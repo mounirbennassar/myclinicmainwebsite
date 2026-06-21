@@ -1,0 +1,142 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-tertiary-container: #3563be;
+  --color-secondary: #00677d;
+  --color-surface-container: #eceef0;
+  --color-background: #f7f9fb;
+  --color-on-tertiary-fixed: #001945;
+  --color-outline-variant: #c2c6d4;
+  --color-inverse-on-surface: #eff1f3;
+  --color-surface-container-high: #e6e8ea;
+  --color-on-secondary-fixed: #001f27;
+  --color-outline: #727783;
+  --color-primary-fixed-dim: #a9c7ff;
+  --color-secondary-fixed-dim: #5cd5f8;
+  --color-on-secondary-container: #005e73;
+  --color-on-surface: #191c1e;
+  --color-primary: #004d99;
+  --color-on-error-container: #93000a;
+  --color-on-primary: #ffffff;
+  --color-surface-container-lowest: #ffffff;
+  --color-secondary-fixed: #b3ebff;
+  --color-surface-dim: #d8dadc;
+  --color-surface-variant: #e0e3e5;
+  --color-tertiary-fixed-dim: #b0c6ff;
+  --color-error-container: #ffdad6;
+  --color-inverse-primary: #a9c7ff;
+  --color-on-background: #191c1e;
+  --color-on-surface-variant: #424752;
+  --color-inverse-surface: #2d3133;
+  --color-on-primary-container: #dae5ff;
+  --color-tertiary: #134aa4;
+  --color-on-primary-fixed-variant: #00468c;
+  --color-primary-fixed: #d6e3ff;
+  --color-surface: #f7f9fb;
+  --color-surface-container-highest: #e0e3e5;
+  --color-surface-tint: #005db7;
+  --color-surface-bright: #f7f9fb;
+  --color-on-secondary-fixed-variant: #004e5f;
+  --color-on-tertiary-container: #dde5ff;
+  --color-error: #ba1a1a;
+  --color-on-secondary: #ffffff;
+  --color-tertiary-fixed: #d9e2ff;
+  --color-on-error: #ffffff;
+  --color-surface-container-low: #f2f4f6;
+  --color-on-tertiary: #ffffff;
+  --color-on-tertiary-fixed-variant: #00429c;
+  --color-primary-container: #1565c0;
+  --color-on-primary-fixed: #001b3d;
+  --color-secondary-container: #63dbfe;
+
+  --font-headline: var(--font-poppins);
+  --font-body: var(--font-manrope);
+  --font-label: var(--font-manrope);
+  --font-arabic: var(--font-tajawal);
+
+  --radius-lg: 0.5rem;
+  --radius-xl: 1.5rem;
+  --radius-full: 9999px;
+}
+
+@layer utilities {
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-feature-settings: 'liga';
+    font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+  .glass-effect {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px);
+  }
+  .shadow-clinical {
+    box-shadow: 0px 10px 40px rgba(0, 77, 153, 0.06);
+  }
+  .hero-gradient {
+    background: radial-gradient(circle at 70% 30%, rgba(214, 227, 255, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 0% 100%, rgba(179, 235, 255, 0.3) 0%, transparent 40%);
+  }
+  .text-glow {
+    text-shadow: 0 0 30px rgba(0, 77, 153, 0.1);
+  }
+}
+
+/* RTL / Arabic support */
+html[dir="rtl"],
+html[dir="rtl"] body {
+  overflow-x: hidden;
+}
+html[dir="rtl"] {
+  font-family: var(--font-tajawal), var(--font-manrope), sans-serif;
+}
+html[dir="rtl"] .font-headline {
+  font-family: var(--font-tajawal), var(--font-poppins), sans-serif;
+}
+html[dir="rtl"] .font-body {
+  font-family: var(--font-tajawal), var(--font-manrope), sans-serif;
+}
+html[dir="rtl"] .material-symbols-outlined {
+  direction: ltr;
+}
+html[dir="rtl"] .tracking-tighter,
+html[dir="rtl"] .tracking-tight,
+html[dir="rtl"] .tracking-widest,
+html[dir="rtl"] .tracking-wider,
+html[dir="rtl"] .tracking-label {
+  letter-spacing: 0 !important;
+}
+
+.tracking-label {
+  letter-spacing: 0.2em;
+}
+
+/* Prevent icon text flash (FOUT) — hide until font loads */
+.material-symbols-outlined {
+  overflow: hidden;
+  width: 1em;
+  height: 1em;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}

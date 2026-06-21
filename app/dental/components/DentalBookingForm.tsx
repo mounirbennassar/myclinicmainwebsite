@@ -1,0 +1,139 @@
+"use client";
+import { useState, useEffect } from "react";
+import { useLang } from "@/app/i18n/context";
+import { trackFormSubmit } from "@/app/lib/tracking";
+
+type Props = {
+  // Slug of the dental service this form is on. Sent to the API so dashboard
+  // can attribute the lead to the correct service page.
+  service?: string;
+};
+
+export default function DentalBookingForm({ service }: Props) {
+  const { lang } = useLang();
+  const isRtl = lang === "ar";
+
+  const [city, setCity] = useState("");
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
+
+  // Capture UTMs and log a server-side click — same logic as the main LP.
+  useEffect(() => {
+    import("@/app/lib/utm-client").then((m) => m.captureAndTrackUtm()).catch(() => {});
+  }, []);
+
+  const submit = async () => {
+    if (!city || !name || !phone) {
+      setError(isRtl ? "يرجى ملء جميع الحقول" : "Please fill in all fields");
+      return;
+    }
+    if (!/^05\d{8}$/.test(phone)) {
+      setError(isRtl ? "رقم الجوال يجب أن يبدأ بـ 05 ويتكون من 10 أرقام" : "Phone must start with 05 and be 10 digits");
+      return;
+    }
+    setSubmitting(true);
+    setError("");
+
+    let utm: Record<string, string> | undefined;
+    let referrer: string | undefined;
+    try {
+      const raw = sessionStorage.getItem("mc_utm");
+      if (raw) {
+        const stored = JSON.parse(raw) as Record<string, string>;
+        utm = {
+          source: stored.utm_source,
+          medium: stored.utm_medium,
+          campaign: stored.utm_campaign,
+          term: stored.utm_term,
+          content: stored.utm_content,
+          ref: stored.utm_ref,
+        };
+      }
+      referrer = sessionStorage.getItem("mc_referrer") || undefined;
+    } catch { /* ignore */ }
+
+    try {
+      const res = await fetch("/api/appointments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ city, name, phone, vertical: "dental", service, utm, referrer }),
+      });
+      if (res.ok) {
+        trackFormSubmit();
+        setSuccess(true);
+        setCity(""); setName(""); setPhone("");
+      } else {
+        setError(isRtl ? "حدث خطأ، حاول مرة أخرى" : "Something went wrong, please try again");
+      }
+    } catch {
+      setError(isRtl ? "خطأ في الاتصال" : "Network error, please try again");
+    }
+    setSubmitting(false);
+  };
+
+  return (
+    <section id="dental-booking" className="py-16 md:py-24 bg-gradient-to-b from-[#003867]/5 to-white scroll-mt-24">
+      <div className="max-w-3xl mx-auto px-4 md:px-8">
+        <div className="bg-white rounded-3xl shadow-xl shadow-[#003867]/5 border border-[#003867]/10 overflow-hidden">
+          <div className="bg-[#003867] text-white p-8 md:p-10">
+            <h3 className="text-3xl font-extrabold">
+              {isRtl ? "احجز استشارتك المجانية" : "Book your free consultation"}
+            </h3>
+            <p className="mt-2 text-white/80">
+              {isRtl ? "سيتواصل معك فريقنا خلال ساعة في أوقات العمل." : "Our team will reach out within an hour during working hours."}
+            </p>
+          </div>
+          <div className="p-8 md:p-10">
+            {success ? (
+              <div className="text-center py-8">
+                <div className="w-16 h-16 rounded-full bg-[#003867]/10 flex items-center justify-center mx-auto mb-5">
+                  <svg className="w-8 h-8 text-[#003867]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+                </div>
+                <h4 className="text-2xl font-extrabold text-[#003867]">{isRtl ? "تم استلام طلبك!" : "Request received!"}</h4>
+                <p className="text-slate-600 mt-2">{isRtl ? "سنتواصل معك قريباً." : "We'll contact you shortly."}</p>
+                <button onClick={() => setSuccess(false)} className="mt-5 text-[#003867] font-bold hover:underline">
+                  {isRtl ? "إرسال طلب آخر" : "Submit another request"}
+                </button>
+              </div>
+            ) : (
+              <form className="space-y-5" onSubmit={(e) => { e.preventDefault(); submit(); }}>
+                {error && <div className="bg-red-50 text-red-700 text-sm px-4 py-3 rounded-xl font-medium">{error}</div>}
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[11px] font-extrabold text-[#003867] uppercase tracking-widest">{isRtl ? "الاسم" : "Your Name"}</label>
+                    <input className="mt-1.5 w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 focus:ring-2 focus:ring-[#003867] focus:border-transparent" placeholder={isRtl ? "الاسم الكامل" : "Full name"} value={name} onChange={(e) => setName(e.target.value)} required />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-extrabold text-[#003867] uppercase tracking-widest">{isRtl ? "الجوال" : "Phone"}</label>
+                    <input dir="ltr" maxLength={10} className="mt-1.5 w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 focus:ring-2 focus:ring-[#003867]" placeholder="05X XXX XXXX" value={phone} onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))} required />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-[11px] font-extrabold text-[#003867] uppercase tracking-widest">{isRtl ? "المدينة" : "City"}</label>
+                  <select className="mt-1.5 w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 focus:ring-2 focus:ring-[#003867]" value={city} onChange={(e) => setCity(e.target.value)} required>
+                    <option value="" disabled>{isRtl ? "اختر المدينة" : "Select city"}</option>
+                    <option value="Riyadh">{isRtl ? "الرياض" : "Riyadh"}</option>
+                    <option value="Jeddah">{isRtl ? "جدة" : "Jeddah"}</option>
+                  </select>
+                </div>
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="w-full bg-[#003867] hover:bg-[#002a4d] text-white font-extrabold py-4 rounded-full shadow-lg shadow-[#003867]/30 active:scale-95 disabled:opacity-50 transition-colors"
+                >
+                  {submitting ? (isRtl ? "جارٍ الإرسال..." : "Submitting...") : (isRtl ? "احجز موعدي" : "Book my appointment")}
+                </button>
+                <p className="text-center text-xs text-slate-500">
+                  {isRtl ? "بياناتك محمية ولن تُشارك مع أي طرف ثالث." : "Your information is private and never shared."}
+                </p>
+              </form>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
