@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getServiceSupabase } from "@/app/lib/supabase";
+import { query, queryOne } from "@/app/lib/db";
 import { hashPassword, generatePassword } from "@/app/lib/auth";
 
 export async function PATCH(
@@ -16,8 +16,6 @@ export async function PATCH(
     const body = await request.json();
     const { name, allowed_cities, is_active, reset_password, memberRole } = body;
 
-    const admin = getServiceSupabase();
-
     // City isolation: a non-super_admin admin can only modify members whose
     // existing allowed_cities overlap their own scope, and cannot grant cities
     // outside that scope.
@@ -28,11 +26,10 @@ export async function PATCH(
       } catch {
         scope = [];
       }
-      const { data: target } = await admin
-        .from("team_members")
-        .select("allowed_cities, role")
-        .eq("id", id)
-        .single();
+      const target = await queryOne<{ allowed_cities: string[] | null; role: string }>(
+        "select allowed_cities, role from team_members where id = $1",
+        [id]
+      );
       if (!target) {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
       }
@@ -63,14 +60,16 @@ export async function PATCH(
       updates.password_hash = await hashPassword(newPassword);
     }
 
-    const { error } = await admin
-      .from("team_members")
-      .update(updates)
-      .eq("id", id);
-
-    if (error) {
-      return NextResponse.json({ error: "Failed to update" }, { status: 500 });
-    }
+    const cols = Object.keys(updates);
+    const setParts = cols.map((c, i) =>
+      c === "allowed_cities" ? `${c} = $${i + 1}::text[]` : `${c} = $${i + 1}`
+    );
+    const values = cols.map((c) => updates[c]);
+    values.push(id);
+    await query(
+      `update team_members set ${setParts.join(", ")} where id = $${values.length}`,
+      values
+    );
 
     return NextResponse.json({
       success: true,

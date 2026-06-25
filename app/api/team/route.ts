@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getServiceSupabase } from "@/app/lib/supabase";
+import { query, queryOne } from "@/app/lib/db";
 import { hashPassword, generatePassword } from "@/app/lib/auth";
 
 export async function GET(request: Request) {
@@ -8,34 +8,33 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const admin = getServiceSupabase();
-  let query = admin
-    .from("team_members")
-    .select("id, email, name, role, allowed_cities, is_active, can_export, created_at")
-    .order("created_at", { ascending: false });
+  try {
+    let sqlText =
+      "select id, email, name, role, allowed_cities, is_active, can_export, created_at from team_members";
+    const params: unknown[] = [];
 
-  // City isolation: non-super_admin admins only see team members whose
-  // allowed_cities overlap with their own scope. super_admin sees everyone.
-  if (role !== "super_admin") {
-    let allowedCities: string[] = [];
-    try {
-      allowedCities = JSON.parse(request.headers.get("x-user-cities") || "[]");
-    } catch {
-      allowedCities = [];
+    // City isolation: non-super_admin admins only see team members whose
+    // allowed_cities overlap with their own scope. super_admin sees everyone.
+    if (role !== "super_admin") {
+      let allowedCities: string[] = [];
+      try {
+        allowedCities = JSON.parse(request.headers.get("x-user-cities") || "[]");
+      } catch {
+        allowedCities = [];
+      }
+      if (!allowedCities.length) {
+        return NextResponse.json({ data: [] });
+      }
+      params.push(allowedCities);
+      sqlText += ` where allowed_cities && $${params.length}::text[]`;
     }
-    if (!allowedCities.length) {
-      return NextResponse.json({ data: [] });
-    }
-    query = query.overlaps("allowed_cities", allowedCities);
-  }
 
-  const { data, error } = await query;
-
-  if (error) {
+    sqlText += " order by created_at desc";
+    const data = await query(sqlText, params);
+    return NextResponse.json({ data });
+  } catch {
     return NextResponse.json({ error: "Failed to fetch team" }, { status: 500 });
   }
-
-  return NextResponse.json({ data });
 }
 
 export async function POST(request: Request) {
@@ -74,43 +73,26 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Only @myclinic.com.sa emails are allowed" }, { status: 400 });
     }
 
-    const password = generatePassword();
-    const password_hash = await hashPassword(password);
-
-    const admin = getServiceSupabase();
-
     // Check if email already exists
-    const { data: existing } = await admin
-      .from("team_members")
-      .select("id")
-      .eq("email", normalizedEmail)
-      .single();
-
+    const existing = await queryOne("select id from team_members where email = $1", [normalizedEmail]);
     if (existing) {
       return NextResponse.json({ error: "Email already exists" }, { status: 409 });
     }
 
-    const { data: user, error } = await admin
-      .from("team_members")
-      .insert([{
-        email: normalizedEmail,
-        name,
-        password_hash,
-        role: ["super_admin", "admin", "agent"].includes(memberRole) ? memberRole : "agent",
-        allowed_cities,
-        can_export,
-        is_active: true,
-      }])
-      .select("id, email, name, role, allowed_cities, is_active, can_export, created_at")
-      .single();
+    const password = generatePassword();
+    const password_hash = await hashPassword(password);
+    const finalRole = ["super_admin", "admin", "agent"].includes(memberRole) ? memberRole : "agent";
 
-    if (error) {
-      console.error("Team create error:", error);
-      return NextResponse.json({ error: "Failed to create member" }, { status: 500 });
-    }
+    const user = await queryOne(
+      `insert into team_members (email, name, password_hash, role, allowed_cities, can_export, is_active)
+       values ($1, $2, $3, $4, $5::text[], $6, $7)
+       returning id, email, name, role, allowed_cities, is_active, can_export, created_at`,
+      [normalizedEmail, name, password_hash, finalRole, allowed_cities, can_export, true]
+    );
 
     return NextResponse.json({ user, generated_password: password });
-  } catch {
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  } catch (err) {
+    console.error("Team create error:", err);
+    return NextResponse.json({ error: "Failed to create member" }, { status: 500 });
   }
 }

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getServiceSupabase } from "@/app/lib/supabase";
+import { query } from "@/app/lib/db";
 
 export async function DELETE(
   request: Request,
@@ -10,13 +10,12 @@ export async function DELETE(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const { id } = await params;
-  const admin = getServiceSupabase();
-  const { error } = await admin.from("utm_links").delete().eq("id", id);
-
-  if (error) {
+  try {
+    const { id } = await params;
+    // utm_clicks.link_id has ON DELETE CASCADE, so the link's clicks go with it.
+    await query("delete from utm_links where id = $1", [id]);
+    return NextResponse.json({ success: true });
+  } catch {
     return NextResponse.json({ error: "Failed to delete" }, { status: 500 });
   }
-
-  return NextResponse.json({ success: true });
 }

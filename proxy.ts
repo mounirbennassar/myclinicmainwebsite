@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
+import { query } from "@/app/lib/db";
 
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET!);
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
 export const config = {
   matcher: ["/dashboard/:path*", "/api/appointments/:path*", "/api/team/:path*", "/api/utm/:path*", "/api/whatsapp/:path*", "/api/auth/me"],
@@ -29,21 +28,10 @@ async function fetchFreshUser(userId: string): Promise<FreshUser | null> {
   const cached = userCache.get(userId);
   if (cached && cached.expiresAt > Date.now()) return cached.value;
 
-  const url = `${SUPABASE_URL}/rest/v1/team_members?id=eq.${encodeURIComponent(
-    userId
-  )}&select=id,email,name,role,allowed_cities,is_active,can_export`;
-
-  const res = await fetch(url, {
-    headers: {
-      apikey: SUPABASE_SERVICE_KEY,
-      Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
-      Accept: "application/json",
-    },
-    cache: "no-store",
-  });
-
-  if (!res.ok) return null;
-  const rows = (await res.json()) as FreshUser[];
+  const rows = await query<FreshUser>(
+    "select id, email, name, role, allowed_cities, is_active, can_export from team_members where id = $1",
+    [userId]
+  );
   const user = rows[0];
   if (!user) return null;
 
@@ -51,7 +39,7 @@ async function fetchFreshUser(userId: string): Promise<FreshUser | null> {
   return user;
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Allow public appointment submissions (POST /api/appointments)

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getServiceSupabase } from "@/app/lib/supabase";
+import { query, queryOne } from "@/app/lib/db";
 
 function generateSlug(length = 6): string {
   const chars = "abcdefghijkmnpqrstuvwxyz23456789";
@@ -23,57 +23,61 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const admin = getServiceSupabase();
-  const { data: links, error } = await admin
-    .from("utm_links")
-    .select("id, slug, destination_url, source, medium, campaign, term, content, label, created_by, created_at")
-    .order("created_at", { ascending: false });
+  try {
+    const links = await query<{ id: string }>(
+      "select id, slug, destination_url, source, medium, campaign, term, content, label, created_by, created_at from utm_links order by created_at desc"
+    );
 
-  if (error) {
+    const linkIds = links.map((l) => l.id);
+
+    const [clicks, appts] = await Promise.all([
+      linkIds.length
+        ? query<{ link_id: string; clicked_at: string }>(
+            "select link_id, clicked_at from utm_clicks where link_id = ANY($1::uuid[])",
+            [linkIds]
+          )
+        : Promise.resolve([] as { link_id: string; clicked_at: string }[]),
+      linkIds.length
+        ? query<{ utm_link_id: string; status: string }>(
+            "select utm_link_id, status from appointments where utm_link_id = ANY($1::uuid[])",
+            [linkIds]
+          )
+        : Promise.resolve([] as { utm_link_id: string; status: string }[]),
+    ]);
+
+    const clickByLink = new Map<string, { count: number; last: string | null }>();
+    for (const c of clicks) {
+      const entry = clickByLink.get(c.link_id) ?? { count: 0, last: null };
+      entry.count += 1;
+      if (!entry.last || c.clicked_at > entry.last) entry.last = c.clicked_at;
+      clickByLink.set(c.link_id, entry);
+    }
+
+    const convByLink = new Map<string, { total: number; confirmed: number }>();
+    for (const a of appts) {
+      if (!a.utm_link_id) continue;
+      const entry = convByLink.get(a.utm_link_id) ?? { total: 0, confirmed: 0 };
+      entry.total += 1;
+      if (a.status === "confirmed" || a.status === "completed") entry.confirmed += 1;
+      convByLink.set(a.utm_link_id, entry);
+    }
+
+    const enriched = links.map((l) => {
+      const clicksEntry = clickByLink.get(l.id) ?? { count: 0, last: null };
+      const conv = convByLink.get(l.id) ?? { total: 0, confirmed: 0 };
+      return {
+        ...l,
+        clicks: clicksEntry.count,
+        last_click_at: clicksEntry.last,
+        conversions: conv.total,
+        confirmed_conversions: conv.confirmed,
+      };
+    });
+
+    return NextResponse.json({ data: enriched });
+  } catch {
     return NextResponse.json({ error: "Failed to fetch links" }, { status: 500 });
   }
-
-  const linkIds = (links ?? []).map((l) => l.id);
-
-  const [clicksRes, apptsRes] = await Promise.all([
-    linkIds.length
-      ? admin.from("utm_clicks").select("link_id, clicked_at").in("link_id", linkIds)
-      : Promise.resolve({ data: [] as { link_id: string; clicked_at: string }[], error: null }),
-    linkIds.length
-      ? admin.from("appointments").select("utm_link_id, status").in("utm_link_id", linkIds)
-      : Promise.resolve({ data: [] as { utm_link_id: string; status: string }[], error: null }),
-  ]);
-
-  const clickByLink = new Map<string, { count: number; last: string | null }>();
-  for (const c of (clicksRes.data ?? []) as { link_id: string; clicked_at: string }[]) {
-    const entry = clickByLink.get(c.link_id) ?? { count: 0, last: null };
-    entry.count += 1;
-    if (!entry.last || c.clicked_at > entry.last) entry.last = c.clicked_at;
-    clickByLink.set(c.link_id, entry);
-  }
-
-  const convByLink = new Map<string, { total: number; confirmed: number }>();
-  for (const a of (apptsRes.data ?? []) as { utm_link_id: string; status: string }[]) {
-    if (!a.utm_link_id) continue;
-    const entry = convByLink.get(a.utm_link_id) ?? { total: 0, confirmed: 0 };
-    entry.total += 1;
-    if (a.status === "confirmed" || a.status === "completed") entry.confirmed += 1;
-    convByLink.set(a.utm_link_id, entry);
-  }
-
-  const enriched = (links ?? []).map((l) => {
-    const clicks = clickByLink.get(l.id) ?? { count: 0, last: null };
-    const conv = convByLink.get(l.id) ?? { total: 0, confirmed: 0 };
-    return {
-      ...l,
-      clicks: clicks.count,
-      last_click_at: clicks.last,
-      conversions: conv.total,
-      confirmed_conversions: conv.confirmed,
-    };
-  });
-
-  return NextResponse.json({ data: enriched });
 }
 
 export async function POST(request: Request) {
@@ -106,11 +110,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid destination URL" }, { status: 400 });
     }
 
-    const admin = getServiceSupabase();
-
     let slug = customSlug || generateSlug();
     for (let i = 0; i < 5; i++) {
-      const { data: existing } = await admin.from("utm_links").select("id").eq("slug", slug).maybeSingle();
+      const existing = await queryOne("select id from utm_links where slug = $1", [slug]);
       if (!existing) break;
       if (customSlug) {
         return NextResponse.json({ error: "Slug already in use" }, { status: 409 });
@@ -121,30 +123,16 @@ export async function POST(request: Request) {
     const roleLabel = role === "super_admin" ? "Super Admin" : "Admin";
     const created_by = `${userName || "Unknown"} (${roleLabel})`;
 
-    const { data, error } = await admin
-      .from("utm_links")
-      .insert([{
-        slug,
-        destination_url,
-        source,
-        medium,
-        campaign,
-        term,
-        content,
-        label,
-        created_by,
-        created_by_id: userId,
-      }])
-      .select("id, slug, destination_url, source, medium, campaign, term, content, label, created_by, created_at")
-      .single();
-
-    if (error) {
-      console.error("utm_links insert error:", error);
-      return NextResponse.json({ error: "Failed to create link" }, { status: 500 });
-    }
+    const data = await queryOne(
+      `insert into utm_links (slug, destination_url, source, medium, campaign, term, content, label, created_by, created_by_id)
+       values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+       returning id, slug, destination_url, source, medium, campaign, term, content, label, created_by, created_at`,
+      [slug, destination_url, source, medium, campaign, term, content, label, created_by, userId]
+    );
 
     return NextResponse.json({ data });
-  } catch {
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  } catch (err) {
+    console.error("utm_links insert error:", err);
+    return NextResponse.json({ error: "Failed to create link" }, { status: 500 });
   }
 }

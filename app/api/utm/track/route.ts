@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getServiceSupabase } from "@/app/lib/supabase";
+import { query, queryOne } from "@/app/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -48,33 +48,26 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: true, skipped: "no-utm" });
     }
 
-    const admin = getServiceSupabase();
-
     let linkId: string | null = null;
 
     if (ref) {
-      const { data } = await admin
-        .from("utm_links")
-        .select("id")
-        .eq("slug", ref)
-        .maybeSingle();
-      if (data?.id) linkId = data.id;
+      const link = await queryOne<{ id: string }>("select id from utm_links where slug = $1", [ref]);
+      if (link?.id) linkId = link.id;
     }
 
     if (!linkId && source && medium && campaign) {
       // Match the most-specific tuple available. Optional term/content narrow
       // the match when present so that two campaigns sharing source/medium/
       // campaign but differing on term don't collide.
-      let q = admin
-        .from("utm_links")
-        .select("id, term, content, created_at")
-        .eq("source", source)
-        .eq("medium", medium)
-        .eq("campaign", campaign);
-      if (term) q = q.eq("term", term);
-      if (content) q = q.eq("content", content);
-      const { data: matches } = await q.order("created_at", { ascending: false }).limit(1);
-      if (matches && matches[0]) linkId = matches[0].id;
+      const conds = ["source = $1", "medium = $2", "campaign = $3"];
+      const vals: unknown[] = [source, medium, campaign];
+      if (term) { vals.push(term); conds.push(`term = $${vals.length}`); }
+      if (content) { vals.push(content); conds.push(`content = $${vals.length}`); }
+      const match = await queryOne<{ id: string }>(
+        `select id from utm_links where ${conds.join(" and ")} order by created_at desc limit 1`,
+        vals
+      );
+      if (match?.id) linkId = match.id;
     }
 
     if (!linkId) {
@@ -89,13 +82,10 @@ export async function POST(request: Request) {
     const referrer = s(body?.referrer, 500) || request.headers.get("referer");
     const country = request.headers.get("x-vercel-ip-country") || null;
 
-    await admin.from("utm_clicks").insert([{
-      link_id: linkId,
-      referrer,
-      user_agent: ua || null,
-      ip_hash,
-      country,
-    }]);
+    await query(
+      "insert into utm_clicks (link_id, referrer, user_agent, ip_hash, country) values ($1, $2, $3, $4, $5)",
+      [linkId, referrer, ua || null, ip_hash, country]
+    );
 
     return NextResponse.json({ ok: true, link_id: linkId });
   } catch {

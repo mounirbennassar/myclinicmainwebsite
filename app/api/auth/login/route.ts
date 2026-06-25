@@ -1,6 +1,17 @@
 import { NextResponse } from "next/server";
-import { getServiceSupabase } from "@/app/lib/supabase";
+import { queryOne } from "@/app/lib/db";
 import { comparePassword, signToken, sessionCookieHeader } from "@/app/lib/auth";
+
+type TeamMember = {
+  id: string;
+  email: string;
+  name: string;
+  password_hash: string;
+  role: "super_admin" | "admin" | "agent";
+  allowed_cities: string[] | null;
+  is_active: boolean | null;
+  can_export: boolean | null;
+};
 
 export async function POST(request: Request) {
   try {
@@ -20,14 +31,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Only @myclinic.com.sa emails are allowed" }, { status: 400 });
     }
 
-    const admin = getServiceSupabase();
-    const { data: user, error } = await admin
-      .from("team_members")
-      .select("*")
-      .eq("email", normalizedEmail)
-      .single();
+    const user = await queryOne<TeamMember>(
+      "select * from team_members where email = $1",
+      [normalizedEmail]
+    );
 
-    if (error || !user) {
+    if (!user) {
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
     }
 

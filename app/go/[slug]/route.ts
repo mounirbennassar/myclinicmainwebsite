@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getServiceSupabase } from "@/app/lib/supabase";
+import { query, queryOne } from "@/app/lib/db";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -16,15 +16,18 @@ async function hashIp(ip: string): Promise<string> {
     .join("");
 }
 
-function buildDestination(link: {
+type UtmLink = {
+  id: string;
+  slug: string;
   destination_url: string;
   source: string;
   medium: string;
   campaign: string;
   term: string | null;
   content: string | null;
-  slug: string;
-}): string {
+};
+
+function buildDestination(link: UtmLink): string {
   try {
     const url = new URL(link.destination_url);
     url.searchParams.set("utm_source", link.source);
@@ -44,13 +47,11 @@ export async function GET(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   const { slug } = await params;
-  const admin = getServiceSupabase();
 
-  const { data: link } = await admin
-    .from("utm_links")
-    .select("id, slug, destination_url, source, medium, campaign, term, content")
-    .eq("slug", slug)
-    .maybeSingle();
+  const link = await queryOne<UtmLink>(
+    "select id, slug, destination_url, source, medium, campaign, term, content from utm_links where slug = $1",
+    [slug]
+  );
 
   if (!link) {
     return NextResponse.redirect(new URL("/", request.url), { status: 302 });
@@ -69,13 +70,10 @@ export async function GET(
   // Skip bot/preview crawlers so the click count reflects real users only.
   const isBot = user_agent ? BOT_RE.test(user_agent) : false;
   if (!isBot) {
-    await admin.from("utm_clicks").insert([{
-      link_id: link.id,
-      referrer,
-      user_agent,
-      ip_hash,
-      country,
-    }]);
+    await query(
+      "insert into utm_clicks (link_id, referrer, user_agent, ip_hash, country) values ($1, $2, $3, $4, $5)",
+      [link.id, referrer, user_agent, ip_hash, country]
+    );
   }
 
   const res = NextResponse.redirect(buildDestination(link), { status: 302 });

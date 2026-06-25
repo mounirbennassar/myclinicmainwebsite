@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getServiceSupabase } from "@/app/lib/supabase";
+import { query, queryOne } from "@/app/lib/db";
 
 // Whitelist what callers can write to `vertical` / `service` so a typo or
 // abusive POST can't pollute the dashboard's filter pivots.
@@ -19,8 +19,6 @@ export async function POST(request: Request) {
     if (!city || !name || !phone) {
       return NextResponse.json({ error: "All fields are required" }, { status: 400 });
     }
-
-    const admin = getServiceSupabase();
 
     const insertData: Record<string, unknown> = { city, name, phone };
 
@@ -60,46 +58,43 @@ export async function POST(request: Request) {
 
         const refSlug = utm.ref ? String(utm.ref).slice(0, 40) : null;
         if (refSlug) {
-          const { data: link } = await admin
-            .from("utm_links")
-            .select("id")
-            .eq("slug", refSlug)
-            .maybeSingle();
+          const link = await queryOne<{ id: string }>("select id from utm_links where slug = $1", [refSlug]);
           if (link?.id) insertData.utm_link_id = link.id;
         }
         // Fall back to source+medium+campaign tuple when no ref slug — this is
         // how raw `?utm_source=...` URLs (that bypass /go/<slug>) still attribute
         // their leads to the originating UTM link in the dashboard.
         if (!insertData.utm_link_id && utm.source && utm.medium && utm.campaign) {
-          let q = admin
-            .from("utm_links")
-            .select("id, term, content, created_at")
-            .eq("source", String(utm.source).slice(0, 100))
-            .eq("medium", String(utm.medium).slice(0, 100))
-            .eq("campaign", String(utm.campaign).slice(0, 100));
-          if (utm.term) q = q.eq("term", String(utm.term).slice(0, 100));
-          if (utm.content) q = q.eq("content", String(utm.content).slice(0, 100));
-          const { data: matches } = await q.order("created_at", { ascending: false }).limit(1);
-          if (matches && matches[0]?.id) insertData.utm_link_id = matches[0].id;
+          const conds = ["source = $1", "medium = $2", "campaign = $3"];
+          const vals: unknown[] = [
+            String(utm.source).slice(0, 100),
+            String(utm.medium).slice(0, 100),
+            String(utm.campaign).slice(0, 100),
+          ];
+          if (utm.term) { vals.push(String(utm.term).slice(0, 100)); conds.push(`term = $${vals.length}`); }
+          if (utm.content) { vals.push(String(utm.content).slice(0, 100)); conds.push(`content = $${vals.length}`); }
+          const match = await queryOne<{ id: string }>(
+            `select id from utm_links where ${conds.join(" and ")} order by created_at desc limit 1`,
+            vals
+          );
+          if (match?.id) insertData.utm_link_id = match.id;
         }
       }
       if (referrer) insertData.referrer = String(referrer).slice(0, 500);
     }
 
-    const { data, error } = await admin
-      .from("appointments")
-      .insert([insertData])
-      .select("*")
-      .single();
-
-    if (error) {
-      console.error("Supabase insert error:", JSON.stringify(error));
-      return NextResponse.json({ error: "Failed to submit appointment" }, { status: 500 });
-    }
+    const cols = Object.keys(insertData);
+    const placeholders = cols.map((_, i) => `$${i + 1}`);
+    const values = cols.map((c) => insertData[c]);
+    const data = await queryOne(
+      `insert into appointments (${cols.join(", ")}) values (${placeholders.join(", ")}) returning *`,
+      values
+    );
 
     return NextResponse.json({ success: true, data });
-  } catch {
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  } catch (err) {
+    console.error("Appointment insert error:", err);
+    return NextResponse.json({ error: "Failed to submit appointment" }, { status: 500 });
   }
 }
 
@@ -119,7 +114,6 @@ export async function GET(request: Request) {
     allowedCities = [];
   }
 
-  const admin = getServiceSupabase();
   const agentUserId = role === "agent" ? request.headers.get("x-user-id") : null;
   if (role === "agent" && !agentUserId) {
     return NextResponse.json({ data: [] });
@@ -128,35 +122,26 @@ export async function GET(request: Request) {
     return NextResponse.json({ data: [] });
   }
 
-  // Supabase/PostgREST caps a single response at 1000 rows by default, which
-  // made the "Total Requests" KPI plateau at 1000. Paginate through every page
-  // until we've drained the result set.
-  const PAGE_SIZE = 1000;
-  const all: Record<string, unknown>[] = [];
-  for (let from = 0; ; from += PAGE_SIZE) {
-    let query = admin
-      .from("appointments")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .range(from, from + PAGE_SIZE - 1);
-
+  try {
+    const conds: string[] = [];
+    const params: unknown[] = [];
     if (role !== "super_admin") {
-      query = query.in("city", allowedCities);
+      params.push(allowedCities);
+      conds.push(`city = ANY($${params.length}::text[])`);
     }
     if (agentUserId) {
-      query = query.eq("assigned_to", agentUserId);
+      params.push(agentUserId);
+      conds.push(`assigned_to = $${params.length}`);
     }
-
-    const { data, error } = await query;
-    if (error) {
-      return NextResponse.json({ error: "Failed to fetch" }, { status: 500 });
-    }
-    if (!data || data.length === 0) break;
-    all.push(...data);
-    if (data.length < PAGE_SIZE) break;
+    const whereClause = conds.length ? `where ${conds.join(" and ")}` : "";
+    const data = await query(
+      `select * from appointments ${whereClause} order by created_at desc`,
+      params
+    );
+    return NextResponse.json({ data });
+  } catch {
+    return NextResponse.json({ error: "Failed to fetch" }, { status: 500 });
   }
-
-  return NextResponse.json({ data: all });
 }
 
 // PATCH is protected by middleware
@@ -175,8 +160,6 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: "Missing id" }, { status: 400 });
     }
 
-    const admin = getServiceSupabase();
-
     let allowedCities: string[] = [];
     try {
       allowedCities = JSON.parse(request.headers.get("x-user-cities") || "[]");
@@ -186,11 +169,10 @@ export async function PATCH(request: Request) {
 
     // Fetch the appointment to enforce city + agent scoping
     if (role !== "super_admin") {
-      const { data: appt } = await admin
-        .from("appointments")
-        .select("assigned_to, city")
-        .eq("id", id)
-        .single();
+      const appt = await queryOne<{ assigned_to: string | null; city: string }>(
+        "select assigned_to, city from appointments where id = $1",
+        [id]
+      );
       if (!appt) {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
       }
@@ -226,14 +208,11 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: "Nothing to update" }, { status: 400 });
     }
 
-    const { error } = await admin
-      .from("appointments")
-      .update(updates)
-      .eq("id", id);
-
-    if (error) {
-      return NextResponse.json({ error: "Failed to update" }, { status: 500 });
-    }
+    const cols = Object.keys(updates);
+    const setParts = cols.map((c, i) => `${c} = $${i + 1}`);
+    const values = cols.map((c) => updates[c]);
+    values.push(id);
+    await query(`update appointments set ${setParts.join(", ")} where id = $${values.length}`, values);
 
     return NextResponse.json({
       success: true,
@@ -261,13 +240,10 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "Missing id or ids" }, { status: 400 });
     }
 
-    const admin = getServiceSupabase();
-    const { error } = ids
-      ? await admin.from("appointments").delete().in("id", ids)
-      : await admin.from("appointments").delete().eq("id", id);
-
-    if (error) {
-      return NextResponse.json({ error: "Failed to delete" }, { status: 500 });
+    if (ids) {
+      await query("delete from appointments where id = ANY($1::uuid[])", [ids]);
+    } else {
+      await query("delete from appointments where id = $1", [id]);
     }
 
     return NextResponse.json({ success: true });
