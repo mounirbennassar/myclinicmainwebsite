@@ -4,14 +4,14 @@ import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useLang } from "@/app/i18n/context";
 import { trackPhoneClick, trackWhatsAppClick } from "@/app/lib/tracking";
-import DentalNav from "./components/DentalNav";
+import SiteNav from "@/app/components/SiteNav";
 import HeroParallaxBg from "./components/HeroParallaxBg";
 import DentalHeroSplit from "./components/DentalHeroSplit";
 import DentalPromisesScroll from "./components/DentalPromisesScroll";
 import DentalDoctorsStrip from "./components/DentalDoctorsStrip";
 import DentalTestimonials from "./components/DentalTestimonials";
 import DentalHoursAndBooking from "./components/DentalHoursAndBooking";
-import DentalFooter from "./components/DentalFooter";
+import SiteFooter from "@/app/components/SiteFooter";
 
 const WHATSAPP_LINK = `https://wa.me/966920022811?text=${encodeURIComponent("مرحباً، أود حجز موعد في عيادة الأسنان بعيادتي")}`;
 
@@ -67,7 +67,7 @@ export default function DentalHub() {
 
   return (
     <div dir={isRtl ? "rtl" : "ltr"} className="min-h-screen bg-white">
-      <DentalNav />
+      <SiteNav />
 
       {/* ── Hero (Split-text + soft clinical backdrop) ───── */}
       <section
@@ -384,7 +384,7 @@ export default function DentalHub() {
       <DentalDoctorsStrip />
       <DentalTestimonials />
       <DentalHoursAndBooking service="general" />
-      <DentalFooter />
+      <SiteFooter />
 
       {/* ── Sticky Floating Buttons ──────────────────────── */}
       <div className={`fixed bottom-6 ${isRtl ? "left-6" : "right-6"} z-50 flex flex-col items-end gap-3`}>

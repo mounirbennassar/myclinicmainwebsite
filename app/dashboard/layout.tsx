@@ -15,14 +15,30 @@ type User = {
 const UserContext = createContext<User | null>(null);
 export const useUser = () => useContext(UserContext);
 
-export type Vertical = "all" | "medical" | "dental";
+export type Vertical = "all" | "medical" | "dental" | "pediatric";
 
 // Reads the ?vertical= query param. "all" means no filter.
 export function useVertical(): Vertical {
   const params = useSearchParams();
   const v = params.get("vertical");
-  return v === "medical" || v === "dental" ? v : "all";
+  return v === "medical" || v === "dental" || v === "pediatric" ? v : "all";
 }
+
+// Shared display metadata so the dashboard, reports, and any future
+// vertical-scoped view label the active segment identically.
+export const VERTICAL_LABELS: Record<Vertical, string> = {
+  all: "All verticals",
+  medical: "Medical",
+  dental: "Dental",
+  pediatric: "Pediatric",
+};
+
+export const VERTICAL_BADGE: Record<Vertical, string> = {
+  all: "bg-slate-100 text-slate-600",
+  medical: "bg-[#004d99]/10 text-[#004d99]",
+  dental: "bg-teal-500/10 text-teal-700",
+  pediatric: "bg-amber-500/10 text-amber-700",
+};
 
 function VerticalToggle() {
   const router = useRouter();
@@ -42,6 +58,7 @@ function VerticalToggle() {
     { value: "all", label: "All" },
     { value: "medical", label: "Medical" },
     { value: "dental", label: "Dental" },
+    { value: "pediatric", label: "Pediatric" },
   ];
 
   return (
@@ -72,6 +89,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
+  const vertical = useVertical();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -98,13 +116,18 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
 
   if (!user) return null;
 
+  // Carry the active vertical across tabs so the segment stays "sticky" — pick
+  // Dental on Appointments and the Reports tab opens scoped to Dental too,
+  // instead of silently resetting to All. (UTM/Team ignore it; it just rides
+  // along so returning to a vertical-aware page restores the selection.)
+  const vQuery = vertical !== "all" ? `?vertical=${vertical}` : "";
   const navItems = [
-    { label: "Appointments", href: "/dashboard", active: pathname === "/dashboard" },
+    { label: "Appointments", href: `/dashboard${vQuery}`, active: pathname === "/dashboard" },
     ...(user.role === "super_admin" || user.role === "admin"
       ? [
-          { label: "Reports", href: "/dashboard/reports", active: pathname === "/dashboard/reports" },
-          { label: "UTM Links", href: "/dashboard/utm", active: pathname === "/dashboard/utm" },
-          { label: "Team", href: "/dashboard/team", active: pathname === "/dashboard/team" },
+          { label: "Reports", href: `/dashboard/reports${vQuery}`, active: pathname === "/dashboard/reports" },
+          { label: "UTM Links", href: `/dashboard/utm${vQuery}`, active: pathname === "/dashboard/utm" },
+          { label: "Team", href: `/dashboard/team${vQuery}`, active: pathname === "/dashboard/team" },
         ]
       : []),
   ];

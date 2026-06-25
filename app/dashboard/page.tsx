@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
-import { useUser, useVertical } from "./layout";
+import { useUser, useVertical, VERTICAL_LABELS, VERTICAL_BADGE } from "./layout";
 import { dentalServiceCatalog } from "../dental/content/services";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
@@ -124,20 +124,31 @@ export default function Dashboard() {
   const canAssign = user?.role === "super_admin" || user?.role === "admin";
   const canDelete = user?.role === "super_admin";
 
-  const filtered = appointments.filter((a) => {
-    const matchSearch =
-      !search ||
-      a.name?.toLowerCase().includes(search.toLowerCase()) ||
-      a.phone?.includes(search) ||
-      a.department?.toLowerCase().includes(search.toLowerCase());
+  // `scoped` = the active segment the user is looking at: the vertical (and the
+  // dental page, when one is chosen) plus the structural city/agent filters. The
+  // stat cards and the "X of Y" denominator read from this, so the numbers always
+  // track the selected vertical/page instead of the global, all-verticals total.
+  const scoped = appointments.filter((a) => {
     const matchCity = !filterCity || a.city === filterCity;
-    const matchStatus = !filterStatus || a.status === filterStatus;
     const matchAgent = !filterAgent || (filterAgent === "unassigned" ? !a.assigned_to : a.assigned_to === filterAgent);
     // Treat legacy rows with NULL vertical as 'medical' so they keep showing in the medical view.
     const v = a.vertical || "medical";
     const matchVertical = vertical === "all" || v === vertical;
     const matchService = !filterService || a.service === filterService;
-    return matchSearch && matchCity && matchStatus && matchAgent && matchVertical && matchService;
+    return matchCity && matchAgent && matchVertical && matchService;
+  });
+
+  // The table layers the transient lookups (free-text search + status) on top of
+  // the scope. Status is intentionally kept out of `scoped` so the status-specific
+  // cards (Inquiry / Booked) keep showing a full breakdown of the segment.
+  const filtered = scoped.filter((a) => {
+    const matchSearch =
+      !search ||
+      a.name?.toLowerCase().includes(search.toLowerCase()) ||
+      a.phone?.includes(search) ||
+      a.department?.toLowerCase().includes(search.toLowerCase());
+    const matchStatus = !filterStatus || a.status === filterStatus;
+    return matchSearch && matchStatus;
   });
 
   const toggleSelect = (id: string) => {
@@ -238,11 +249,12 @@ export default function Dashboard() {
     return () => clearInterval(interval);
   }, [fetchAppointments, fetchAgents]);
 
-  // If the user filters to a dental page, then flips the vertical toggle to
-  // Medical, the service dropdown disappears but the filter stays active and
-  // the list goes empty. Clear it when the filter is no longer relevant.
+  // If the user filters to a dental page, then flips the vertical toggle to a
+  // vertical without a service dropdown (Medical or Pediatric), the filter
+  // stays active and the list goes empty. Clear it when no longer relevant.
+  // ("all" and "dental" keep the dropdown, so the filter stays meaningful.)
   useEffect(() => {
-    if (vertical === "medical" && filterService) setFilterService("");
+    if (vertical !== "dental" && vertical !== "all" && filterService) setFilterService("");
   }, [vertical, filterService]);
 
   const updateStatus = async (id: string, newStatus: string) => {
@@ -351,18 +363,33 @@ export default function Dashboard() {
   };
 
   const stats = {
-    total: appointments.length,
-    today: appointments.filter((a) => new Date(a.created_at).toDateString() === new Date().toDateString()).length,
-    new: appointments.filter((a) => a.status === "new").length,
-    confirmed: appointments.filter((a) => a.status === "booked" || a.status === "confirmed").length,
+    total: scoped.length,
+    today: scoped.filter((a) => new Date(a.created_at).toDateString() === new Date().toDateString()).length,
+    new: scoped.filter((a) => a.status === "new").length,
+    confirmed: scoped.filter((a) => a.status === "booked" || a.status === "confirmed").length,
   };
+
+  // Human-readable label for the active scope, shown beside the page title.
+  const scopeServiceName = filterService
+    ? dentalServiceCatalog.find((s) => s.slug === filterService)?.en
+    : null;
+  const scopeLabel = scopeServiceName
+    ? `${VERTICAL_LABELS[vertical]} · ${scopeServiceName}`
+    : VERTICAL_LABELS[vertical];
 
   return (
     <main className="max-w-7xl mx-auto px-4 md:px-8 py-6 md:py-8">
       {/* Welcome + Refresh */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-lg font-bold text-slate-900">Appointments</h1>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-lg font-bold text-slate-900">Appointments</h1>
+            {canAssign && (
+              <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${VERTICAL_BADGE[vertical]}`}>
+                {scopeLabel}
+              </span>
+            )}
+          </div>
           {user?.role === "agent" && (
             <p className="text-xs text-slate-400 mt-0.5">Showing your assigned leads</p>
           )}
@@ -453,7 +480,7 @@ export default function Dashboard() {
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <p className="text-xs text-slate-400 font-medium">
-            {selectedIds.size > 0 ? `${selectedIds.size} selected — ` : ""}{filtered.length} of {appointments.length} appointments
+            {selectedIds.size > 0 ? `${selectedIds.size} selected — ` : ""}{filtered.length} of {scoped.length} appointments
           </p>
           {canDelete && selectedIds.size > 0 && (
             <button

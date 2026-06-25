@@ -6,6 +6,8 @@ import { doctorsData, type Doctor } from "./doctors-data";
 import { useLang } from "./i18n/context";
 import translations, { type TranslationKey } from "./i18n/translations";
 import { trackFormSubmit, trackPhoneClick, trackWhatsAppClick } from "./lib/tracking";
+import SiteNav from "./components/SiteNav";
+import SiteFooter from "./components/SiteFooter";
 
 const specKeys = [
   "allergyImmunology", "audioVestibular", "cardiology", "dental", "dermatologyCosmetics",
@@ -67,7 +69,7 @@ const slideImages = ["/clinic/reception.webp", "/clinic/lobby.webp", "/clinic/nu
 const WHATSAPP_LINK = `https://wa.me/966920022811?text=${encodeURIComponent("مرحباً، أود حجز موعد في عيادتي")}`;
 
 export default function Home() {
-  const { lang, setLang, ready } = useLang();
+  const { lang, ready } = useLang();
   const t = translations[lang];
   const isRtl = lang === "ar";
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -245,42 +247,7 @@ export default function Home() {
   return (
     <div className="bg-surface font-body text-on-surface antialiased overflow-x-hidden">
       {/* Main Navigation */}
-      <header className="sticky top-0 w-full z-50 glass-effect shadow-clinical">
-        <div className="flex justify-between items-center max-w-7xl mx-auto px-4 md:px-8 py-4">
-          <Image src="/myclinic-frame-logo.webp" alt="My Clinic" width={180} height={48} className="h-12 w-auto" priority />
-
-          <div className="flex items-center gap-2 md:gap-4">
-            {/* Language Switcher */}
-            <div className="flex items-center bg-surface-container rounded-full overflow-hidden text-[11px] md:text-xs font-bold border border-outline-variant/20">
-              <button
-                onClick={() => setLang("en")}
-                className={`px-2.5 py-1.5 md:px-3 transition-all cursor-pointer ${lang === "en" ? "bg-primary text-white" : "text-on-surface-variant hover:text-primary"}`}
-              >
-                EN
-              </button>
-              <button
-                onClick={() => setLang("ar")}
-                className={`px-2.5 py-1.5 md:px-3 transition-all cursor-pointer ${lang === "ar" ? "bg-primary text-white" : "text-on-surface-variant hover:text-primary"}`}
-              >
-                AR
-              </button>
-            </div>
-            <a href="tel:920022811" onClick={trackPhoneClick} className="hidden lg:flex items-center gap-2 text-primary font-bold text-sm" dir="ltr">
-              <span className="material-symbols-outlined text-lg">call</span>
-              920 022 811
-            </a>
-            <a href="tel:920022811" onClick={trackPhoneClick} className="flex lg:hidden items-center justify-center w-9 h-9 rounded-full bg-primary/10 text-primary" aria-label="Call us">
-              <span className="material-symbols-outlined text-lg">call</span>
-            </a>
-            <button
-              onClick={() => document.getElementById('booking-form')?.scrollIntoView({ behavior: 'smooth' })}
-              className="bg-primary hover:bg-primary-container text-white px-3 md:px-6 py-2 md:py-2.5 rounded-full text-xs md:text-sm font-bold shadow-lg shadow-primary/20 transition-all active:scale-95 cursor-pointer whitespace-nowrap"
-            >
-              {t.requestAppointment}
-            </button>
-          </div>
-        </div>
-      </header>
+      <SiteNav />
 
       {/* Hero Section */}
       <section className="relative min-h-[90vh] flex items-center overflow-hidden bg-surface hero-gradient">
@@ -809,46 +776,7 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="w-full py-12 border-t border-slate-200/50 bg-slate-50 px-4 md:px-0">
-        <div className="max-w-7xl mx-auto md:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-8 mb-8">
-            <Image src="/logo-dark.svg" alt="My Clinic" width={150} height={40} className="h-10 w-auto" />
-            <div className="flex flex-wrap justify-center gap-8">
-              <a className="text-slate-500 hover:text-primary transition-colors text-sm font-medium" href="/privacy">{t.privacy}</a>
-              <a className="text-slate-500 hover:text-primary transition-colors text-sm font-medium" href="/terms">{t.terms}</a>
-            </div>
-          </div>
-          {/* App Store Badges */}
-          <div className="flex justify-center gap-4 mb-8">
-            <a href="https://apps.apple.com/us/app/my-clinic-ksa/id1475630623?ign-itscg=30200&ign-itsct=apps_box_badge" target="_blank" rel="noopener noreferrer">
-              <Image src="/Download_on_the_App_Store.png" alt="Download on the App Store" width={135} height={40} className="h-10 w-auto" />
-            </a>
-            <a href="https://play.google.com/store/apps/details?id=com.myclinic.ksa&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1" target="_blank" rel="noopener noreferrer">
-              <Image src="/Get_it_on_playstore.png" alt="Get it on Google Play" width={135} height={40} className="h-10 w-auto" />
-            </a>
-          </div>
-          {/* Social Media Links */}
-          <div className="flex flex-col items-center gap-4 mb-8">
-            <p className="text-sm font-bold text-primary uppercase tracking-widest">{t.followMyClinic}</p>
-            <div className="flex gap-3">
-              {[
-                { href: "https://www.instagram.com/myclinicksa/", icon: "fa-instagram", label: "Instagram" },
-                { href: "https://www.tiktok.com/@myclinic_ksa", icon: "fa-tiktok", label: "TikTok" },
-                { href: "https://www.linkedin.com/company/myclinicksa/", icon: "fa-linkedin-in", label: "LinkedIn" },
-                { href: "https://www.facebook.com/MyClinicKSA/", icon: "fa-facebook-f", label: "Facebook" },
-                { href: "https://www.youtube.com/channel/UCzD7SKMrFnKCZywENykDPCA", icon: "fa-youtube", label: "YouTube" },
-              ].map((s) => (
-                <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant hover:bg-primary hover:text-white transition-colors" aria-label={s.label} title={s.label}>
-                  <i className={`fa-brands ${s.icon} text-base`}></i>
-                </a>
-              ))}
-            </div>
-          </div>
-          <div className="text-center pt-6 border-t border-slate-200/50">
-            <p className="font-body text-sm text-slate-500">&copy; {t.allRightsReserved}</p>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
 
       {/* Sticky Floating Buttons */}
       <div className={`fixed bottom-6 ${isRtl ? "left-6" : "right-6"} z-50 flex flex-col items-end gap-3`}>

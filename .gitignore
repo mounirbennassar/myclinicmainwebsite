@@ -39,6 +39,7 @@ team-credentials.md
 
 # raw assets (originals - optimized versions in /public/clinic/)
 /public/images/
+/public/pediatricegallery/
 /content/
 
 # vercel

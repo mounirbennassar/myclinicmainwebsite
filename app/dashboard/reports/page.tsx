@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { useUser, useVertical } from "../layout";
+import { useUser, useVertical, VERTICAL_LABELS, VERTICAL_BADGE } from "../layout";
 import { useRouter } from "next/navigation";
 import { dentalServiceCatalog } from "../../dental/content/services";
 import {
@@ -455,7 +455,12 @@ export default function ReportsPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-lg font-bold text-slate-900">Reports</h1>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-lg font-bold text-slate-900">Reports</h1>
+            <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${VERTICAL_BADGE[vertical]}`}>
+              {VERTICAL_LABELS[vertical]}
+            </span>
+          </div>
           <p className="text-xs text-slate-400 mt-0.5">{formatDate(start)} - {formatDate(end)} &middot; {filtered.length} leads</p>
         </div>
         <div className="flex items-center gap-2">

@@ -3,7 +3,7 @@ import { getServiceSupabase } from "@/app/lib/supabase";
 
 // Whitelist what callers can write to `vertical` / `service` so a typo or
 // abusive POST can't pollute the dashboard's filter pivots.
-const ALLOWED_VERTICALS = new Set(["medical", "dental"]);
+const ALLOWED_VERTICALS = new Set(["medical", "dental", "pediatric"]);
 const ALLOWED_DENTAL_SERVICES = new Set([
   "general", "implants", "orthodontics", "veneers", "oral-surgery",
   "pediatric", "root-canal", "whitening", "crowns-bridges", "gums",
@@ -44,6 +44,12 @@ export async function POST(request: Request) {
       insertData.created_by = `${userName || "Unknown"} (${roleLabel})`;
     } else {
       insertData.channel = "Website";
+
+      // Public contact-form inquiries fold their subject/email/message into
+      // `note` so the call centre sees the full message alongside the lead.
+      if (typeof note === "string" && note.trim()) {
+        insertData.note = note.slice(0, 2000);
+      }
 
       if (utm && typeof utm === "object") {
         if (utm.source) insertData.utm_source = String(utm.source).slice(0, 100);

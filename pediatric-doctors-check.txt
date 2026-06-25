@@ -1,0 +1,42 @@
+MyClinic — Pediatric Doctors Check
+Generated: 2026-06-22
+Source checked: app/doctors-data.ts
+Display rule: a doctor appears on /pediatric ONLY if spec == "Pediatrics" (exact match)
+              — see app/pediatric/components/KidsDoctorsStrip.tsx
+
+================================================================================
+#  Name (your list)             In data?  Shows on /pediatric?  Notes
+--------------------------------------------------------------------------------
+1  Prof. Bassam Bin Abbas       YES       YES                   spec "Pediatrics"; Riyadh Al Sahafa
+2  Prof. Abdullah Al-Shamrani   YES       YES                   stored as "Al Shamrani" (no hyphen)
+3  Dr. Khalid Bin Saad          YES       YES                   stored as "Khaled" (not "Khalid")
+4  Dr. Bushra Asiri             NO        NO                    not in data (EN or AR) — PENDING IMAGE
+5  Dr. Mohammed Al-Otaibi       NO        NO                    not in data (only unrelated "Noura AlOtaibi") — PENDING IMAGE
+6  Dr. Mariam Dabour            NO        NO                    not in data (EN or AR) — PENDING IMAGE
+7  Prof. Fahad Al-Bashiri       YES       YES                   stored as "Al Bashiri" (no hyphen)
+================================================================================
+
+VERDICT: 4 of 7 present and already showing; 3 missing.
+
+MISSING — DO NOT ADD until photos are provided:
+  - Dr. Bushra Asiri        — General Pediatrics, Assistant Professor & Consultant
+                              (أستاذ مساعد واستشاري طب الأطفال) — Riyadh
+  - Dr. Mohammed Al-Otaibi  — Pediatric Orthopedic Surgery Consultant
+                              (استشاري طب وجراحة عظام الأطفال) — Riyadh
+  - Dr. Mariam Dabour       — Pediatric Pulmonary, Cystic Fibrosis & Lung Transplant Consultant
+                              (استشاري طب الأطفال والأمراض الصدرية والتليف الكيسي وزراعة الرئة) — Riyadh
+
+ACTION TAKEN (2026-06-22):
+  - The 4 listed doctors that exist are now ordered FIRST on the /pediatric
+    strip, ahead of the other pediatric consultants.
+  - The 3 missing doctors are pre-wired into the featured order list; they will
+    appear in the correct position automatically once added with images.
+    Planned exact names (must match when added):
+      "Dr. Bushra Asiri", "Dr. Mohammed Al-Otaibi", "Dr. Mariam Dabour"
+
+CURRENT FULL /pediatric ROSTER (11 doctors, spec == "Pediatrics"):
+  Featured (your list): Prof. Bassam Bin Abbas, Prof. Abdullah Al Shamrani,
+                        Dr. Khaled Bin Saad, Prof. Fahad Al Bashiri
+  Others:               Dr. Turki Alahmadi, Dr. Saud Bahaidarah, Dr. Saniah Awidah,
+                        Dr. Riham Orabi, Dr. Osama Bawazer, Dr. Om Salamah Kamal,
+                        Prof. Moslah Jabari

@@ -176,6 +176,7 @@ const translations = {
     privacyNote: "By clicking confirm, you agree to our patient data privacy terms.",
 
     // Footer
+    contact: "Contact",
     privacy: "Privacy",
     terms: "Terms",
     patientPortal: "Patient Portal",
@@ -365,6 +366,7 @@ const translations = {
     privacyNote: "بالنقر على تأكيد، فإنك توافق على سياسة خصوصية بيانات المرضى.",
 
     // Footer
+    contact: "تواصل معنا",
     privacy: "الخصوصية",
     terms: "الشروط والأحكام",
     patientPortal: "بوابة المرضى",

@@ -1,6 +1,7 @@
 "use client";
 import Image from "next/image";
 import { useLang } from "@/app/i18n/context";
+import { trackPhoneClick } from "@/app/lib/tracking";
 
 export default function DentalFooter() {
   const { lang } = useLang();
@@ -12,13 +13,29 @@ export default function DentalFooter() {
         <div className="flex flex-col md:flex-row justify-between items-center gap-8 mb-8">
           <Image src="/logo-dark.svg" alt="My Clinic" width={150} height={40} className="h-10 w-auto" />
           <div className="flex flex-wrap justify-center gap-8">
-            <a className="text-slate-500 hover:text-[#003867] transition-colors text-sm font-medium" href="/privacy">
+            <a className="text-slate-500 hover:text-[#003867] transition-colors text-sm font-medium" href="/contact">
+              {isRtl ? "تواصل معنا" : "Contact"}
+            </a>
+            <a className="text-slate-500 hover:text-[#003867] transition-colors text-sm font-medium" href="/privacy-policy">
               {isRtl ? "الخصوصية" : "Privacy"}
             </a>
             <a className="text-slate-500 hover:text-[#003867] transition-colors text-sm font-medium" href="/terms">
               {isRtl ? "الشروط والأحكام" : "Terms"}
             </a>
           </div>
+        </div>
+
+        {/* Contact channels */}
+        <div className="flex flex-col sm:flex-row justify-center items-center gap-3 sm:gap-6 mb-8">
+          <a href="tel:920022811" onClick={trackPhoneClick} className="flex items-center gap-2 text-slate-600 hover:text-[#003867] transition-colors text-sm font-bold" dir="ltr">
+            <span className="material-symbols-outlined text-[18px]">call</span>
+            920 022 811
+          </a>
+          <span className="hidden sm:block w-px h-4 bg-slate-300" aria-hidden />
+          <a href="mailto:info@myclinic.com.sa" className="flex items-center gap-2 text-slate-600 hover:text-[#003867] transition-colors text-sm font-bold" dir="ltr">
+            <span className="material-symbols-outlined text-[18px]">mail</span>
+            info@myclinic.com.sa
+          </a>
         </div>
 
         {/* App Store Badges */}
