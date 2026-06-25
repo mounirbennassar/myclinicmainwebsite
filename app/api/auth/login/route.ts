@@ -65,7 +65,11 @@ export async function POST(request: Request) {
 
     res.headers.set("Set-Cookie", sessionCookieHeader(token));
     return res;
-  } catch {
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  } catch (err) {
+    // A thrown error here is almost always a server-side misconfiguration
+    // (missing DATABASE_URL or JWT_SECRET) rather than bad input — log it so it
+    // surfaces in the platform's function logs, and return a 500.
+    console.error("Login error:", err);
+    return NextResponse.json({ error: "Server error. Please try again." }, { status: 500 });
   }
 }
