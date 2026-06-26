@@ -15,19 +15,23 @@ type Props = {
   showTabs?: boolean;
   /** Max doctors to request. */
   limit?: number;
+  /** Server-fetched doctors. When provided the carousel renders them directly
+   *  and skips the client fetch (faster + works even if /api/doctors is down). */
+  initialDoctors?: Doctor[];
   /** Optional heading overrides. */
   eyebrowEn?: string; eyebrowAr?: string;
   headingEn?: string; headingAr?: string;
 };
 
-export default function DoctorsCarousel({ specialty, showTabs = false, limit, eyebrowEn, eyebrowAr, headingEn, headingAr }: Props) {
+export default function DoctorsCarousel({ specialty, showTabs = false, limit, initialDoctors, eyebrowEn, eyebrowAr, headingEn, headingAr }: Props) {
   const { lang } = useLang();
   const t = translations[lang];
   const isRtl = lang === "ar";
   const railRef = useRef<HTMLDivElement>(null);
 
-  const [doctors, setDoctors] = useState<Doctor[]>([]);
-  const [loading, setLoading] = useState(true);
+  const hasInitial = Array.isArray(initialDoctors);
+  const [doctors, setDoctors] = useState<Doctor[]>(initialDoctors ?? []);
+  const [loading, setLoading] = useState(!hasInitial);
   const [activeTab, setActiveTab] = useState<string>(specialty ?? "");
 
   const tSpec = (name: string) => {
@@ -36,6 +40,7 @@ export default function DoctorsCarousel({ specialty, showTabs = false, limit, ey
   };
 
   useEffect(() => {
+    if (hasInitial) return; // already have server-rendered data
     let cancelled = false;
     const params = new URLSearchParams();
     if (specialty) params.set("specialty", specialty);

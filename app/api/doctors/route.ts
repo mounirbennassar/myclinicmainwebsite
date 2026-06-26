@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import { query, queryOne } from "@/app/lib/db";
 import { getAllActiveDoctors, getDoctorsBySpecialty, uniqueDoctorSlug } from "@/app/lib/doctors";
 
-// GET is public + cached (carousels, find-a-doctor). POST is gated by the proxy.
-export const revalidate = 3600;
+// GET is public (carousels). It filters by the `specialty` query param, so it
+// must render per-request rather than be statically cached. POST is gated.
+export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   try {
