@@ -127,6 +127,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
       ? [
           { label: "Reports", href: `/dashboard/reports${vQuery}`, active: pathname === "/dashboard/reports" },
           { label: "UTM Links", href: `/dashboard/utm${vQuery}`, active: pathname === "/dashboard/utm" },
+          { label: "Doctors", href: `/dashboard/doctors${vQuery}`, active: pathname === "/dashboard/doctors" },
           { label: "Team", href: `/dashboard/team${vQuery}`, active: pathname === "/dashboard/team" },
         ]
       : []),
@@ -157,7 +158,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
               </nav>
             </div>
             <div className="flex items-center gap-3">
-              {(user.role === "super_admin" || user.role === "admin") && pathname.startsWith("/dashboard") && pathname !== "/dashboard/team" && pathname !== "/dashboard/utm" && pathname !== "/dashboard/whatsapp" && (
+              {(user.role === "super_admin" || user.role === "admin") && pathname.startsWith("/dashboard") && pathname !== "/dashboard/team" && pathname !== "/dashboard/utm" && pathname !== "/dashboard/whatsapp" && pathname !== "/dashboard/doctors" && (
                 <VerticalToggle />
               )}
               <div className="hidden md:flex flex-col items-end">

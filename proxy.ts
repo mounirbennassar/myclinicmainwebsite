@@ -6,7 +6,7 @@ import { query } from "@/app/lib/db";
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET!);
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/api/appointments/:path*", "/api/team/:path*", "/api/utm/:path*", "/api/whatsapp/:path*", "/api/auth/me"],
+  matcher: ["/dashboard/:path*", "/api/appointments/:path*", "/api/team/:path*", "/api/utm/:path*", "/api/whatsapp/:path*", "/api/doctors/:path*", "/api/doctors", "/api/auth/me"],
 };
 
 type FreshUser = {
@@ -49,6 +49,12 @@ export async function proxy(request: NextRequest) {
 
   // Allow public UTM click tracking from landing pages
   if (pathname === "/api/utm/track" && request.method === "POST") {
+    return NextResponse.next();
+  }
+
+  // The public doctor list (carousels, find-a-doctor) is open; doctor CRUD,
+  // image upload and the admin /manage list stay gated.
+  if (pathname === "/api/doctors" && request.method === "GET") {
     return NextResponse.next();
   }
 

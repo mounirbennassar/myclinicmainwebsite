@@ -57,3 +57,27 @@ export async function getAllDoctorSlugs(): Promise<string[]> {
   const rows = await query<{ slug: string }>("select slug from doctors where is_active");
   return rows.map((r) => r.slug);
 }
+
+/** Every doctor incl. inactive — for the dashboard management table. */
+export function getAllDoctorsForAdmin(): Promise<Doctor[]> {
+  return query<Doctor>(`select ${CARD_COLS}, email from doctors order by sort_order desc, name_en asc`);
+}
+
+/** Build a unique slug from a name (dr-<name>, with -2/-3… on collision). */
+export async function uniqueDoctorSlug(name: string, excludeId?: string): Promise<string> {
+  const base =
+    "dr-" +
+    (name || "doctor")
+      .replace(/^\s*dr\.?\s*/i, "")
+      .toLowerCase()
+      .normalize("NFKD").replace(/[̀-ͯ]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 60) || "dr-doctor";
+  let slug = base;
+  for (let i = 2; ; i++) {
+    const clash = await queryOne<{ id: string }>("select id from doctors where slug = $1 and ($2::uuid is null or id <> $2)", [slug, excludeId ?? null]);
+    if (!clash) return slug;
+    slug = `${base}-${i}`;
+  }
+}

@@ -27,33 +27,9 @@ const specIcons = [
   "rheumatology", "water_drop",
 ];
 
-const specEnNames = [
-  "Allergy & Immunology", "Audio-vestibular & Speech", "Cardiology", "Dental", "Dermatology & Cosmetics",
-  "Emergency", "Endocrinology & Diabetes", "ENT", "Family Medicine", "Gastroenterology",
-  "General & Bariatric Surgery", "Geriatric Medicine", "Hematology", "Internal Medicine", "Nephrology",
-  "Neurology", "Nutrition", "Obstetrics & Gynecology", "Occupational Medicine", "Ophthalmology",
-  "Orthopedics", "Pediatrics", "Physiotherapy", "Psychiatry & Psychology", "Pulmonology & Sleep Medicine",
-  "Rheumatology", "Urology",
-];
-
-// Map English spec/filter names to translation keys
-const specNameToKey: Record<string, string> = {};
-specEnNames.forEach((name, i) => { specNameToKey[name] = specKeys[i]; });
-specNameToKey["Gastroenterology & Hepatology"] = "gastroenterology";
-
 const svcKeys = ["radiology", "laboratory", "pharmacy", "physiotherapy", "homeHealthcare", "myCare"] as const;
 const svcIcons = ["radiology", "biotech", "local_pharmacy", "physical_therapy", "home_health", "support_agent"];
 const svcImages = ["/clinic/mri.webp", "/clinic/lab.webp", "/clinic/pharmacy.webp", "/clinic/physiotherapy.webp", "/clinic/ax.webp", "/clinic/nurse-station.webp"];
-
-const doctorFilters = [
-  "Allergy & Immunology", "Audio-vestibular & Speech", "Cardiology", "Dental",
-  "Dermatology & Cosmetics", "Emergency", "Endocrinology & Diabetes", "ENT",
-  "Family Medicine", "Gastroenterology & Hepatology", "General & Bariatric Surgery", "Geriatric Medicine",
-  "Hematology", "Internal Medicine", "Nephrology", "Neurology", "Nutrition",
-  "Obstetrics & Gynecology", "Occupational Medicine", "Ophthalmology", "Orthopedics",
-  "Pediatrics", "Physiotherapy", "Psychiatry & Psychology", "Pulmonology & Sleep Medicine",
-  "Rheumatology", "Urology",
-];
 
 const branches = [
   { name: "Al Sahafa", nameAr: "الصحافة", city: "Riyadh", cityAr: "الرياض", image: "/clinic/riyadh.webp", mapUrl: "https://maps.app.goo.gl/5XEWuSVKVzkJNyWt6", isDental: false, isRiyadh: true },
