@@ -83,4 +83,35 @@ create table if not exists utm_clicks (
 create index if not exists utm_clicks_link_id_idx on utm_clicks (link_id);
 create index if not exists utm_clicks_clicked_at_idx on utm_clicks (clicked_at desc);
 
+-- ── Doctors ───────────────────────────────────────────────────────────────
+-- One row per unique doctor (deduped from the source export by source_user_id).
+-- `specialties` is canonical (for filters + per-specialty landing carousels);
+-- `specialty_raw` keeps the original label for display. A doctor can belong to
+-- multiple specialties even from a single raw label (e.g. "Family Medicine and
+-- Pediatric"), so both `specialties` and `cities` are arrays.
+create table if not exists doctors (
+  id               uuid primary key default gen_random_uuid(),
+  source_user_id   bigint unique,
+  source_rec_id    bigint,
+  slug             text unique not null,
+  name_en          text not null,
+  name_ar          text,
+  email            text,
+  image_url        text,
+  qualification_en text,
+  specialty_raw    text,
+  specialties      text[] default '{}',
+  title            text,
+  branches         text[] default '{}',
+  cities           text[] default '{}',
+  is_active        boolean default true,
+  sort_order       int default 0,
+  created_at       timestamptz not null default now(),
+  updated_at       timestamptz
+);
+create unique index if not exists doctors_slug_idx on doctors (slug);
+create index if not exists doctors_specialties_idx on doctors using gin (specialties);
+create index if not exists doctors_cities_idx on doctors using gin (cities);
+create index if not exists doctors_active_sort_idx on doctors (is_active, sort_order);
+
 commit;

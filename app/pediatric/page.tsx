@@ -4,6 +4,7 @@ import { useLang } from "@/app/i18n/context";
 import { trackWhatsAppClick } from "@/app/lib/tracking";
 import SiteNav from "@/app/components/SiteNav";
 import SiteFooter from "@/app/components/SiteFooter";
+import DoctorsCarousel from "@/app/components/DoctorsCarousel";
 import KidsHeroBg from "./components/KidsHeroBg";
 import KidsHero, { WhatsAppIcon } from "./components/KidsHero";
 import KidsMarquee from "./components/KidsMarquee";
@@ -13,7 +14,6 @@ import KidsServices from "./components/KidsServices";
 // Below-fold sections load as separate chunks so the hero paints and
 // hydrates first on slow mobile connections. The doctors strip alone
 // carries the full doctors dataset.
-const KidsDoctorsStrip = dynamic(() => import("./components/KidsDoctorsStrip"));
 const KidsGallery = dynamic(() => import("./components/KidsGallery"));
 const KidsTestimonials = dynamic(() => import("./components/KidsTestimonials"));
 const KidsBookingForm = dynamic(() => import("./components/KidsBookingForm"));
@@ -54,7 +54,13 @@ export default function KidsHub() {
 
       <KidsPromises lang={lang} />
       <KidsServices lang={lang} onBookClick={scrollToBooking} />
-      <KidsDoctorsStrip />
+      <DoctorsCarousel
+        specialty="Pediatrics"
+        eyebrowEn="Pediatric Team"
+        eyebrowAr="فريق الأطفال"
+        headingEn="Meet our pediatricians"
+        headingAr="تعرّف على أطباء الأطفال لدينا"
+      />
       <KidsGallery />
       <KidsTestimonials />
 

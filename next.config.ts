@@ -17,6 +17,16 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "upload.wikimedia.org",
       },
+      {
+        // Doctor profile photos from the clinic's image server.
+        protocol: "https",
+        hostname: "bamc.myclinic.com.sa",
+      },
+      {
+        // Dashboard image uploads (Vercel Blob).
+        protocol: "https",
+        hostname: "*.public.blob.vercel-storage.com",
+      },
     ],
   },
   async redirects() {

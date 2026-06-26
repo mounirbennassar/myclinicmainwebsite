@@ -2,12 +2,12 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import { doctorsData, type Doctor } from "./doctors-data";
 import { useLang } from "./i18n/context";
 import translations, { type TranslationKey } from "./i18n/translations";
 import { trackFormSubmit, trackPhoneClick, trackWhatsAppClick } from "./lib/tracking";
 import SiteNav from "./components/SiteNav";
 import SiteFooter from "./components/SiteFooter";
+import DoctorsCarousel from "./components/DoctorsCarousel";
 
 const specKeys = [
   "allergyImmunology", "audioVestibular", "cardiology", "dental", "dermatologyCosmetics",
@@ -73,8 +73,6 @@ export default function Home() {
   const t = translations[lang];
   const isRtl = lang === "ar";
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
-  const [activeFilter, setActiveFilter] = useState("Allergy & Immunology");
   const [selectedCity, setSelectedCity] = useState("");
   const [selectedBranch, setSelectedBranch] = useState("");
   const [selectedDepartment, setSelectedDepartment] = useState("");
@@ -95,70 +93,14 @@ export default function Home() {
     "Obhour": "أبحر",
     "Al Sahafa": "الصحافة",
   };
-  const locationArMap: Record<string, string> = {
-    "Jeddah Al Mohammadiyah": "جدة المحمدية",
-    "Jeddah Al Safa": "جدة الصفا",
-    "Jeddah Al Khalidiyyah": "جدة المحمدية + مركز الأسنان",
-    "Jeddah Al Mohammadiyah + Dental Center": "جدة المحمدية + مركز الأسنان",
-    "Jeddah Al Mohammadiyah + Obhour": "جدة المحمدية + أبحر",
-    "Riyadh Al Sahafa": "الرياض الصحافة",
-  };
-  const locationEnMap: Record<string, string> = {
-    "Jeddah Al Mohammadiyah": "Jeddah Al Mohammadiyah",
-    "Jeddah Al Safa": "Jeddah Al Safa",
-    "Jeddah Al Khalidiyyah": "Jeddah Al Mohammadiyah + Dental Center",
-    "Jeddah Al Mohammadiyah + Dental Center": "Jeddah Al Mohammadiyah + Dental Center",
-    "Jeddah Al Mohammadiyah + Obhour": "Jeddah Al Mohammadiyah + Obhour",
-    "Riyadh Al Sahafa": "Riyadh Al Sahafa",
-  };
-  const languagesArMap: Record<string, string> = {
-    "English, Arabic": "الإنجليزية، العربية",
-    "English, Arabic, French": "الإنجليزية، العربية، الفرنسية",
-  };
-  const carouselRef = useRef<HTMLDivElement>(null);
-  const filterRef = useRef<HTMLDivElement>(null);
   const locationsRef = useRef<HTMLDivElement>(null);
 
-  // Translate an English spec name using the spec translation keys
-  const tSpec = (enName: string) => {
-    const key = specNameToKey[enName];
-    if (key) return t[`spec.${key}` as TranslationKey] || enName;
-    return enName;
-  };
-
-  const filteredDoctors = doctorsData.filter((doc) => doc.spec === activeFilter);
-
-  const handleFilterChange = (filter: string) => {
-    setActiveFilter(filter);
-    if (carouselRef.current) {
-      carouselRef.current.scrollTo({ left: 0, behavior: 'smooth' });
-    }
-  };
-
   // Scroll helper that works consistently across LTR and RTL.
-  // `direction` = 'prev' (back/start) or 'next' (forward/end) relative to reading order.
-  // In RTL, "start" is visually on the right; in LTR, "start" is on the left.
-  // scrollLeft can be negative (modern) or positive (legacy) in RTL — detect and normalize.
   const scrollContainer = (container: HTMLElement | null, direction: 'prev' | 'next', amount: number) => {
     if (!container) return;
-    // In RTL, the browser reverses the visual layout. We want:
-    //   prev → scroll toward the start of content
-    //   next → scroll toward the end of content
-    // scrollBy({left: +X}) moves content left (reveals right side, i.e., next in LTR, prev in RTL)
-    // scrollBy({left: -X}) moves content right (reveals left side, i.e., prev in LTR, next in RTL)
     const forward = direction === 'next' ? 1 : -1;
     const rtlFactor = isRtl ? -1 : 1;
     container.scrollBy({ left: forward * rtlFactor * amount, behavior: 'smooth' });
-  };
-
-  const scrollDoctors = (direction: 'prev' | 'next') => {
-    const container = carouselRef.current;
-    const cardWidth = container?.querySelector<HTMLElement>(':scope > div')?.offsetWidth || 300;
-    scrollContainer(container, direction, cardWidth + 24);
-  };
-
-  const scrollFilters = (direction: 'prev' | 'next') => {
-    scrollContainer(filterRef.current, direction, 200);
   };
 
   const scrollLocations = (direction: 'prev' | 'next') => {
@@ -417,108 +359,7 @@ export default function Home() {
       </section>
 
       {/* Doctors Section */}
-      <section className="py-16 md:py-24 bg-surface overflow-x-clip">
-        <div className="max-w-7xl mx-auto px-4 md:px-8">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4 md:gap-6">
-            <div className="space-y-4">
-              <span className="text-secondary font-extrabold text-xs uppercase tracking-label">{t.ourSpecialists}</span>
-              <h2 className="text-3xl md:text-4xl font-headline font-extrabold text-primary tracking-tight">{t.worldClassMinds}</h2>
-            </div>
-          </div>
-
-          {/* Specialty Filter Bar */}
-          <div className="relative mb-10 flex items-center gap-2">
-            <button
-              onClick={() => scrollFilters('prev')}
-              className="shrink-0 w-8 h-8 rounded-full bg-white border border-outline-variant/30 hover:border-primary/40 hover:text-primary hover:bg-primary/5 text-on-surface-variant flex items-center justify-center transition-all duration-300 shadow-sm cursor-pointer"
-              aria-label="Scroll filters left"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
-                <path strokeLinecap="round" strokeLinejoin="round" d={isRtl ? "M8.25 4.5l7.5 7.5-7.5 7.5" : "M15.75 19.5L8.25 12l7.5-7.5"} />
-              </svg>
-            </button>
-            <div className="relative flex-1 overflow-hidden">
-              <div ref={filterRef} className="flex overflow-x-auto gap-2 pb-2 hide-scrollbar">
-                {doctorFilters.map((filter) => (
-                  <button
-                    key={filter}
-                    onClick={() => handleFilterChange(filter)}
-                    className={`shrink-0 px-4 py-2 rounded-full text-sm font-bold transition-all duration-300 cursor-pointer border ${
-                      activeFilter === filter
-                        ? "bg-primary text-white border-primary shadow-lg shadow-primary/20"
-                        : "bg-white text-on-surface-variant border-outline-variant/30 hover:border-primary/40 hover:text-primary hover:bg-primary/5"
-                    }`}
-                  >
-                    {tSpec(filter)}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <button
-              onClick={() => scrollFilters('next')}
-              className="shrink-0 w-8 h-8 rounded-full bg-white border border-outline-variant/30 hover:border-primary/40 hover:text-primary hover:bg-primary/5 text-on-surface-variant flex items-center justify-center transition-all duration-300 shadow-sm cursor-pointer"
-              aria-label="Scroll filters right"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
-                <path strokeLinecap="round" strokeLinejoin="round" d={isRtl ? "M15.75 19.5L8.25 12l7.5-7.5" : "M8.25 4.5l7.5 7.5-7.5 7.5"} />
-              </svg>
-            </button>
-          </div>
-
-          <div className="relative overflow-visible">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeFilter}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3 }}
-              >
-                {filteredDoctors.length > 0 ? (
-                  <div ref={carouselRef} className="flex overflow-x-scroll snap-x snap-mandatory gap-6 pb-8 hide-scrollbar" style={{ scrollBehavior: 'smooth' }}>
-                    {filteredDoctors.map((doc, index) => (
-                <div key={index} className="w-[280px] sm:w-[300px] lg:w-[280px] snap-start shrink-0 group bg-surface-container-lowest rounded-xl p-6 shadow-clinical hover:-translate-y-2 transition-all duration-300">
-                  <div className="relative w-full aspect-[4/5] rounded-xl overflow-hidden mb-6 bg-surface-container">
-                    <Image alt={doc.name} src={doc.img} fill className="object-cover grayscale group-hover:grayscale-0 transition-all duration-500" sizes="280px" loading="lazy" />
-                    <div className={`absolute top-4 ${isRtl ? "right-4" : "left-4"} bg-secondary-fixed text-on-secondary-fixed px-3 py-1 rounded-full text-[10px] font-bold uppercase`}>{tSpec(doc.spec)}</div>
-                  </div>
-                  <h3 className="text-xl font-headline font-extrabold text-on-surface mb-1">{isRtl && doc.nameAr ? doc.nameAr : doc.name}</h3>
-                  <p className="text-on-surface-variant text-sm font-medium mb-6">{isRtl && doc.titleAr ? doc.titleAr : doc.title}</p>
-                  <div className={`flex ${isRtl ? "justify-start" : "justify-end"}`}>
-                    <button onClick={() => setSelectedDoctor(doc)} className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center group-hover:scale-110 transition-transform cursor-pointer">
-                      <span className="material-symbols-outlined">add</span>
-                    </button>
-                  </div>
-                </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-center py-16">
-                    <div className="text-center">
-                      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                        <span className="material-symbols-outlined text-primary text-3xl">person_search</span>
-                      </div>
-                      <p className="text-on-surface-variant font-medium">{t.noDoctorsYet}</p>
-                      <button onClick={() => setActiveFilter("Family Medicine")} className="mt-3 text-primary font-bold text-sm hover:underline cursor-pointer">{t.tryAnother}</button>
-                    </div>
-                  </div>
-                )}
-              </motion.div>
-            </AnimatePresence>
-
-            {filteredDoctors.length > 1 && (
-              <>
-                <button onClick={() => scrollDoctors('prev')} className={`absolute ${isRtl ? "right-0" : "left-0"} top-1/2 -translate-y-1/2 w-12 h-12 bg-white/90 backdrop-blur rounded-full shadow-xl flex items-center justify-center text-primary z-20 transition-all hover:scale-110 hover:bg-primary hover:text-white cursor-pointer border border-outline-variant/20`} aria-label="Previous doctors">
-                  <span className="material-symbols-outlined">{isRtl ? "chevron_right" : "chevron_left"}</span>
-                </button>
-                <button onClick={() => scrollDoctors('next')} className={`absolute ${isRtl ? "left-0" : "right-0"} top-1/2 -translate-y-1/2 w-12 h-12 bg-white/90 backdrop-blur rounded-full shadow-xl flex items-center justify-center text-primary z-20 transition-all hover:scale-110 hover:bg-primary hover:text-white cursor-pointer border border-outline-variant/20`} aria-label="Next doctors">
-                  <span className="material-symbols-outlined">{isRtl ? "chevron_left" : "chevron_right"}</span>
-                </button>
-              </>
-            )}
-          </div>
-        </div>
-      </section>
+      <DoctorsCarousel showTabs />
 
       {/* Additional Services Section */}
       <section className="py-16 md:py-24 bg-surface">
@@ -807,88 +648,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Doctor Modal */}
-      <AnimatePresence>
-        {selectedDoctor && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-            onClick={() => setSelectedDoctor(null)}
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 30 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 30 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden max-h-[90vh] overflow-y-auto"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="relative h-80 sm:h-96 overflow-hidden">
-                <Image src={selectedDoctor.img} alt={selectedDoctor.name} fill className="object-cover object-top" sizes="(max-width: 640px) 100vw, 512px" />
-                <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/40 to-transparent" />
-                <button
-                  onClick={() => setSelectedDoctor(null)}
-                  className={`absolute top-4 ${isRtl ? "left-4" : "right-4"} w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-white hover:text-primary transition-all cursor-pointer`}
-                >
-                  <span className="material-symbols-outlined">close</span>
-                </button>
-                <div className={`absolute bottom-4 ${isRtl ? "right-6" : "left-6"}`}>
-                  <span className="bg-secondary-fixed text-on-secondary-fixed px-3 py-1 rounded-full text-[10px] font-bold uppercase">{tSpec(selectedDoctor.spec)}</span>
-                </div>
-              </div>
-              <div className="p-8">
-                <h3 className="text-2xl font-headline font-extrabold text-primary mb-1">{isRtl && selectedDoctor.nameAr ? selectedDoctor.nameAr : selectedDoctor.name}</h3>
-                <p className="text-on-surface-variant font-medium mb-6">{isRtl && selectedDoctor.titleAr ? selectedDoctor.titleAr : selectedDoctor.title}</p>
-                <div className="space-y-4 mb-8">
-                  {selectedDoctor.education && selectedDoctor.education.length > 0 && (
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center shrink-0 mt-0.5">
-                        <span className="material-symbols-outlined text-primary text-lg">school</span>
-                      </div>
-                      <div>
-                        <p className="text-xs text-on-surface-variant uppercase font-bold tracking-wider mb-1">{t.educationQualifications}</p>
-                        {(isRtl && selectedDoctor.educationAr ? selectedDoctor.educationAr : selectedDoctor.education).map((edu, i) => (
-                          <p key={i} className="text-sm font-medium text-on-surface leading-relaxed">{edu}</p>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {selectedDoctor.languages && (
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center shrink-0">
-                        <span className="material-symbols-outlined text-primary text-lg">translate</span>
-                      </div>
-                      <div>
-                        <p className="text-xs text-on-surface-variant uppercase font-bold tracking-wider">{t.languages}</p>
-                        <p className="text-sm font-medium text-on-surface">{isRtl && selectedDoctor.languages ? (languagesArMap[selectedDoctor.languages] || selectedDoctor.languages) : selectedDoctor.languages}</p>
-                      </div>
-                    </div>
-                  )}
-                  {selectedDoctor.location && (
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center shrink-0">
-                        <span className="material-symbols-outlined text-primary text-lg">location_on</span>
-                      </div>
-                      <div>
-                        <p className="text-xs text-on-surface-variant uppercase font-bold tracking-wider">{t.location}</p>
-                        <p className="text-sm font-medium text-on-surface">{isRtl ? (locationArMap[selectedDoctor.location] || selectedDoctor.location) : (locationEnMap[selectedDoctor.location] || selectedDoctor.location)}</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-                <button
-                  onClick={() => { setSelectedDoctor(null); document.getElementById('booking-form')?.scrollIntoView({ behavior: 'smooth' }); }}
-                  className="w-full py-4 bg-primary text-white rounded-full font-bold shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all cursor-pointer"
-                >
-                  {t.requestAppointmentWith} {isRtl && selectedDoctor.nameAr ? selectedDoctor.nameAr.split(' ').slice(1).join(' ') : selectedDoctor.name.split(' ')[1]}
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }
