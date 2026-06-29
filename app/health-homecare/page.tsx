@@ -447,7 +447,7 @@ export default function HealthHomecarePage() {
               </p>
             </Reveal>
 
-            <div className="mt-12 grid md:grid-cols-2 gap-5 md:gap-7 items-stretch">
+            <div className="mt-12 grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5 lg:gap-7 items-stretch">
               {SERVICES.map((s, i) => {
                 const c = isRtl ? s.ar : s.en;
                 const accent = s.phase === "virtual" ? TEAL : NAVY;
@@ -455,45 +455,47 @@ export default function HealthHomecarePage() {
                   ? `مرحباً، أود حجز خدمة «${s.ar.title}» ضمن تيلي هوم من عيادتي.`
                   : `Hello, I'd like to book "${s.en.title}" with My Clinic Telehome.`;
                 return (
-                  <Reveal key={s.en.title} delay={(i % 2) * 0.08}>
-                    <div className="flex h-full flex-col bg-white rounded-[1.75rem] p-7 md:p-8 shadow-clinical ring-1 ring-outline-variant/30 hover:-translate-y-1 hover:shadow-[0_28px_56px_-32px_rgba(0,77,153,0.5)] transition-all">
+                  <Reveal key={s.en.title} delay={(i % 3) * 0.06}>
+                    <div className="flex h-full flex-col bg-white rounded-2xl sm:rounded-[1.75rem] p-4 sm:p-6 md:p-7 shadow-clinical ring-1 ring-outline-variant/30 hover:-translate-y-1 hover:shadow-[0_28px_56px_-32px_rgba(0,77,153,0.5)] transition-all">
                       {/* header */}
-                      <div className="flex items-start gap-4">
-                        <span className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${accent}14`, color: accent }}>
-                          <span className="material-symbols-outlined text-[28px]" style={{ fontVariationSettings: "'FILL' 1" }}>{s.icon}</span>
+                      <div className="flex flex-col sm:flex-row sm:items-start gap-2.5 sm:gap-4">
+                        <span className="w-11 h-11 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${accent}14`, color: accent }}>
+                          <span className="material-symbols-outlined text-[24px] sm:text-[28px]" style={{ fontVariationSettings: "'FILL' 1" }}>{s.icon}</span>
                         </span>
-                        <div className="flex-1 min-w-0">
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold tracking-wide" style={{ backgroundColor: `${accent}14`, color: accent }}>
-                            <span className="material-symbols-outlined text-[13px]" style={{ fontVariationSettings: "'FILL' 1" }}>{s.phase === "virtual" ? "videocam" : "home_health"}</span>
-                            {s.phase === "virtual" ? (isRtl ? "افتراضي" : "VIRTUAL") : isRtl ? "في المنزل" : "AT HOME"}
-                          </span>
-                          <h3 className="mt-2 font-headline text-xl md:text-[1.4rem] font-extrabold text-on-surface leading-tight">{c.title}</h3>
+                        <div className="flex-1 min-w-0 w-full">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9.5px] sm:text-[10px] font-extrabold tracking-wide" style={{ backgroundColor: `${accent}14`, color: accent }}>
+                              <span className="material-symbols-outlined text-[13px]" style={{ fontVariationSettings: "'FILL' 1" }}>{s.phase === "virtual" ? "videocam" : "home_health"}</span>
+                              {s.phase === "virtual" ? (isRtl ? "افتراضي" : "VIRTUAL") : isRtl ? "في المنزل" : "AT HOME"}
+                            </span>
+                            <span className="font-headline text-2xl sm:text-3xl font-extrabold leading-none shrink-0" style={{ color: `${accent}26` }}>{String(i + 1).padStart(2, "0")}</span>
+                          </div>
+                          <h3 className="mt-1.5 sm:mt-2 font-headline text-[15px] sm:text-xl md:text-[1.4rem] font-extrabold text-on-surface leading-tight">{c.title}</h3>
                         </div>
-                        <span className="font-headline text-3xl font-extrabold leading-none" style={{ color: `${accent}26` }}>{String(i + 1).padStart(2, "0")}</span>
                       </div>
 
                       {/* three blocks */}
-                      <div className="mt-6 space-y-4">
+                      <div className="mt-4 sm:mt-6 space-y-3 sm:space-y-4">
                         {[
                           { label: isRtl ? BLOCK.what.ar : BLOCK.what.en, text: c.what },
                           { label: isRtl ? BLOCK.how.ar : BLOCK.how.en, text: c.how },
                         ].map((b) => (
                           <div key={b.label}>
                             <div className="flex items-center gap-2 mb-1">
-                              <span className="w-1.5 h-1.5 rounded-full" style={{ background: accent }} />
-                              <span className={`text-[11px] font-extrabold text-on-surface-variant ${isRtl ? "" : "uppercase tracking-[0.12em]"}`}>{b.label}</span>
+                              <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: accent }} />
+                              <span className={`text-[10px] sm:text-[11px] font-extrabold text-on-surface-variant ${isRtl ? "" : "uppercase tracking-[0.12em]"}`}>{b.label}</span>
                             </div>
-                            <p className="text-[14.5px] text-on-surface-variant leading-[1.8] [text-wrap:pretty]">{b.text}</p>
+                            <p className="text-[13px] sm:text-[14.5px] text-on-surface-variant leading-[1.7] sm:leading-[1.8] [text-wrap:pretty]">{b.text}</p>
                           </div>
                         ))}
 
                         {/* what to expect — highlighted */}
-                        <div className="rounded-2xl p-4" style={{ backgroundColor: `${accent}0d` }}>
+                        <div className="rounded-2xl p-3 sm:p-4" style={{ backgroundColor: `${accent}0d` }}>
                           <div className="flex items-center gap-2 mb-1">
                             <span className="material-symbols-outlined text-[16px]" style={{ color: accent, fontVariationSettings: "'FILL' 1" }}>check_circle</span>
-                            <span className={`text-[11px] font-extrabold ${isRtl ? "" : "uppercase tracking-[0.12em]"}`} style={{ color: accent }}>{isRtl ? BLOCK.expect.ar : BLOCK.expect.en}</span>
+                            <span className={`text-[10px] sm:text-[11px] font-extrabold ${isRtl ? "" : "uppercase tracking-[0.12em]"}`} style={{ color: accent }}>{isRtl ? BLOCK.expect.ar : BLOCK.expect.en}</span>
                           </div>
-                          <p className="text-[14.5px] text-on-surface-variant leading-[1.8] [text-wrap:pretty]">{c.expect}</p>
+                          <p className="text-[13px] sm:text-[14.5px] text-on-surface-variant leading-[1.7] sm:leading-[1.8] [text-wrap:pretty]">{c.expect}</p>
                         </div>
                       </div>
 
@@ -502,7 +504,7 @@ export default function HealthHomecarePage() {
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={trackWhatsAppClick}
-                        className="mt-auto pt-6 inline-flex items-center gap-1.5 font-extrabold text-sm hover:gap-2.5 transition-all"
+                        className="mt-auto pt-4 sm:pt-6 inline-flex items-center gap-1.5 font-extrabold text-[13px] sm:text-sm hover:gap-2.5 transition-all"
                         style={{ color: accent }}
                       >
                         <i className="fa-brands fa-whatsapp text-base"></i>
