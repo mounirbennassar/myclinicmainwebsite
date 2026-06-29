@@ -3,14 +3,14 @@ import type { Metadata } from "next";
 // Health Homecare page. Shares the root LangProvider + brand fonts from
 // app/layout.tsx; this layout only adds page-specific SEO metadata.
 export const metadata: Metadata = {
-  title: "Home Healthcare Services in Jeddah & Riyadh | عيادتي My Clinic",
+  title: "Telehome — Home & Virtual Care in Jeddah & Riyadh | عيادتي My Clinic",
   description:
-    "Get quality medical care at home. My Clinic offers home visits, medication delivery, lab tests, and virtual care—personalized to your needs. احصل على رعاية طبية عالية الجودة في منزلك — زيارات منزلية للطبيب والممرض، علاج طبيعي وفحوصات مخبرية في جدة والرياض.",
+    "Telehome by My Clinic: start with a teleconsultation, then care comes to you — lab tests, medication delivery, nursing, physiotherapy and doctor visits at home. تيلي هوم من عيادتي — ابدأ باستشارة عن بُعد ثم تصلك الرعاية إلى المنزل: فحوصات وأدوية وتمريض وعلاج طبيعي وزيارات طبيب في جدة والرياض.",
   alternates: { canonical: "/health-homecare" },
   openGraph: {
-    title: "Home Healthcare | الرعاية الصحية المنزلية — عيادتي My Clinic",
+    title: "Telehome · تيلي هوم — Home & Virtual Care | عيادتي My Clinic",
     description:
-      "زيارات منزلية للطبيب والممرض، علاج طبيعي وفحوصات مخبرية في راحة منزلك. Doctor & nurse home visits, physiotherapy and lab tests at home across Jeddah & Riyadh.",
+      "عيادتك أينما كنت — استشارة عن بُعد ثم رعاية منزلية متكاملة. Your clinic, wherever you are — a teleconsultation, then nursing, labs, medication and doctor visits brought to your door across Jeddah & Riyadh.",
     images: [{ url: "/myclinic-frame-logo.webp", width: 800, height: 400, alt: "My Clinic | عيادتي" }],
     locale: "ar_SA",
     type: "website",

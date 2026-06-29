@@ -11,12 +11,19 @@ import SiteFooter from "@/app/components/SiteFooter";
 const PHONE_TEL = "920022811";
 const PHONE_DISPLAY = "920 022 811";
 const WA_NUMBER = "966567729095";
-const waUrl = (isRtl: boolean) =>
+const waUrl = (isRtl: boolean, msg?: string) =>
   `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(
-    isRtl
-      ? "مرحباً، أود معرفة المزيد عن خدمات الرعاية الصحية المنزلية من عيادتي."
-      : "Hello, I'd like to know more about My Clinic Home Healthcare services."
+    msg ??
+      (isRtl
+        ? "مرحباً، أود حجز استشارة ضمن خدمة تيلي هوم للرعاية المنزلية والافتراضية من عيادتي."
+        : "Hello, I'd like to book a consultation with My Clinic Telehome (home & virtual care).")
   )}`;
+
+/* Brand journey palette — virtual phase reads aqua/teal, at-home phase reads navy.
+   This carries the "from your screen to your front door" story through the page. */
+const AQUA = "#5cd5f8";
+const TEAL = "#00677d"; // --color-secondary
+const NAVY = "#004d99"; // --color-primary
 
 /* Safe scroll reveal — framer-motion whileInView (GSAP ScrollTrigger reveals
    are known to leave elements stuck at opacity:0 on these pages). */
@@ -34,62 +41,143 @@ function Reveal({ children, className, delay = 0 }: { children: ReactNode; class
   );
 }
 
-const QUICK = [
-  { icon: "medical_services", en: "Doctor visits", ar: "زيارات الطبيب" },
-  { icon: "vaccines", en: "Nursing care", ar: "رعاية تمريضية" },
-  { icon: "physical_therapy", en: "Physiotherapy", ar: "علاج طبيعي" },
-  { icon: "science", en: "Lab tests at home", ar: "فحوصات مخبرية منزلية" },
+/* What you get — the full Telehome offering at a glance */
+const OFFERINGS: { phase: "virtual" | "home"; icon: string; en: string; ar: string }[] = [
+  { phase: "virtual", icon: "video_call", en: "Teleconsultation", ar: "استشارة عن بُعد" },
+  { phase: "home", icon: "science", en: "Lab at home", ar: "مختبر منزلي" },
+  { phase: "home", icon: "medication", en: "Medication delivery", ar: "توصيل الأدوية" },
+  { phase: "home", icon: "vaccines", en: "Home nursing", ar: "تمريض منزلي" },
+  { phase: "home", icon: "physical_therapy", en: "Physiotherapy", ar: "علاج طبيعي" },
+  { phase: "home", icon: "stethoscope", en: "Doctor visit", ar: "زيارة طبيب" },
 ];
 
-const SERVICES = [
+/* The journey — from your screen to your front door */
+const JOURNEY: { phase: "virtual" | "home"; icon: string; en: [string, string]; ar: [string, string] }[] = [
+  { phase: "virtual", icon: "video_call", en: ["Talk to a doctor", "A teleconsultation, from the comfort of your home."], ar: ["تحدّث إلى طبيب", "استشارة عن بُعد من راحة منزلك."] },
+  { phase: "virtual", icon: "clinical_notes", en: ["Get your care plan", "Tests, meds, nursing or a doctor visit — added to your plan."], ar: ["احصل على خطتك", "فحوصات أو أدوية أو تمريض أو زيارة طبيب — تُضاف إلى خطتك."] },
+  { phase: "home", icon: "pin_drop", en: ["Share where & when", "Your National Address and a time that suits you."], ar: ["حدّد المكان والوقت", "عنوانك الوطني والوقت الذي يناسبك."] },
+  { phase: "home", icon: "mark_chat_read", en: ["We confirm", "We assign your dedicated team and send an SMS to confirm."], ar: ["نؤكّد موعدك", "نخصّص لك فريقاً ونرسل رسالة تأكيد."] },
+  { phase: "home", icon: "home_health", en: ["Care comes to you", "Nurses, specialists and medication, straight to your door."], ar: ["الرعاية تصل إليك", "ممرّضون وأخصائيون وأدوية إلى باب منزلك."] },
+  { phase: "home", icon: "smartphone", en: ["Results in your app", "Notes and next steps, at your fingertips."], ar: ["النتائج في تطبيقك", "الملاحظات والخطوات التالية بين يديك."] },
+];
+
+/* Section labels for each service card */
+const BLOCK = {
+  what: { en: "What it is", ar: "ما هي الخدمة" },
+  how: { en: "How we deliver it", ar: "كيف نقدّمها" },
+  expect: { en: "What to expect", ar: "ما الذي تتوقّعه" },
+};
+
+type Service = {
+  phase: "virtual" | "home";
+  icon: string;
+  en: { title: string; what: string; how: string; expect: string };
+  ar: { title: string; what: string; how: string; expect: string };
+};
+
+const SERVICES: Service[] = [
   {
-    icon: "physical_therapy",
-    color: "#00677d",
+    phase: "virtual",
+    icon: "video_call",
     en: {
-      title: "Physiotherapy",
-      desc: "Home physiotherapy is a service where licensed physiotherapists provide personalized treatment to patients in the comfort of their own homes. This approach is especially beneficial for individuals who have difficulty traveling to a clinic due to mobility issues, chronic conditions, or post-surgical recovery.",
-      items: ["Geriatric Physiotherapy", "Neurological Physiotherapy", "Orthopedic Physiotherapy", "Pediatric Physiotherapy", "Post-Operative Physiotherapy", "Sports Physiotherapy"],
-      note: "",
+      title: "Teleconsultation",
+      what: "A scheduled video consultation with our doctors — your starting point for almost everything else. The doctor listens, assesses, and agrees a plan with you.",
+      how: "Book your session through our app, then meet your doctor by video. Prescriptions and onward requests are issued straight from the consultation.",
+      expect: "The same standard of care as an in-clinic visit. You leave with a clear plan and, if needed, a prescription or onward request.",
     },
     ar: {
-      title: "العلاج الطبيعي",
-      desc: "العلاج الطبيعي المنزلي خدمة يقدّم فيها أخصائيو العلاج الطبيعي المرخّصون علاجاً شخصياً للمرضى في راحة منازلهم. ويُعد هذا النهج مفيداً بشكل خاص للأفراد الذين يجدون صعوبة في الذهاب إلى العيادة بسبب مشاكل الحركة أو الحالات المزمنة أو التعافي بعد الجراحة.",
-      items: ["العلاج الطبيعي لكبار السن", "العلاج الطبيعي للأعصاب", "العلاج الطبيعي للعظام", "العلاج الطبيعي للأطفال", "العلاج الطبيعي بعد العملية الجراحية", "العلاج الطبيعي الرياضي"],
-      note: "",
+      title: "استشارة عن بُعد",
+      what: "استشارة مجدولة بالفيديو مع أطبائنا — نقطة البداية لكل شيء تقريباً. يستمع الطبيب ويقيّم ويتّفق معك على خطة.",
+      how: "احجز جلستك عبر تطبيقنا، ثم قابل طبيبك بالفيديو. تصدر الوصفات والطلبات اللاحقة مباشرةً من الاستشارة.",
+      expect: "نفس مستوى الرعاية في العيادة. تُنهي الاستشارة بخطة واضحة، ووصفة أو إحالة عند الحاجة.",
     },
   },
   {
-    icon: "stethoscope",
-    color: "#004d99",
+    phase: "home",
+    icon: "science",
     en: {
-      title: "Physician Assessment",
-      desc: "A home physician assessment involves a licensed doctor visiting patients in their home to provide comprehensive medical evaluation and care. Patients receive care in a familiar, comfortable environment, and we develop a customized treatment plan based on each patient's individual needs.",
-      items: ["GP assessments", "Specialist", "Senior Specialist", "Consultant evaluations"],
-      note: "We provide a treatment and follow-up plan based on the patient's condition — e.g. post-acute care programs and population health management programs.",
+      title: "Home Lab & Sample Collection",
+      what: "Laboratory sample collection, done at your home.",
+      how: "After your consultation, a trained phlebotomist visits at your chosen time to collect your samples.",
+      expect: "A short, professional visit, with samples handled to standard. Your results then come to you on our app.",
     },
     ar: {
-      title: "التقييم من قبل طبيب",
-      desc: "يتضمّن التقييم الطبي المنزلي زيارة طبيب مرخّص للمرضى في منازلهم لتقديم تقييم ورعاية طبية شاملة. يتلقّى المرضى الرعاية في بيئة مألوفة ومريحة، ونطوّر خطة علاج مخصّصة بناءً على احتياجات كل مريض.",
-      items: ["تقييم طبيب عام", "أخصائي", "أخصائي أول", "استشاري"],
-      note: "نقدّم خطة علاج ومتابعة بناءً على حالة المريض، مثل برنامج رعاية ما بعد الحالات الحادة وبرنامج إدارة صحة السكان.",
+      title: "المختبر وسحب العينات منزلياً",
+      what: "سحب عينات المختبر في منزلك.",
+      how: "بعد استشارتك، يزورك فنّي سحب عينات مدرّب في الوقت الذي تختاره لأخذ العينات.",
+      expect: "زيارة قصيرة واحترافية، مع التعامل مع العينات وفق المعايير. ثم تصلك النتائج عبر تطبيقنا.",
     },
   },
   {
+    phase: "home",
+    icon: "medication",
+    en: {
+      title: "Medication Delivery",
+      what: "Prescribed medication brought to your door, straight from your consultation — no pharmacy queue.",
+      how: "Your prescription is prepared and delivered to the address and time you choose — in a vehicle equipped to all required specifications, keeping your medication safe and in the best condition.",
+      expect: "Correctly dispensed medication with clear instructions. If an item is unavailable, we provide an approved alternative with the same active ingredient, in line with Ministry of Health requirements.",
+    },
+    ar: {
+      title: "توصيل الأدوية",
+      what: "توصيل الأدوية الموصوفة إلى باب منزلك مباشرةً من استشارتك — دون طوابير الصيدلية.",
+      how: "تُجهَّز وصفتك وتُوصَّل إلى العنوان والوقت اللذين تختارهما — في مركبة مجهّزة بكل المواصفات المطلوبة للحفاظ على الدواء آمناً وبأفضل حال.",
+      expect: "دواء مصروف بشكل صحيح مع تعليمات واضحة. وإذا لم يتوفّر صنف، نوفّر بديلاً معتمداً بنفس المادة الفعّالة وفقاً لمتطلبات وزارة الصحة.",
+    },
+  },
+  {
+    phase: "home",
     icon: "vaccines",
-    color: "#0e7490",
     en: {
-      title: "Nursing Care",
-      desc: "Nursing care at home involves professional nurses providing a range of medical and personal care services in the comfort of your own home. It is especially beneficial for individuals who require ongoing medical attention but prefer to stay in their familiar environment — such as the elderly, those recovering from surgery, or patients with chronic illnesses.",
-      items: ["Vital signs monitoring", "Laboratory test extraction", "Immunization injections", "IV fluids", "Wound care", "ECG at home", "Retinal imaging", "Vascular doppler"],
-      note: "",
+      title: "Home Nursing",
+      what: "A nurse comes to you to carry out the services you need, at home — in complete comfort and under our care.",
+      how: "A licensed nurse follows your plan: vital signs monitoring, lab sample collection, vaccinations, injections, IV fluids, wound dressing, ECG, and catheter change.",
+      expect: "Skilled, attentive care in your own home, fully documented and shared with your doctor.",
     },
     ar: {
-      title: "التمريض",
-      desc: "تتضمّن الرعاية التمريضية المنزلية ممرّضين محترفين يقدّمون مجموعة من خدمات الرعاية الطبية والشخصية للمرضى في منازلهم. وهي مفيدة بشكل خاص لمن يحتاجون إلى رعاية طبية مستمرة ويفضّلون البقاء في بيئتهم المألوفة، مثل كبار السن، أو المتعافين من الجراحة، أو مرضى الأمراض المزمنة.",
-      items: ["مراقبة العلامات الحيوية", "استخراج عينات المختبر", "اللقاحات والتطعيمات", "السوائل الوريدية", "العناية بالجروح", "تخطيط القلب في المنزل", "تصوير الشبكية", "الموجات فوق الصوتية دوبلر"],
-      note: "",
+      title: "التمريض المنزلي",
+      what: "يأتي إليك ممرّض لتنفيذ الخدمات التي تحتاجها في المنزل — براحة تامة وتحت رعايتنا.",
+      how: "ينفّذ ممرّض مرخّص خطتك: مراقبة العلامات الحيوية، سحب العينات، اللقاحات، الحقن، السوائل الوريدية، تضميد الجروح، تخطيط القلب، وتغيير القسطرة.",
+      expect: "رعاية ماهرة ومهتمّة في منزلك، موثّقة بالكامل ومشاركة مع طبيبك.",
     },
   },
+  {
+    phase: "home",
+    icon: "physical_therapy",
+    en: {
+      title: "Home Physiotherapy",
+      what: "One-to-one physiotherapy from a therapist in your home — for anyone with mobility challenges, a chronic condition, or post-surgical recovery.",
+      how: "We follow the plan your doctor has set for you, working through it together across visits so you steadily improve.",
+      expect: "A tailored plan, hands-on sessions at home, and progress tracked visit by visit.",
+    },
+    ar: {
+      title: "العلاج الطبيعي المنزلي",
+      what: "علاج طبيعي فردي من أخصائي في منزلك — لمن يواجه صعوبة في الحركة أو حالة مزمنة أو تعافياً بعد الجراحة.",
+      how: "نتبع الخطة التي وضعها طبيبك، ونعمل عليها معاً عبر الزيارات لتتحسّن باطّراد.",
+      expect: "خطة مخصّصة، وجلسات عملية في المنزل، ومتابعة للتقدّم زيارةً بزيارة.",
+    },
+  },
+  {
+    phase: "home",
+    icon: "stethoscope",
+    en: {
+      title: "Home Doctor Visit",
+      what: "A licensed doctor visits for a full assessment and treatment plan.",
+      how: "Choose the specialty you need. The doctor examines you, builds a plan based on your needs, and arranges any follow-up.",
+      expect: "A thorough assessment, and a clear treatment and follow-up plan.",
+    },
+    ar: {
+      title: "زيارة الطبيب المنزلية",
+      what: "يزورك طبيب مرخّص لتقييم شامل وخطة علاج.",
+      how: "اختر التخصص الذي تحتاجه. يفحصك الطبيب، ويبني خطة وفق احتياجك، ويرتّب أي متابعة.",
+      expect: "تقييم دقيق، وخطة علاج ومتابعة واضحة.",
+    },
+  },
+];
+
+/* The two details that matter most */
+const DETAILS: { icon: string; en: [string, string]; ar: [string, string] }[] = [
+  { icon: "pin_drop", en: ["Your National Address", "So your team arrives at the right place, first time."], ar: ["عنوانك الوطني", "ليصل فريقك إلى المكان الصحيح من أول مرة."] },
+  { icon: "schedule", en: ["Your preferred time", "Choose the slot that fits — we build the visit around you."], ar: ["وقتك المفضّل", "اختر الموعد المناسب — ونبني الزيارة حولك."] },
 ];
 
 export default function HealthHomecarePage() {
@@ -97,46 +185,62 @@ export default function HealthHomecarePage() {
   const isRtl = lang === "ar";
   const WA = waUrl(isRtl);
 
-  const eyebrow = (en: string, ar: string) => (
-    <span className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white text-primary font-extrabold shadow-clinical ring-1 ring-primary/10 ${isRtl ? "text-[13px]" : "text-[11px] uppercase tracking-[0.15em]"}`}>
-      {isRtl ? ar : en}
-    </span>
-  );
+  const phaseLabel = (p: "virtual" | "home") =>
+    p === "virtual" ? (isRtl ? "افتراضي" : "Virtual") : isRtl ? "في المنزل" : "At home";
 
   return (
     <div dir={isRtl ? "rtl" : "ltr"} className="min-h-screen bg-surface flex flex-col">
-      {/* ── Header ── */}
       <SiteNav />
 
       <main className="flex-1">
-        {/* ── Hero ── */}
-        <section className="relative overflow-hidden">
-          <div className="absolute inset-0 hero-gradient" aria-hidden />
-          <div className="relative max-w-7xl mx-auto px-4 md:px-8 pt-10 md:pt-16 pb-14 md:pb-20">
-            <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-center">
+        {/* ─────────────────────────── Hero ─────────────────────────── */}
+        <section
+          className="relative overflow-hidden text-white"
+          style={{ background: "linear-gradient(135deg,#06203f 0%,#04274d 46%,#013a6b 100%)" }}
+        >
+          {/* decorative glows + faint grid */}
+          <div className="absolute inset-0 pointer-events-none" aria-hidden>
+            <div className="absolute -top-28 right-[-6%] w-[34rem] h-[34rem] rounded-full" style={{ background: "radial-gradient(circle, rgba(92,213,248,0.22) 0%, transparent 70%)" }} />
+            <div className="absolute bottom-[-32%] left-[-8%] w-[42rem] h-[42rem] rounded-full" style={{ background: "radial-gradient(circle, rgba(0,93,183,0.4) 0%, transparent 70%)" }} />
+            <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: "radial-gradient(rgba(255,255,255,0.9) 1px, transparent 1px)", backgroundSize: "22px 22px" }} />
+          </div>
+
+          <div className="relative max-w-7xl mx-auto px-4 md:px-8 pt-12 md:pt-16 pb-32 md:pb-40">
+            <div className="grid lg:grid-cols-12 gap-10 lg:gap-12 items-center">
               {/* Copy */}
-              <div>
-                <span className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white text-primary font-extrabold shadow-clinical ring-1 ring-primary/10 ${isRtl ? "text-[13px]" : "text-[11px] uppercase tracking-[0.15em]"}`}>
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, ease: "easeOut" }}
+                className="lg:col-span-6"
+              >
+                <span className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 ring-1 ring-white/20 backdrop-blur text-white font-extrabold ${isRtl ? "text-[13px]" : "text-[11px] uppercase tracking-[0.18em]"}`}>
                   <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>home_health</span>
-                  {isRtl ? "الرعاية الصحية المنزلية" : "Home Healthcare"}
+                  Telehome · تيلي هوم
                 </span>
-                <h1 className={`mt-6 font-headline font-extrabold text-primary text-4xl md:text-5xl xl:text-[3.75rem] ${isRtl ? "leading-[1.22]" : "tracking-tight leading-[1.04]"} [text-wrap:balance] text-glow`}>
-                  {isRtl ? "رعاية صحية تأتي إليك" : "Healthcare that comes to you"}
+
+                <h1 className={`mt-6 font-headline font-extrabold text-4xl md:text-5xl xl:text-[3.75rem] ${isRtl ? "leading-[1.25]" : "tracking-tight leading-[1.05]"} [text-wrap:balance]`}>
+                  {isRtl ? (
+                    <>عيادتك، <span style={{ color: AQUA }}>أينما كنت.</span></>
+                  ) : (
+                    <>Your clinic, <span style={{ color: AQUA }}>wherever you are.</span></>
+                  )}
                 </h1>
-                <p className="mt-5 text-on-surface-variant text-base md:text-lg max-w-xl leading-relaxed [text-wrap:pretty]">
+
+                <p className="mt-5 text-white/75 text-base md:text-lg max-w-xl leading-relaxed [text-wrap:pretty]">
                   {isRtl
-                    ? "زيارات الطبيب، ورعاية تمريضية، وعلاج طبيعي — يقدّمها مختصّون مرخّصون في راحة منزلك، في جدة والرياض."
-                    : "Doctor visits, nursing care and physiotherapy — delivered by licensed professionals in the comfort of your home, across Jeddah & Riyadh."}
+                    ? "ابدأ باستشارة عن بُعد، ثم دع البقية تأتي إليك — فحوصات وأدوية وتمريض وعلاج طبيعي وزيارات طبيب، يوصلها فريقنا إلى باب منزلك. فريق واحد، تطبيق واحد، رحلة واحدة — من أول اتصال إلى آخر متابعة."
+                    : "Start with a teleconsultation, then let the rest come to you — lab tests, medication, nursing, physiotherapy and doctor visits, brought to your door by our own team. One team, one app, one journey — from the first call to the final follow-up."}
                 </p>
 
                 <ul className="mt-7 flex flex-wrap gap-x-5 gap-y-2.5">
                   {[
-                    { en: "Licensed professionals", ar: "مختصّون مرخّصون" },
-                    { en: "Care at home", ar: "رعاية في المنزل" },
+                    { en: "Virtual + at-home care", ar: "رعاية افتراضية ومنزلية" },
                     { en: "Jeddah & Riyadh", ar: "جدة والرياض" },
+                    { en: "Licensed professionals", ar: "مختصّون مرخّصون" },
                   ].map((t) => (
-                    <li key={t.en} className="inline-flex items-center gap-1.5 text-on-surface-variant text-sm font-bold">
-                      <span className="material-symbols-outlined text-[18px] text-secondary" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                    <li key={t.en} className="inline-flex items-center gap-1.5 text-white/85 text-sm font-bold">
+                      <span className="material-symbols-outlined text-[18px]" style={{ color: AQUA, fontVariationSettings: "'FILL' 1" }}>check_circle</span>
                       {isRtl ? t.ar : t.en}
                     </li>
                   ))}
@@ -148,170 +252,261 @@ export default function HealthHomecarePage() {
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={trackWhatsAppClick}
-                    className="inline-flex items-center justify-center gap-2 bg-[#25D366] text-white font-extrabold px-7 py-3.5 rounded-full shadow-[0_8px_24px_-8px_rgba(37,211,102,0.6)] hover:-translate-y-0.5 hover:shadow-[0_12px_28px_-8px_rgba(37,211,102,0.7)] active:translate-y-0 transition-all"
+                    className="inline-flex items-center justify-center gap-2 bg-[#25D366] text-white font-extrabold px-7 py-3.5 rounded-full shadow-[0_12px_30px_-10px_rgba(37,211,102,0.7)] hover:-translate-y-0.5 hover:shadow-[0_16px_34px_-10px_rgba(37,211,102,0.8)] active:translate-y-0 transition-all"
                   >
                     <i className="fa-brands fa-whatsapp text-xl"></i>
-                    {isRtl ? "تواصل عبر واتساب" : "Contact us on WhatsApp"}
+                    {isRtl ? "احجز استشارتك" : "Book a consultation"}
+                    <span className={`material-symbols-outlined text-[20px] ${isRtl ? "rotate-180" : ""}`}>arrow_forward</span>
                   </a>
                   <a
                     href={`tel:${PHONE_TEL}`}
                     onClick={trackPhoneClick}
                     dir="ltr"
-                    className="inline-flex items-center justify-center gap-2 bg-white text-primary font-extrabold px-7 py-3.5 rounded-full ring-1 ring-primary/15 shadow-clinical hover:-translate-y-0.5 transition-all"
+                    className="inline-flex items-center justify-center gap-2 bg-white/10 text-white font-extrabold px-7 py-3.5 rounded-full ring-1 ring-white/25 backdrop-blur hover:bg-white/20 transition-all"
                   >
                     <span className="material-symbols-outlined text-[20px]">call</span>
                     {PHONE_DISPLAY}
                   </a>
                 </div>
-              </div>
+              </motion.div>
 
               {/* Image */}
-              <div className="relative">
-                {/* layered depth block behind the photo (desktop) */}
-                <div className={`hidden lg:block absolute inset-0 rounded-[2.3rem] bg-secondary-fixed/50 ${isRtl ? "-translate-x-5" : "translate-x-5"} translate-y-5`} aria-hidden />
-                <div className="relative aspect-[4/3] md:aspect-[3/2] lg:aspect-[5/4] rounded-[2rem] overflow-hidden ring-1 ring-outline-variant/40 shadow-[0_40px_90px_-45px_rgba(0,77,153,0.55)]">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.96 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.8, delay: 0.15, ease: "easeOut" }}
+                className="lg:col-span-6 relative"
+              >
+                <div className={`hidden lg:block absolute inset-0 rounded-[2.4rem] bg-white/5 ring-1 ring-white/10 ${isRtl ? "-translate-x-5" : "translate-x-5"} translate-y-5`} aria-hidden />
+                <div className="relative aspect-[4/3] lg:aspect-[5/4] rounded-[2rem] overflow-hidden ring-1 ring-white/15 shadow-[0_50px_100px_-40px_rgba(0,0,0,0.7)]">
                   <Image
                     src="/clinic/home-healthcare.webp"
-                    alt={isRtl ? "فريق التمريض في عيادتي" : "My Clinic nursing team"}
+                    alt={isRtl ? "فريق الرعاية المنزلية في عيادتي" : "My Clinic home healthcare team"}
                     fill
                     priority
-                    quality={75}
+                    quality={78}
                     sizes="(max-width: 1024px) 100vw, 50vw"
                     className="object-cover"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-primary/25 via-transparent to-transparent" aria-hidden />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#06203f]/70 via-[#06203f]/10 to-transparent" aria-hidden />
                 </div>
 
-                {/* floating glass detail card */}
-                <div className={`absolute bottom-4 ${isRtl ? "right-4" : "left-4"} flex items-center gap-3 bg-white/90 backdrop-blur-md rounded-2xl shadow-xl ring-1 ring-white/60 p-3 pe-5 max-w-[16rem]`}>
-                  <span className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                    <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>home_health</span>
-                  </span>
-                  <div>
-                    <div className="font-extrabold text-on-surface text-sm leading-tight">{isRtl ? "زيارات منزلية" : "In-home visits"}</div>
-                    <div className="text-[12px] text-on-surface-variant">{isRtl ? "طبيب، ممرّض وعلاج طبيعي" : "Doctor, nurse & physio"}</div>
+                {/* floating glass chip — virtual */}
+                <div className={`absolute top-4 ${isRtl ? "left-4" : "right-4"} flex items-center gap-2.5 bg-white/95 backdrop-blur-md rounded-2xl shadow-xl ring-1 ring-white/60 px-3.5 py-2.5`}>
+                  <span className="w-2.5 h-2.5 rounded-full" style={{ background: AQUA, boxShadow: `0 0 0 4px ${AQUA}33` }} />
+                  <div className="leading-tight">
+                    <div className="font-extrabold text-on-surface text-[13px]">{isRtl ? "تبدأ بالفيديو" : "Starts on video"}</div>
+                    <div className="text-[11px] text-on-surface-variant">{isRtl ? "استشارة عن بُعد" : "Teleconsultation"}</div>
                   </div>
                 </div>
-              </div>
+
+                {/* floating glass chip — at door */}
+                <div className={`absolute bottom-4 ${isRtl ? "right-4" : "left-4"} flex items-center gap-2.5 bg-white/95 backdrop-blur-md rounded-2xl shadow-xl ring-1 ring-white/60 px-3.5 py-2.5`}>
+                  <span className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                    <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>home_health</span>
+                  </span>
+                  <div className="leading-tight">
+                    <div className="font-extrabold text-on-surface text-[13px]">{isRtl ? "تصل إلى بابك" : "Arrives at your door"}</div>
+                    <div className="text-[11px] text-on-surface-variant">{isRtl ? "طبيب، ممرّض ودواء" : "Doctor, nurse & meds"}</div>
+                  </div>
+                </div>
+              </motion.div>
             </div>
           </div>
         </section>
 
-        {/* ── Quick services strip ── */}
-        <section className="max-w-7xl mx-auto px-4 md:px-8 -mt-2 md:-mt-4">
-          <Reveal className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5 bg-white rounded-[2rem] shadow-[0_30px_70px_-40px_rgba(0,77,153,0.4)] ring-1 ring-outline-variant/30 p-6 md:p-8">
-            {QUICK.map((q) => (
-              <div key={q.en} className="flex flex-col items-center text-center gap-2.5 px-2">
-                <span className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
-                  <span className="material-symbols-outlined text-[26px]" style={{ fontVariationSettings: "'FILL' 1" }}>{q.icon}</span>
-                </span>
-                <span className="text-[13px] md:text-sm font-bold text-on-surface">{isRtl ? q.ar : q.en}</span>
-              </div>
-            ))}
+        {/* ──────────────────── What comes to you (strip) ──────────────────── */}
+        <section className="relative z-20 max-w-7xl mx-auto px-4 md:px-8 -mt-24 md:-mt-28">
+          <Reveal className="bg-white rounded-[2rem] shadow-[0_40px_90px_-45px_rgba(0,77,153,0.5)] ring-1 ring-outline-variant/30 p-6 md:p-8">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-x-4 gap-y-6">
+              {OFFERINGS.map((o) => {
+                const accent = o.phase === "virtual" ? TEAL : NAVY;
+                return (
+                  <div key={o.en} className="flex flex-col items-center text-center gap-2.5 px-1">
+                    <span className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ backgroundColor: `${accent}14`, color: accent }}>
+                      <span className="material-symbols-outlined text-[25px]" style={{ fontVariationSettings: "'FILL' 1" }}>{o.icon}</span>
+                    </span>
+                    <span className="text-[13px] font-bold text-on-surface leading-tight">{isRtl ? o.ar : o.en}</span>
+                    <span className="text-[10px] font-extrabold tracking-wide" style={{ color: accent }}>{phaseLabel(o.phase)}</span>
+                  </div>
+                );
+              })}
+            </div>
           </Reveal>
         </section>
 
-        {/* ── Intro band ── */}
+        {/* ──────────────── Journey: screen → front door ──────────────── */}
         <section className="max-w-7xl mx-auto px-4 md:px-8 py-16 md:py-24">
-          <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
-            {/* Image */}
-            <Reveal className="order-2 lg:order-1">
-              <div className="relative">
-                <div className="hidden lg:block absolute inset-0 rounded-[2.3rem] bg-primary/5 -translate-x-5 translate-y-5" aria-hidden />
-                <div className="relative aspect-[4/3] rounded-[2rem] overflow-hidden ring-1 ring-outline-variant/40 shadow-[0_30px_75px_-45px_rgba(0,77,153,0.5)]">
-                  <Image
-                    src="/clinic/consultation.webp"
-                    alt={isRtl ? "طبيبة عيادتي تقدّم الرعاية لمريض" : "A My Clinic physician caring for a patient"}
-                    fill
-                    quality={72}
-                    sizes="(max-width: 1024px) 100vw, 50vw"
-                    className="object-cover"
-                  />
+          <Reveal className="text-center max-w-2xl mx-auto">
+            <span className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white text-primary font-extrabold shadow-clinical ring-1 ring-primary/10 ${isRtl ? "text-[13px]" : "text-[11px] uppercase tracking-[0.15em]"}`}>
+              {isRtl ? "كيف تعمل" : "How it works"}
+            </span>
+            <h2 className={`mt-5 font-headline text-3xl md:text-4xl xl:text-5xl font-extrabold text-primary ${isRtl ? "leading-[1.3]" : "tracking-tight leading-[1.08]"} [text-wrap:balance]`}>
+              {isRtl ? "من شاشتك إلى باب منزلك" : "From your screen to your front door"}
+            </h2>
+            <p className="mt-5 text-on-surface-variant leading-[1.9] [text-wrap:pretty]">
+              {isRtl
+                ? "ست خطوات بسيطة: تبدأ باستشارة افتراضية، ثم تأتي إليك الرعاية إلى المنزل."
+                : "Six simple steps: it begins with a virtual visit, then the care comes home to you."}
+            </p>
+          </Reveal>
+
+          <Reveal delay={0.1} className="mt-12">
+            <div className="bg-white rounded-[2.5rem] ring-1 ring-outline-variant/30 shadow-clinical p-6 sm:p-10 md:p-12">
+              {/* phase legend */}
+              <div className="hidden lg:grid grid-cols-6 gap-5 mb-6">
+                <div className="col-span-2 flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full" style={{ background: TEAL }} />
+                  <span className="text-[11px] font-extrabold uppercase tracking-[0.14em]" style={{ color: TEAL }}>{isRtl ? "على شاشتك" : "On your screen"}</span>
+                  <span className="flex-1 h-px bg-outline-variant/40 ms-1" />
+                </div>
+                <div className="col-span-4 flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full" style={{ background: NAVY }} />
+                  <span className="text-[11px] font-extrabold uppercase tracking-[0.14em]" style={{ color: NAVY }}>{isRtl ? "عند بابك" : "At your door"}</span>
+                  <span className="flex-1 h-px bg-outline-variant/40 ms-1" />
                 </div>
               </div>
-            </Reveal>
-            {/* Copy */}
-            <Reveal delay={0.1} className="order-1 lg:order-2">
-              {eyebrow("My Clinic Home Healthcare", "الرعاية المنزلية من عيادتي")}
-              <h2 className={`mt-5 font-headline text-3xl md:text-4xl font-extrabold text-primary ${isRtl ? "leading-[1.3]" : "tracking-tight leading-[1.1]"} [text-wrap:balance]`}>
-                {isRtl ? "رعاية متكاملة في راحة منزلك" : "Complete care in the comfort of home"}
-              </h2>
-              <p className="mt-6 text-on-surface-variant text-base md:text-lg leading-[1.9] [text-wrap:pretty]">
-                {isRtl
-                  ? "في عيادتي، نوفّر لك رعاية صحية منزلية آمنة ومريحة يقدّمها فريق من المتخصصين المؤهّلين — من زيارات الطبيب والممرّضة إلى العلاج الطبيعي والفحوصات المخبرية. استمتع برعاية مصمّمة حول احتياجاتك لتبقى صحتك أولوية دون عناء التنقّل."
-                  : "At My Clinic, we bring you safe, convenient home healthcare delivered by a team of qualified professionals — from doctor and nurse visits to physiotherapy and lab tests. Experience care designed around your needs, so your health stays a priority without the hassle of travel."}
-              </p>
-              <div className="mt-7 flex flex-wrap gap-2.5">
-                {[
-                  { icon: "schedule", en: "On your schedule", ar: "في الوقت الذي يناسبك" },
-                  { icon: "health_and_safety", en: "Safe & private", ar: "آمنة وخاصة" },
-                  { icon: "groups", en: "Qualified team", ar: "فريق مؤهّل" },
-                ].map((h) => (
-                  <span key={h.en} className="inline-flex items-center gap-2 bg-surface-container-low text-on-surface font-bold text-[13px] px-3.5 py-2 rounded-full ring-1 ring-outline-variant/30">
-                    <span className="material-symbols-outlined text-primary text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>{h.icon}</span>
-                    {isRtl ? h.ar : h.en}
-                  </span>
-                ))}
+
+              {/* ── Desktop horizontal timeline ── */}
+              <div className="hidden lg:block relative">
+                <div
+                  className="absolute top-7 h-0.5 rounded-full"
+                  style={{ left: "8.33%", right: "8.33%", background: `linear-gradient(to ${isRtl ? "left" : "right"}, ${AQUA}, ${TEAL} 32%, ${NAVY})` }}
+                  aria-hidden
+                />
+                <ol className="relative grid grid-cols-6 gap-5">
+                  {JOURNEY.map((s, i) => {
+                    const accent = s.phase === "virtual" ? TEAL : NAVY;
+                    return (
+                      <li key={i} className="flex flex-col items-center text-center">
+                        <span
+                          className="relative z-10 w-14 h-14 rounded-2xl flex items-center justify-center text-white ring-4 ring-white"
+                          style={{ backgroundColor: accent, boxShadow: `0 14px 26px -12px ${accent}` }}
+                        >
+                          <span className="material-symbols-outlined text-[26px]" style={{ fontVariationSettings: "'FILL' 1" }}>{s.icon}</span>
+                        </span>
+                        <span className="mt-4 text-[10px] font-extrabold tracking-[0.14em]" style={{ color: accent }}>
+                          {String(i + 1).padStart(2, "0")} · {phaseLabel(s.phase).toUpperCase()}
+                        </span>
+                        <h3 className="mt-1.5 font-headline font-extrabold text-on-surface text-[15px] leading-snug">{isRtl ? s.ar[0] : s.en[0]}</h3>
+                        <p className="mt-1.5 text-[12.5px] text-on-surface-variant leading-relaxed [text-wrap:pretty]">{isRtl ? s.ar[1] : s.en[1]}</p>
+                      </li>
+                    );
+                  })}
+                </ol>
               </div>
-            </Reveal>
-          </div>
+
+              {/* ── Mobile vertical timeline ── */}
+              <div className="lg:hidden relative">
+                <div
+                  className="absolute top-7 bottom-7 w-0.5 rounded-full"
+                  style={{ insetInlineStart: "27px", background: `linear-gradient(to bottom, ${AQUA}, ${TEAL} 30%, ${NAVY})` }}
+                  aria-hidden
+                />
+                <ol className="space-y-6">
+                  {JOURNEY.map((s, i) => {
+                    const accent = s.phase === "virtual" ? TEAL : NAVY;
+                    return (
+                      <li key={i} className="relative flex gap-4">
+                        <span
+                          className="relative z-10 w-14 h-14 shrink-0 rounded-2xl flex items-center justify-center text-white ring-4 ring-white"
+                          style={{ backgroundColor: accent, boxShadow: `0 14px 26px -12px ${accent}` }}
+                        >
+                          <span className="material-symbols-outlined text-[26px]" style={{ fontVariationSettings: "'FILL' 1" }}>{s.icon}</span>
+                        </span>
+                        <div className="pt-1">
+                          <span className="text-[10px] font-extrabold tracking-[0.14em]" style={{ color: accent }}>
+                            {String(i + 1).padStart(2, "0")} · {phaseLabel(s.phase).toUpperCase()}
+                          </span>
+                          <h3 className="mt-0.5 font-headline font-extrabold text-on-surface text-base leading-snug">{isRtl ? s.ar[0] : s.en[0]}</h3>
+                          <p className="mt-1 text-[13.5px] text-on-surface-variant leading-relaxed [text-wrap:pretty]">{isRtl ? s.ar[1] : s.en[1]}</p>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ol>
+              </div>
+            </div>
+          </Reveal>
         </section>
 
-        {/* ── Homecare services ── */}
+        {/* ──────────────── Services: how each one works ──────────────── */}
         <section className="relative overflow-hidden bg-surface-container-low border-y border-outline-variant/30">
           <div className="max-w-7xl mx-auto px-4 md:px-8 py-16 md:py-24">
             <Reveal className="text-center max-w-2xl mx-auto">
-              {eyebrow("Our Services", "خدماتنا")}
+              <span className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white text-primary font-extrabold shadow-clinical ring-1 ring-primary/10 ${isRtl ? "text-[13px]" : "text-[11px] uppercase tracking-[0.15em]"}`}>
+                {isRtl ? "خدماتنا" : "Our services"}
+              </span>
               <h2 className={`mt-5 font-headline text-3xl md:text-4xl font-extrabold text-primary ${isRtl ? "leading-[1.3]" : "tracking-tight leading-[1.1]"} [text-wrap:balance]`}>
-                {isRtl ? "خدمات الرعاية الصحية المنزلية" : "Home healthcare services"}
+                {isRtl ? "كيف تعمل كل خدمة" : "How each service works"}
               </h2>
               <p className="mt-5 text-on-surface-variant leading-[1.9] [text-wrap:pretty]">
                 {isRtl
-                  ? "ثلاث خدمات أساسية يقدّمها مختصّون مرخّصون في منزلك."
-                  : "Three core services, delivered by licensed specialists right at your home."}
+                  ? "كل خدمة بثلاث خطوات واضحة: ما هي، وكيف نقدّمها، وما الذي تتوقّعه."
+                  : "Every service in three clear parts: what it is, how we deliver it, and what to expect."}
               </p>
             </Reveal>
 
-            <div className="mt-12 grid lg:grid-cols-3 gap-5 md:gap-7 items-stretch">
+            <div className="mt-12 grid md:grid-cols-2 gap-5 md:gap-7 items-stretch">
               {SERVICES.map((s, i) => {
                 const c = isRtl ? s.ar : s.en;
+                const accent = s.phase === "virtual" ? TEAL : NAVY;
+                const msg = isRtl
+                  ? `مرحباً، أود حجز خدمة «${s.ar.title}» ضمن تيلي هوم من عيادتي.`
+                  : `Hello, I'd like to book "${s.en.title}" with My Clinic Telehome.`;
                 return (
-                  <Reveal key={s.en.title} delay={i * 0.08}>
-                    <div className="flex h-full flex-col bg-white rounded-[1.75rem] p-7 md:p-8 shadow-clinical ring-1 ring-outline-variant/30 hover:-translate-y-1 hover:shadow-[0_24px_50px_-30px_rgba(0,77,153,0.5)] transition-all">
-                      <span
-                        className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0"
-                        style={{ backgroundColor: `${s.color}1a`, color: s.color }}
-                      >
-                        <span className="material-symbols-outlined text-[28px]" style={{ fontVariationSettings: "'FILL' 1" }}>{s.icon}</span>
-                      </span>
-                      <h3 className="mt-5 font-headline text-xl md:text-2xl font-extrabold text-on-surface">{c.title}</h3>
-                      <p className="mt-3 text-on-surface-variant text-[15px] leading-[1.85] [text-wrap:pretty]">{c.desc}</p>
-
-                      <div className="mt-5 flex flex-wrap gap-2">
-                        {c.items.map((it) => (
-                          <span key={it} className="inline-flex items-center gap-1.5 bg-surface-container-low ring-1 ring-outline-variant/30 text-on-surface text-[12.5px] font-semibold px-3 py-1.5 rounded-full">
-                            <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: s.color }} aria-hidden />
-                            {it}
+                  <Reveal key={s.en.title} delay={(i % 2) * 0.08}>
+                    <div className="flex h-full flex-col bg-white rounded-[1.75rem] p-7 md:p-8 shadow-clinical ring-1 ring-outline-variant/30 hover:-translate-y-1 hover:shadow-[0_28px_56px_-32px_rgba(0,77,153,0.5)] transition-all">
+                      {/* header */}
+                      <div className="flex items-start gap-4">
+                        <span className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${accent}14`, color: accent }}>
+                          <span className="material-symbols-outlined text-[28px]" style={{ fontVariationSettings: "'FILL' 1" }}>{s.icon}</span>
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold tracking-wide" style={{ backgroundColor: `${accent}14`, color: accent }}>
+                            <span className="material-symbols-outlined text-[13px]" style={{ fontVariationSettings: "'FILL' 1" }}>{s.phase === "virtual" ? "videocam" : "home_health"}</span>
+                            {s.phase === "virtual" ? (isRtl ? "افتراضي" : "VIRTUAL") : isRtl ? "في المنزل" : "AT HOME"}
                           </span>
-                        ))}
+                          <h3 className="mt-2 font-headline text-xl md:text-[1.4rem] font-extrabold text-on-surface leading-tight">{c.title}</h3>
+                        </div>
+                        <span className="font-headline text-3xl font-extrabold leading-none" style={{ color: `${accent}26` }}>{String(i + 1).padStart(2, "0")}</span>
                       </div>
 
-                      {c.note && (
-                        <p className="mt-4 text-[13.5px] text-on-surface-variant/90 leading-relaxed border-s-2 ps-3" style={{ borderColor: `${s.color}55` }}>
-                          {c.note}
-                        </p>
-                      )}
+                      {/* three blocks */}
+                      <div className="mt-6 space-y-4">
+                        {[
+                          { label: isRtl ? BLOCK.what.ar : BLOCK.what.en, text: c.what },
+                          { label: isRtl ? BLOCK.how.ar : BLOCK.how.en, text: c.how },
+                        ].map((b) => (
+                          <div key={b.label}>
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="w-1.5 h-1.5 rounded-full" style={{ background: accent }} />
+                              <span className={`text-[11px] font-extrabold text-on-surface-variant ${isRtl ? "" : "uppercase tracking-[0.12em]"}`}>{b.label}</span>
+                            </div>
+                            <p className="text-[14.5px] text-on-surface-variant leading-[1.8] [text-wrap:pretty]">{b.text}</p>
+                          </div>
+                        ))}
+
+                        {/* what to expect — highlighted */}
+                        <div className="rounded-2xl p-4" style={{ backgroundColor: `${accent}0d` }}>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="material-symbols-outlined text-[16px]" style={{ color: accent, fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                            <span className={`text-[11px] font-extrabold ${isRtl ? "" : "uppercase tracking-[0.12em]"}`} style={{ color: accent }}>{isRtl ? BLOCK.expect.ar : BLOCK.expect.en}</span>
+                          </div>
+                          <p className="text-[14.5px] text-on-surface-variant leading-[1.8] [text-wrap:pretty]">{c.expect}</p>
+                        </div>
+                      </div>
 
                       <a
-                        href={WA}
+                        href={waUrl(isRtl, msg)}
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={trackWhatsAppClick}
-                        className="mt-6 inline-flex items-center gap-1.5 font-extrabold text-sm hover:gap-2.5 transition-all"
-                        style={{ color: s.color }}
+                        className="mt-auto pt-6 inline-flex items-center gap-1.5 font-extrabold text-sm hover:gap-2.5 transition-all"
+                        style={{ color: accent }}
                       >
                         <i className="fa-brands fa-whatsapp text-base"></i>
-                        {isRtl ? "اطلب هذه الخدمة" : "Request this service"}
+                        {isRtl ? "احجز هذه الخدمة" : "Book this service"}
                         <span className={`material-symbols-outlined text-[18px] ${isRtl ? "rotate-180" : ""}`}>arrow_forward</span>
                       </a>
                     </div>
@@ -322,24 +517,98 @@ export default function HealthHomecarePage() {
           </div>
         </section>
 
-        {/* ── Closing CTA band ── */}
+        {/* ──────────────── Your care, on your terms ──────────────── */}
         <section className="max-w-7xl mx-auto px-4 md:px-8 py-16 md:py-24">
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+            {/* Copy */}
+            <Reveal>
+              <span className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white text-primary font-extrabold shadow-clinical ring-1 ring-primary/10 ${isRtl ? "text-[13px]" : "text-[11px] uppercase tracking-[0.15em]"}`}>
+                {isRtl ? "أنت تقرّر أين ومتى" : "You decide where & when"}
+              </span>
+              <h2 className={`mt-5 font-headline text-3xl md:text-4xl font-extrabold text-primary ${isRtl ? "leading-[1.3]" : "tracking-tight leading-[1.1]"} [text-wrap:balance]`}>
+                {isRtl ? "رعايتك، بشروطك أنت" : "Your care, on your terms"}
+              </h2>
+              <p className="mt-6 text-on-surface-variant text-base md:text-lg leading-[1.9] [text-wrap:pretty]">
+                {isRtl
+                  ? "تبقى دائماً المتحكّم في مكان رعايتك ووقتها بما يناسب يومك. بعد استشارتك، نرسل لك نموذجاً قصيراً عبر رسالة نصية — "
+                  : "You're always in control of where your care happens and when it fits your day. After your consultation, we'll send you a short form by SMS — "}
+                <span className="font-extrabold text-on-surface">{isRtl ? "لا يستغرق سوى دقيقة" : "it takes only a minute"}</span>
+                {isRtl ? "، وهو ما يتيح لنا ترتيب كل زيارة حولك." : ", and it's what lets us plan every visit around you."}
+              </p>
+
+              <div className="mt-7 flex flex-wrap gap-2.5">
+                {[
+                  { icon: "verified_user", en: "Dedicated team assigned", ar: "فريق مخصّص لك" },
+                  { icon: "lock", en: "Private & documented", ar: "خصوصية وتوثيق كامل" },
+                ].map((h) => (
+                  <span key={h.en} className="inline-flex items-center gap-2 bg-surface-container-low text-on-surface font-bold text-[13px] px-3.5 py-2 rounded-full ring-1 ring-outline-variant/30">
+                    <span className="material-symbols-outlined text-primary text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>{h.icon}</span>
+                    {isRtl ? h.ar : h.en}
+                  </span>
+                ))}
+              </div>
+            </Reveal>
+
+            {/* The two details card */}
+            <Reveal delay={0.1}>
+              <div className="relative bg-white rounded-[2rem] ring-1 ring-outline-variant/30 shadow-[0_40px_90px_-50px_rgba(0,77,153,0.5)] p-7 md:p-9">
+                <div className="flex items-center gap-2 mb-6">
+                  <span className="material-symbols-outlined text-primary text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>checklist</span>
+                  <span className={`text-[12px] font-extrabold text-on-surface-variant ${isRtl ? "" : "uppercase tracking-[0.14em]"}`}>{isRtl ? "أهمّ تفصيلين" : "The two details that matter most"}</span>
+                </div>
+
+                <div className="space-y-5">
+                  {DETAILS.map((d, i) => (
+                    <div key={i} className="flex items-start gap-4">
+                      <span className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                        <span className="material-symbols-outlined text-[22px]" style={{ fontVariationSettings: "'FILL' 1" }}>{d.icon}</span>
+                      </span>
+                      <div>
+                        <div className="font-extrabold text-on-surface">{isRtl ? d.ar[0] : d.en[0]}</div>
+                        <div className="mt-0.5 text-[14px] text-on-surface-variant leading-relaxed [text-wrap:pretty]">{isRtl ? d.ar[1] : d.en[1]}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-7 pt-6 border-t border-outline-variant/40 flex items-start gap-3">
+                  <span className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: `${TEAL}14`, color: TEAL }}>
+                    <span className="material-symbols-outlined text-[19px]" style={{ fontVariationSettings: "'FILL' 1" }}>mark_chat_read</span>
+                  </span>
+                  <p className="text-[14px] text-on-surface-variant leading-relaxed [text-wrap:pretty]">
+                    {isRtl
+                      ? "وبمجرّد حصولنا عليهما، نرسل لك رسالة تأكيد — ويصبح موعدك مؤكّداً."
+                      : "Once we have these, we'll send you an SMS to confirm — and your visit is set."}
+                  </p>
+                </div>
+              </div>
+            </Reveal>
+          </div>
+        </section>
+
+        {/* ──────────────────────── Closing CTA ──────────────────────── */}
+        <section className="max-w-7xl mx-auto px-4 md:px-8 pb-16 md:pb-24">
           <Reveal>
-            <div className="relative overflow-hidden rounded-[2.5rem] bg-primary text-white px-6 md:px-14 py-14 md:py-20 shadow-[0_40px_90px_-40px_rgba(0,77,153,0.7)]">
-              <div className="absolute -top-20 -right-16 w-80 h-80 rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, rgba(92,213,248,0.35) 0%, transparent 70%)" }} aria-hidden />
-              <div className="absolute -bottom-24 -left-16 w-96 h-96 rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 70%)" }} aria-hidden />
+            <div
+              className="relative overflow-hidden rounded-[2.5rem] text-white px-6 md:px-14 py-14 md:py-20 shadow-[0_50px_110px_-45px_rgba(0,77,153,0.8)]"
+              style={{ background: "linear-gradient(135deg,#06203f 0%,#04274d 46%,#013a6b 100%)" }}
+            >
+              <div className="absolute -top-20 -right-16 w-80 h-80 rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, rgba(92,213,248,0.32) 0%, transparent 70%)" }} aria-hidden />
+              <div className="absolute -bottom-24 -left-16 w-96 h-96 rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, rgba(0,93,183,0.45) 0%, transparent 70%)" }} aria-hidden />
+              <div className="absolute inset-0 opacity-[0.06] pointer-events-none" style={{ backgroundImage: "radial-gradient(rgba(255,255,255,0.9) 1px, transparent 1px)", backgroundSize: "22px 22px" }} aria-hidden />
+
               <div className="relative max-w-3xl">
-                <span className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/15 text-white font-extrabold backdrop-blur ${isRtl ? "text-[13px]" : "text-[11px] uppercase tracking-[0.15em]"}`}>
+                <span className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 ring-1 ring-white/20 text-white font-extrabold backdrop-blur ${isRtl ? "text-[13px]" : "text-[11px] uppercase tracking-[0.15em]"}`}>
                   <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>home_health</span>
                   {isRtl ? "ابدأ الآن" : "Get started"}
                 </span>
                 <h2 className={`mt-5 font-headline text-3xl md:text-5xl font-extrabold ${isRtl ? "leading-[1.3]" : "tracking-tight leading-[1.05]"} [text-wrap:balance]`}>
-                  {isRtl ? "احجز رعايتك المنزلية اليوم" : "Book your home care today"}
+                  {isRtl ? "نحن جاهزون متى كنت مستعداً." : "Ready when you are."}
                 </h2>
-                <p className="mt-5 text-white/85 text-base md:text-lg leading-[1.9] [text-wrap:pretty]">
+                <p className="mt-5 text-white/80 text-base md:text-lg leading-[1.9] [text-wrap:pretty]">
                   {isRtl
-                    ? "فريقنا جاهز لزيارتك في المنزل. تواصل معنا عبر واتساب أو الهاتف وسنرتّب لك الرعاية المناسبة في الوقت الذي يناسبك."
-                    : "Our team is ready to visit you at home. Reach us on WhatsApp or by phone and we'll arrange the right care at a time that suits you."}
+                    ? "رعاية تبدأ من هاتفك وتصل إلى بابك. تواصل معنا عبر واتساب أو الهاتف وسنرتّب لك الرعاية المناسبة في الوقت الذي يناسبك."
+                    : "Care that begins from your phone and arrives at your door. Reach us on WhatsApp or by phone and we'll arrange the right care at a time that suits you."}
                 </p>
                 <div className="mt-9 flex flex-col sm:flex-row gap-3.5">
                   <a
@@ -350,7 +619,7 @@ export default function HealthHomecarePage() {
                     className="inline-flex items-center justify-center gap-2 bg-[#25D366] text-white font-extrabold px-8 py-4 rounded-full shadow-lg hover:-translate-y-0.5 hover:shadow-xl active:translate-y-0 transition-all"
                   >
                     <i className="fa-brands fa-whatsapp text-xl"></i>
-                    {isRtl ? "تواصل عبر واتساب" : "Chat on WhatsApp"}
+                    {isRtl ? "احجز استشارتك" : "Book a consultation"}
                   </a>
                   <a
                     href={`tel:${PHONE_TEL}`}
@@ -369,6 +638,18 @@ export default function HealthHomecarePage() {
       </main>
 
       <SiteFooter />
+
+      {/* Floating WhatsApp */}
+      <a
+        href={WA}
+        onClick={trackWhatsAppClick}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={isRtl ? "تواصل عبر واتساب" : "Chat on WhatsApp"}
+        className={`fixed bottom-6 ${isRtl ? "left-6" : "right-6"} z-40 w-14 h-14 bg-[#25D366] rounded-full flex items-center justify-center shadow-lg shadow-[#25D366]/30 hover:scale-110 transition-all`}
+      >
+        <i className="fa-brands fa-whatsapp text-white text-2xl" />
+      </a>
     </div>
   );
 }
