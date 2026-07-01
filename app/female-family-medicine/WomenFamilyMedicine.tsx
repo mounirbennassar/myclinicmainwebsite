@@ -242,6 +242,24 @@ export default function WomenFamilyMedicine({ doctors }: { doctors: Doctor[] }) 
     setSubmitting(false);
   };
 
+  /* Hero CTAs are rendered twice — in the copy column (desktop) and after the
+     image (mobile) — so the mobile order is text → image → buttons. */
+  const heroCtas = (
+    <>
+      <button onClick={() => document.getElementById("book")?.scrollIntoView({ behavior: "smooth" })}
+        className="inline-flex items-center justify-center gap-2.5 text-white font-bold text-base md:text-[17px] px-7 py-3.5 md:py-4 rounded-full shadow-[0_22px_44px_-16px_rgba(201,72,111,0.5)] hover:-translate-y-0.5 active:translate-y-0 transition-transform cursor-pointer"
+        style={{ background: NAVY }}>
+        {isRtl ? "احجزي موعدك الآن" : "Book your appointment"}
+        <ArrowIcon isRtl={isRtl} className="text-[20px]" />
+      </button>
+      <a href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer" onClick={trackWhatsAppClick}
+        className="inline-flex items-center justify-center gap-2.5 bg-white/85 text-[#0B3D78] font-bold text-base md:text-[17px] px-6 py-3.5 md:py-4 rounded-full border border-[#E2E9F3] shadow-[0_14px_30px_-18px_rgba(11,61,120,0.3)] hover:-translate-y-0.5 hover:border-[#25D366] transition-all">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="#25D366"><path d="M12 2a9.9 9.9 0 0 0-8.5 15l-1.3 4.7 4.8-1.3A9.9 9.9 0 1 0 12 2Zm0 18a8.1 8.1 0 0 1-4.1-1.1l-.3-.2-2.8.8.8-2.7-.2-.3A8.1 8.1 0 1 1 12 20Z" /><path d="M8.9 7.3c-.2-.4-.3-.4-.5-.4h-.5c-.2 0-.4 0-.7.3-.2.3-.9.9-.9 2.1s.9 2.5 1 2.6c.1.2 1.7 2.7 4.3 3.7 2.1.8 2.6.7 3 .6.5-.1 1.4-.6 1.6-1.2.2-.6.2-1 .1-1.1l-.5-.3-1.6-.8c-.2-.1-.4-.1-.5.1l-.7.9c-.1.1-.3.1-.5.1-.7-.3-1.4-.6-2.2-1.5-.6-.7-1-1.4-1.1-1.6-.1-.2 0-.4.1-.5l.4-.5.2-.4c0-.1 0-.3-.1-.4l-.7-1.7Z" /></svg>
+        {isRtl ? "تواصلي عبر واتساب" : "Chat on WhatsApp"}
+      </a>
+    </>
+  );
+
   const inputCls = "w-full px-4 py-3.5 rounded-2xl border-[1.5px] border-[#E1EAF4] bg-[#F7FAFE] text-[#1C3552] text-[15px] outline-none transition-all focus:border-[#0E7C84] focus:ring-4 focus:ring-[#0E7C84]/15 placeholder:text-[#93A4BB]";
   const labelCls = "block text-[13.5px] font-bold text-[#42556F] mb-2";
   const eyebrow = (text: string, center = false) => (
@@ -267,19 +285,19 @@ export default function WomenFamilyMedicine({ doctors }: { doctors: Doctor[] }) 
             <div className="absolute inset-0" style={{ backgroundImage: "radial-gradient(rgba(10,76,142,0.07) 1.4px,transparent 1.4px)", backgroundSize: "30px 30px", WebkitMaskImage: "radial-gradient(ellipse 72% 62% at 60% 34%,#000,transparent 80%)", maskImage: "radial-gradient(ellipse 72% 62% at 60% 34%,#000,transparent 80%)" }} />
           </div>
 
-          <div className="relative z-[2] max-w-7xl mx-auto px-4 md:px-8 pt-10 md:pt-14 pb-20 md:pb-28 grid lg:grid-cols-2 gap-10 lg:gap-14 items-center">
+          <div className="relative z-[2] max-w-7xl mx-auto px-4 md:px-8 pt-6 md:pt-14 pb-16 md:pb-28 grid lg:grid-cols-2 gap-8 lg:gap-14 items-center">
             {/* copy */}
             <div>
               {/* Hero uses initial={false} so the server-rendered HTML is visible
                   before hydration (no opacity:0 flash-of-nothing on slow networks). */}
               <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
-                className="inline-flex items-center gap-2.5 bg-white/75 backdrop-blur border border-[#F3D2E0] pl-4 pr-3.5 py-2.5 rounded-full shadow-[0_14px_30px_-18px_rgba(201,72,111,0.45)] mb-6">
+                className="inline-flex items-center gap-2.5 bg-white/75 backdrop-blur border border-[#F3D2E0] pl-4 pr-3.5 py-2 md:py-2.5 rounded-full shadow-[0_14px_30px_-18px_rgba(201,72,111,0.45)] mb-5 md:mb-6">
                 <span className="w-2.5 h-2.5 rounded-full animate-[ff-dot_2.4s_ease-in-out_infinite]" style={{ background: ROSE, boxShadow: "0 0 0 4px rgba(229,104,142,0.18)" }} />
-                <span className="text-sm font-bold" style={{ color: NAVY }}>{isRtl ? "رعاية متكاملة للمرأة والأسرة" : "Complete care for women & family"}</span>
+                <span className="text-[13px] md:text-sm font-bold" style={{ color: NAVY }}>{isRtl ? "رعاية متكاملة للمرأة والأسرة" : "Complete care for women & family"}</span>
               </motion.div>
 
               <motion.h1 initial={false} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.06 }}
-                className={`font-headline font-extrabold text-[#0B3D78] tracking-tight mb-6 text-4xl md:text-5xl xl:text-[3.6rem] ${isRtl ? "leading-[1.3]" : "leading-[1.08]"}`}>
+                className={`font-headline font-extrabold text-[#0B3D78] tracking-tight mb-5 md:mb-6 text-[2rem] sm:text-4xl md:text-5xl xl:text-[3.6rem] ${isRtl ? "leading-[1.3]" : "leading-[1.08]"}`}>
                 {isRtl ? (
                   <>عناية تليق بك في{" "}<span className="relative whitespace-nowrap" style={{ color: ROSE }}>كل مرحلة
                     <svg viewBox="0 0 230 24" preserveAspectRatio="none" className="absolute left-0 right-0 -bottom-3 w-full h-[14px]" fill="none"><path d="M4 14C54 5 150 4 226 12" stroke={ROSE} strokeWidth="5" strokeLinecap="round" opacity=".5" /></svg>
@@ -292,25 +310,15 @@ export default function WomenFamilyMedicine({ doctors }: { doctors: Doctor[] }) 
               </motion.h1>
 
               <motion.p initial={false} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.14 }}
-                className="text-[#55677E] text-base md:text-[19px] leading-[1.9] max-w-xl mb-8">
+                className="text-[#55677E] text-[15px] md:text-[19px] leading-[1.8] md:leading-[1.9] max-w-xl mb-7 md:mb-8">
                 {isRtl
                   ? "من متابعة الحمل والولادة إلى صحة الأسرة، نقدم لك رعاية دقيقة ومتكاملة على أيدي نخبة من المتخصصين في صحة المرأة والأسرة — بخصوصية تامة وراحة تستحقينها."
                   : "From pregnancy and childbirth to whole-family health, we deliver precise, integrated care from specialists devoted to women's & family health — in complete privacy and the comfort you deserve."}
               </motion.p>
 
               <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.22 }}
-                className="flex flex-wrap items-center gap-3.5">
-                <button onClick={() => document.getElementById("book")?.scrollIntoView({ behavior: "smooth" })}
-                  className="inline-flex items-center gap-2.5 text-white font-bold text-[17px] px-7 py-4 rounded-full shadow-[0_22px_44px_-16px_rgba(201,72,111,0.5)] hover:-translate-y-0.5 active:translate-y-0 transition-transform cursor-pointer"
-                  style={{ background: NAVY }}>
-                  {isRtl ? "احجزي موعدك الآن" : "Book your appointment"}
-                  <ArrowIcon isRtl={isRtl} className="text-[20px]" />
-                </button>
-                <a href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer" onClick={trackWhatsAppClick}
-                  className="inline-flex items-center gap-2.5 bg-white/85 text-[#0B3D78] font-bold text-[17px] px-6 py-4 rounded-full border border-[#E2E9F3] shadow-[0_14px_30px_-18px_rgba(11,61,120,0.3)] hover:-translate-y-0.5 hover:border-[#25D366] transition-all">
-                  <svg width="21" height="21" viewBox="0 0 24 24" fill="#25D366"><path d="M12 2a9.9 9.9 0 0 0-8.5 15l-1.3 4.7 4.8-1.3A9.9 9.9 0 1 0 12 2Zm0 18a8.1 8.1 0 0 1-4.1-1.1l-.3-.2-2.8.8.8-2.7-.2-.3A8.1 8.1 0 1 1 12 20Z" /><path d="M8.9 7.3c-.2-.4-.3-.4-.5-.4h-.5c-.2 0-.4 0-.7.3-.2.3-.9.9-.9 2.1s.9 2.5 1 2.6c.1.2 1.7 2.7 4.3 3.7 2.1.8 2.6.7 3 .6.5-.1 1.4-.6 1.6-1.2.2-.6.2-1 .1-1.1l-.5-.3-1.6-.8c-.2-.1-.4-.1-.5.1l-.7.9c-.1.1-.3.1-.5.1-.7-.3-1.4-.6-2.2-1.5-.6-.7-1-1.4-1.1-1.6-.1-.2 0-.4.1-.5l.4-.5.2-.4c0-.1 0-.3-.1-.4l-.7-1.7Z" /></svg>
-                  {isRtl ? "تواصلي عبر واتساب" : "Chat on WhatsApp"}
-                </a>
+                className="hidden lg:flex lg:flex-wrap lg:items-center gap-3.5">
+                {heroCtas}
               </motion.div>
             </div>
 
@@ -318,29 +326,35 @@ export default function WomenFamilyMedicine({ doctors }: { doctors: Doctor[] }) 
             <motion.div initial={false} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, delay: 0.15 }}
               className="relative flex justify-center">
               <div className="relative w-full max-w-[470px]">
-                <div className="relative z-[2] rounded-[28px] overflow-hidden h-[clamp(440px,56vw,560px)] bg-[#EAF1FB] shadow-[0_44px_90px_-44px_rgba(11,61,120,0.4)]">
+                <div className="relative z-[2] rounded-[24px] md:rounded-[28px] overflow-hidden h-[clamp(320px,88vw,420px)] md:h-[clamp(440px,56vw,560px)] bg-[#EAF1FB] shadow-[0_44px_90px_-44px_rgba(11,61,120,0.4)]">
                   <Image src="/female-family/hero.webp" alt={isRtl ? "طبيبة مع أم وطفلة في العيادة" : "A woman doctor with a mother and daughter"} fill preload quality={80} sizes="(max-width:1024px) 100vw, 470px" className="object-cover" style={{ objectPosition: "50% 30%" }} />
                 </div>
                 {/* floating chip — top (GSAP parallax wrapper → CSS float inner) */}
-                <div ref={chipA} className="absolute top-6 -right-4 md:-right-5 z-[6] will-change-transform">
-                  <div className="animate-[ff-float_6s_ease-in-out_infinite] flex items-center gap-2.5 bg-white/95 backdrop-blur text-[#0B3D78] px-4 py-3 rounded-2xl shadow-[0_22px_44px_-18px_rgba(11,61,120,0.45)] font-bold text-sm whitespace-nowrap border border-[#EFE1E9]">
+                <div ref={chipA} className="absolute top-4 md:top-6 -right-2 md:-right-5 z-[6] will-change-transform">
+                  <div className="animate-[ff-float_6s_ease-in-out_infinite] flex items-center gap-2 md:gap-2.5 bg-white/95 backdrop-blur text-[#0B3D78] px-3 py-2.5 md:px-4 md:py-3 rounded-2xl shadow-[0_22px_44px_-18px_rgba(11,61,120,0.45)] font-bold text-[12px] md:text-sm whitespace-nowrap border border-[#EFE1E9]">
                     <span className="w-2 h-2 rounded-full" style={{ background: ROSE, boxShadow: "0 0 0 4px rgba(229,104,142,0.2)" }} />
                     {isRtl ? "نخبة من الأطباء المتخصصين" : "A team of expert specialists"}
                   </div>
                 </div>
                 {/* floating chip — bottom */}
-                <div ref={chipB} className="absolute -bottom-4 -left-4 md:-left-5 z-[6] will-change-transform">
-                  <div className="animate-[ff-float2_7s_ease-in-out_infinite] bg-white rounded-[18px] px-5 py-3.5 shadow-[0_34px_64px_-26px_rgba(11,61,120,0.45)] flex items-center gap-3.5 border border-[#F3E3EA]">
-                    <div className="w-12 h-12 rounded-[14px] text-white flex items-center justify-center shrink-0" style={{ background: "linear-gradient(135deg,#E5688E,#0A4C8E)" }}>
-                      <span className="material-symbols-outlined">clinical_notes</span>
+                <div ref={chipB} className="absolute -bottom-4 -left-2 md:-left-5 z-[6] will-change-transform">
+                  <div className="animate-[ff-float2_7s_ease-in-out_infinite] bg-white rounded-[16px] md:rounded-[18px] px-4 py-3 md:px-5 md:py-3.5 shadow-[0_34px_64px_-26px_rgba(11,61,120,0.45)] flex items-center gap-3 md:gap-3.5 border border-[#F3E3EA]">
+                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-[12px] md:rounded-[14px] text-white flex items-center justify-center shrink-0" style={{ background: "linear-gradient(135deg,#E5688E,#0A4C8E)" }}>
+                      <span className="material-symbols-outlined text-[20px] md:text-2xl">clinical_notes</span>
                     </div>
                     <div>
-                      <div className="text-2xl font-extrabold leading-none" style={{ color: NAVY }}><CountUp to={15} prefix="+" /></div>
-                      <div className="text-[12.5px] font-semibold text-[#55677E] mt-1">{isRtl ? "عاما في رعاية المرأة" : "years caring for women"}</div>
+                      <div className="text-xl md:text-2xl font-extrabold leading-none" style={{ color: NAVY }}><CountUp to={15} prefix="+" /></div>
+                      <div className="text-[11.5px] md:text-[12.5px] font-semibold text-[#55677E] mt-1">{isRtl ? "عاما في رعاية المرأة" : "years caring for women"}</div>
                     </div>
                   </div>
                 </div>
               </div>
+            </motion.div>
+
+            {/* CTAs — mobile/tablet only, rendered after the image */}
+            <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.22 }}
+              className="flex lg:hidden flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center sm:justify-center gap-3 mt-1">
+              {heroCtas}
             </motion.div>
           </div>
         </section>
@@ -371,28 +385,28 @@ export default function WomenFamilyMedicine({ doctors }: { doctors: Doctor[] }) 
             </p>
           </Reveal>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3.5 md:gap-6">
             {SERVICES.map((s, i) => (
               <Reveal key={i} delay={(i % 3) * 0.08}>
-                <div className="group h-full bg-white border border-[#EAF1F9] rounded-[28px] overflow-hidden shadow-[0_30px_60px_-40px_rgba(11,61,120,0.32)] hover:-translate-y-2.5 hover:shadow-[0_50px_90px_-40px_rgba(11,61,120,0.5)] transition-all duration-500">
+                <div className="group h-full bg-white border border-[#EAF1F9] rounded-[20px] md:rounded-[28px] overflow-hidden shadow-[0_30px_60px_-40px_rgba(11,61,120,0.32)] hover:-translate-y-2.5 hover:shadow-[0_50px_90px_-40px_rgba(11,61,120,0.5)] transition-all duration-500">
                   {/* photo header — accent gradient sits behind the image as a graceful fallback */}
-                  <div className="relative h-[210px] overflow-hidden" style={{ background: `linear-gradient(140deg, ${s.accent}22, ${NAVY}14)` }}>
+                  <div className="relative h-[120px] sm:h-[170px] md:h-[210px] overflow-hidden" style={{ background: `linear-gradient(140deg, ${s.accent}22, ${NAVY}14)` }}>
                     <Image src={s.img} alt={isRtl ? s.altAr : s.altEn} fill loading="lazy" quality={78}
-                      sizes="(max-width:640px) 100vw, (max-width:1024px) 50vw, 420px"
+                      sizes="(max-width:1024px) 50vw, 420px"
                       className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]" />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#082C57]/45 via-transparent to-transparent" aria-hidden />
                     {/* glass icon chip */}
-                    <span className="absolute bottom-4 start-5 w-[52px] h-[52px] rounded-2xl flex items-center justify-center text-white backdrop-blur-md border border-white/30 shadow-[0_14px_28px_-12px_rgba(8,44,87,0.6)]" style={{ background: `linear-gradient(135deg, ${s.accent}E6, ${NAVY}CC)` }}>
-                      <span className="material-symbols-outlined text-[26px]" style={{ fontVariationSettings: "'FILL' 1" }}>{s.icon}</span>
+                    <span className="absolute bottom-3 start-3.5 md:bottom-4 md:start-5 w-9 h-9 md:w-[52px] md:h-[52px] rounded-xl md:rounded-2xl flex items-center justify-center text-white backdrop-blur-md border border-white/30 shadow-[0_14px_28px_-12px_rgba(8,44,87,0.6)]" style={{ background: `linear-gradient(135deg, ${s.accent}E6, ${NAVY}CC)` }}>
+                      <span className="material-symbols-outlined text-[19px] md:text-[26px]" style={{ fontVariationSettings: "'FILL' 1" }}>{s.icon}</span>
                     </span>
                   </div>
-                  <div className="p-7">
-                    <h3 className="text-[21px] font-extrabold text-[#0B3D78] mb-3">{isRtl ? s.ar[0] : s.en[0]}</h3>
-                    <p className="text-[15.5px] leading-[1.85] text-[#5C6E85] mb-5">{isRtl ? s.ar[1] : s.en[1]}</p>
+                  <div className="p-4 md:p-7">
+                    <h3 className="text-[14.5px] md:text-[21px] font-extrabold text-[#0B3D78] mb-1.5 md:mb-3 leading-snug">{isRtl ? s.ar[0] : s.en[0]}</h3>
+                    <p className="text-[12px] md:text-[15.5px] leading-[1.7] md:leading-[1.85] text-[#5C6E85] mb-3 md:mb-5">{isRtl ? s.ar[1] : s.en[1]}</p>
                     <button onClick={() => document.getElementById("book")?.scrollIntoView({ behavior: "smooth" })} className="flex items-center justify-between w-full cursor-pointer">
-                      <span className="font-bold text-[15px]" style={{ color: s.accent }}>{isRtl ? "احجزي الآن" : "Book now"}</span>
-                      <span className="w-10 h-10 rounded-full flex items-center justify-center transition-all group-hover:scale-110" style={{ background: `${s.accent}18`, color: s.accent }}>
-                        <ArrowIcon isRtl={isRtl} className="text-[18px]" />
+                      <span className="font-bold text-[13px] md:text-[15px]" style={{ color: s.accent }}>{isRtl ? "احجزي الآن" : "Book now"}</span>
+                      <span className="w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center transition-all group-hover:scale-110" style={{ background: `${s.accent}18`, color: s.accent }}>
+                        <ArrowIcon isRtl={isRtl} className="text-[16px] md:text-[18px]" />
                       </span>
                     </button>
                   </div>
@@ -413,17 +427,17 @@ export default function WomenFamilyMedicine({ doctors }: { doctors: Doctor[] }) 
             </Reveal>
 
             <div className="relative">
-              <div className="hidden lg:block absolute top-[46px] inset-x-[11%] h-0.5 rounded-full" style={{ background: `linear-gradient(${isRtl ? "to left" : "to right"}, ${TEAL}, ${NAVY} 55%, ${ROSE})` }} aria-hidden />
-              <div className="relative grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+              <div className="absolute top-[23px] sm:top-[31px] lg:top-[46px] inset-x-[12%] h-0.5 rounded-full" style={{ background: `linear-gradient(${isRtl ? "to left" : "to right"}, ${TEAL}, ${NAVY} 55%, ${ROSE})` }} aria-hidden />
+              <div className="relative grid grid-cols-4 gap-2 sm:gap-5 lg:gap-8">
                 {JOURNEY.map((s, i) => {
                   const last = i === JOURNEY.length - 1;
                   return (
-                    <Reveal key={i} delay={i * 0.1} className="text-center px-2">
-                      <div className="w-[92px] h-[92px] mx-auto mb-5 rounded-full flex items-center justify-center shadow-[0_24px_50px_-24px_rgba(11,61,120,0.4)]" style={last ? { background: "linear-gradient(135deg,#0A4C8E,#E5688E)" } : { background: "#fff", border: "2px solid #DCEAF7" }}>
-                        <span className="text-3xl font-extrabold" style={{ color: last ? "#fff" : "#0A4C8E" }}>{String(i + 1).padStart(2, "0")}</span>
+                    <Reveal key={i} delay={i * 0.1} className="text-center px-0.5 sm:px-2">
+                      <div className="w-12 h-12 sm:w-16 sm:h-16 lg:w-[92px] lg:h-[92px] mx-auto mb-3 sm:mb-4 lg:mb-5 rounded-full flex items-center justify-center shadow-[0_24px_50px_-24px_rgba(11,61,120,0.4)]" style={last ? { background: "linear-gradient(135deg,#0A4C8E,#E5688E)" } : { background: "#fff", border: "2px solid #DCEAF7" }}>
+                        <span className="text-sm sm:text-xl lg:text-3xl font-extrabold" style={{ color: last ? "#fff" : "#0A4C8E" }}>{String(i + 1).padStart(2, "0")}</span>
                       </div>
-                      <h3 className="text-[19px] font-extrabold text-[#0B3D78] mb-2.5">{isRtl ? s.ar[0] : s.en[0]}</h3>
-                      <p className="text-[15px] leading-[1.8] text-[#5C6E85]">{isRtl ? s.ar[1] : s.en[1]}</p>
+                      <h3 className="text-[12.5px] sm:text-[16px] lg:text-[19px] font-extrabold text-[#0B3D78] mb-1 sm:mb-2.5 leading-snug">{isRtl ? s.ar[0] : s.en[0]}</h3>
+                      <p className="hidden sm:block text-[13px] lg:text-[15px] leading-[1.8] text-[#5C6E85]">{isRtl ? s.ar[1] : s.en[1]}</p>
                     </Reveal>
                   );
                 })}
@@ -465,15 +479,15 @@ export default function WomenFamilyMedicine({ doctors }: { doctors: Doctor[] }) 
                 </p>
               </Reveal>
 
-              <div className="grid sm:grid-cols-2 gap-x-7 gap-y-6">
+              <div className="grid grid-cols-2 gap-x-4 gap-y-6 md:gap-x-7">
                 {WHY.map((w, i) => (
-                  <Reveal key={i} delay={(i % 2) * 0.08} className="flex gap-3.5 items-start">
-                    <div className="w-[46px] h-[46px] rounded-[13px] flex items-center justify-center shrink-0" style={{ background: "rgba(127,224,222,0.14)", border: "1px solid rgba(127,224,222,0.3)", color: "#7FE0DE" }}>
-                      <span className="material-symbols-outlined text-[22px]">{w.icon}</span>
+                  <Reveal key={i} delay={(i % 2) * 0.08} className="flex flex-col sm:flex-row gap-2.5 sm:gap-3.5 items-start">
+                    <div className="w-10 h-10 md:w-[46px] md:h-[46px] rounded-[11px] md:rounded-[13px] flex items-center justify-center shrink-0" style={{ background: "rgba(127,224,222,0.14)", border: "1px solid rgba(127,224,222,0.3)", color: "#7FE0DE" }}>
+                      <span className="material-symbols-outlined text-[19px] md:text-[22px]">{w.icon}</span>
                     </div>
                     <div>
-                      <h4 className="text-[16.5px] font-extrabold text-white mb-1">{isRtl ? w.ar[0] : w.en[0]}</h4>
-                      <p className="text-sm leading-[1.7] text-[#A7C0DC]">{isRtl ? w.ar[1] : w.en[1]}</p>
+                      <h4 className="text-[14px] md:text-[16.5px] font-extrabold text-white mb-1">{isRtl ? w.ar[0] : w.en[0]}</h4>
+                      <p className="text-[12.5px] md:text-sm leading-[1.7] text-[#A7C0DC]">{isRtl ? w.ar[1] : w.en[1]}</p>
                     </div>
                   </Reveal>
                 ))}
