@@ -7,9 +7,6 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell,
 } from "recharts";
-import * as XLSX from "xlsx";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 
 type Appointment = {
   id: string;
@@ -365,7 +362,9 @@ export default function ReportsPage() {
     }));
 
   // ── Export Helpers ──
-  const exportTable = (data: Record<string, unknown>[], filename: string, format: "csv" | "excel" | "pdf") => {
+  // xlsx / jspdf are imported on demand inside the excel/pdf branches so the
+  // heavy libraries stay out of the reports page bundle.
+  const exportTable = async (data: Record<string, unknown>[], filename: string, format: "csv" | "excel" | "pdf") => {
     if (!data.length) return;
 
     if (format === "csv") {
@@ -376,11 +375,16 @@ export default function ReportsPage() {
       const a = document.createElement("a"); a.href = url; a.download = `${filename}.csv`; a.click();
       URL.revokeObjectURL(url);
     } else if (format === "excel") {
+      const XLSX = await import("xlsx");
       const ws = XLSX.utils.json_to_sheet(data);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Report");
       XLSX.writeFile(wb, `${filename}.xlsx`);
     } else if (format === "pdf") {
+      const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+        import("jspdf"),
+        import("jspdf-autotable"),
+      ]);
       const doc = new jsPDF();
       doc.setFontSize(14);
       doc.text(`My Clinic — ${filename}`, 14, 18);

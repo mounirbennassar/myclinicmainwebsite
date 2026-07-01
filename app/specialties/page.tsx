@@ -1,9 +1,8 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { doctorsData } from "@/app/doctors-data";
 import { useLang } from "@/app/i18n/context";
 import translations, { type TranslationKey } from "@/app/i18n/translations";
 import { specKeys, specIcons, doctorFilters, type SpecKey } from "@/app/lib/specialties";
@@ -16,10 +15,16 @@ export default function SpecialtiesPage() {
   const isRtl = lang === "ar";
 
   // Live doctor count per specialty (keyed by the doctor-filter label).
-  const counts = useMemo(() => {
-    const map: Record<string, number> = {};
-    for (const d of doctorsData) map[d.spec] = (map[d.spec] || 0) + 1;
-    return map;
+  // The doctors dataset is ~97KB of source, so it is imported lazily after
+  // mount instead of being bundled into the page — cards render immediately
+  // with their "Service available" fallback and the counts fill in.
+  const [counts, setCounts] = useState<Record<string, number>>({});
+  useEffect(() => {
+    import("@/app/doctors-data").then(({ doctorsData }) => {
+      const map: Record<string, number> = {};
+      for (const d of doctorsData) map[d.spec] = (map[d.spec] || 0) + 1;
+      setCounts(map);
+    });
   }, []);
 
   // Pediatrics, Dental and Women & Family Medicine have their own dedicated

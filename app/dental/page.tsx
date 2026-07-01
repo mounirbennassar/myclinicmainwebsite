@@ -6,10 +6,19 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { useLang } from "@/app/i18n/context";
 import { trackPhoneClick, trackWhatsAppClick } from "@/app/lib/tracking";
 import SiteNav from "@/app/components/SiteNav";
+import { WhatsAppIcon } from "@/app/components/icons";
 import HeroParallaxBg from "./components/HeroParallaxBg";
 import DentalHeroSplit from "./components/DentalHeroSplit";
 import DentalPromisesScroll from "./components/DentalPromisesScroll";
-import DentalDoctorsStrip from "./components/DentalDoctorsStrip";
+import dynamic from "next/dynamic";
+
+// Below the fold and carries the full ~97KB doctors dataset — client-only so
+// the chunk stays entirely out of the landing page's critical JS; a min-height
+// placeholder holds the space to avoid layout shift while it loads.
+const DentalDoctorsStrip = dynamic(() => import("./components/DentalDoctorsStrip"), {
+  ssr: false,
+  loading: () => <div className="min-h-[520px]" />,
+});
 import DentalTestimonials from "./components/DentalTestimonials";
 import DentalHoursAndBooking from "./components/DentalHoursAndBooking";
 import SiteFooter from "@/app/components/SiteFooter";
@@ -30,7 +39,7 @@ const stagger = {
 };
 
 export default function DentalHub() {
-  const { lang, ready } = useLang();
+  const { lang } = useLang();
   const isRtl = lang === "ar";
 
   const heroRef = useRef<HTMLDivElement>(null);
@@ -62,8 +71,6 @@ export default function DentalHub() {
     offset: ["start end", "end start"],
   });
   const techBlobY = useTransform(techProgress, [0, 1], ["0%", "-20%"]);
-
-  if (!ready) return <div className="min-h-screen bg-white" />;
 
   const t = isRtl ? AR : EN;
 
@@ -367,14 +374,7 @@ export default function DentalHub() {
                   onClick={() => { trackWhatsAppClick(); window.open(WHATSAPP_LINK, "_blank"); }}
                   className="px-8 py-4 rounded-full font-bold bg-[#25D366] text-white border-2 border-[#25D366] hover:bg-[#1da851] hover:border-[#1da851] transition-colors inline-flex items-center gap-2"
                 >
-                  <Image
-                    src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg"
-                    alt="WhatsApp"
-                    width={20}
-                    height={20}
-                    className="pointer-events-none"
-                    unoptimized
-                  />
+                  <WhatsAppIcon className="pointer-events-none text-[20px]" />
                   {t.cta.whatsapp}
                 </button>
               </div>

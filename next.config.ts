@@ -14,10 +14,6 @@ const nextConfig: NextConfig = {
     imageSizes: [16, 24, 32, 48, 64, 96, 128, 192, 256, 320, 420],
     remotePatterns: [
       {
-        protocol: "https",
-        hostname: "upload.wikimedia.org",
-      },
-      {
         // Doctor profile photos from the clinic's image server.
         protocol: "https",
         hostname: "bamc.myclinic.com.sa",
@@ -46,19 +42,12 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        source: "/dental/:path*",
-        headers: [
-          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
-        ],
-      },
-      {
-        source: "/clinic/:path*",
-        headers: [
-          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
-        ],
-      },
-      {
-        source: "/doctors/:path*",
+        // Long-cache every static asset served from /public (images, video,
+        // fonts) regardless of folder — replaces the previous per-folder rules
+        // (/dental, /clinic, /doctors) which left /kids, /team, /female-family
+        // and the root logos uncached. Assets are treated as immutable: upload
+        // a new filename when content changes.
+        source: "/:all*(svg|jpg|jpeg|png|webp|avif|gif|ico|mp4|webm|woff2)",
         headers: [
           { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
         ],

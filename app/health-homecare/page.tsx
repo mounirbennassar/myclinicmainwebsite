@@ -7,6 +7,7 @@ import { useLang } from "@/app/i18n/context";
 import { trackPhoneClick, trackWhatsAppClick } from "@/app/lib/tracking";
 import SiteNav from "@/app/components/SiteNav";
 import SiteFooter from "@/app/components/SiteFooter";
+import { WhatsAppIcon } from "@/app/components/icons";
 
 const PHONE_TEL = "920022811";
 const PHONE_DISPLAY = "920 022 811";
@@ -254,7 +255,7 @@ export default function HealthHomecarePage() {
                     onClick={trackWhatsAppClick}
                     className="inline-flex items-center justify-center gap-2 bg-[#25D366] text-white font-extrabold px-7 py-3.5 rounded-full shadow-[0_12px_30px_-10px_rgba(37,211,102,0.7)] hover:-translate-y-0.5 hover:shadow-[0_16px_34px_-10px_rgba(37,211,102,0.8)] active:translate-y-0 transition-all"
                   >
-                    <i className="fa-brands fa-whatsapp text-xl"></i>
+                    <WhatsAppIcon className="text-xl" />
                     {isRtl ? "احجز استشارتك" : "Book a consultation"}
                     <span className={`material-symbols-outlined text-[20px] ${isRtl ? "rotate-180" : ""}`}>arrow_forward</span>
                   </a>
@@ -283,7 +284,7 @@ export default function HealthHomecarePage() {
                     src="/clinic/home-healthcare.webp"
                     alt={isRtl ? "فريق الرعاية المنزلية في عيادتي" : "My Clinic home healthcare team"}
                     fill
-                    priority
+                    preload
                     quality={78}
                     sizes="(max-width: 1024px) 100vw, 50vw"
                     className="object-cover"
@@ -507,7 +508,7 @@ export default function HealthHomecarePage() {
                         className="mt-auto pt-4 sm:pt-6 inline-flex items-center gap-1.5 font-extrabold text-[13px] sm:text-sm hover:gap-2.5 transition-all"
                         style={{ color: accent }}
                       >
-                        <i className="fa-brands fa-whatsapp text-base"></i>
+                        <WhatsAppIcon className="text-base" />
                         {isRtl ? "احجز هذه الخدمة" : "Book this service"}
                         <span className={`material-symbols-outlined text-[18px] ${isRtl ? "rotate-180" : ""}`}>arrow_forward</span>
                       </a>
@@ -620,7 +621,7 @@ export default function HealthHomecarePage() {
                     onClick={trackWhatsAppClick}
                     className="inline-flex items-center justify-center gap-2 bg-[#25D366] text-white font-extrabold px-8 py-4 rounded-full shadow-lg hover:-translate-y-0.5 hover:shadow-xl active:translate-y-0 transition-all"
                   >
-                    <i className="fa-brands fa-whatsapp text-xl"></i>
+                    <WhatsAppIcon className="text-xl" />
                     {isRtl ? "احجز استشارتك" : "Book a consultation"}
                   </a>
                   <a
@@ -650,7 +651,7 @@ export default function HealthHomecarePage() {
         aria-label={isRtl ? "تواصل عبر واتساب" : "Chat on WhatsApp"}
         className={`fixed bottom-6 ${isRtl ? "left-6" : "right-6"} z-40 w-14 h-14 bg-[#25D366] rounded-full flex items-center justify-center shadow-lg shadow-[#25D366]/30 hover:scale-110 transition-all`}
       >
-        <i className="fa-brands fa-whatsapp text-white text-2xl" />
+        <WhatsAppIcon className="text-white text-2xl" />
       </a>
     </div>
   );

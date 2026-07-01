@@ -6,6 +6,7 @@ import { useLang } from "./i18n/context";
 import translations, { type TranslationKey } from "./i18n/translations";
 import { trackFormSubmit, trackPhoneClick, trackWhatsAppClick } from "./lib/tracking";
 import SiteNav from "./components/SiteNav";
+import { WhatsAppIcon } from "./components/icons";
 import SiteFooter from "./components/SiteFooter";
 import DoctorsCarousel from "./components/DoctorsCarousel";
 
@@ -45,7 +46,7 @@ const slideImages = ["/clinic/reception.webp", "/clinic/lobby.webp", "/clinic/nu
 const WHATSAPP_LINK = `https://wa.me/966920022811?text=${encodeURIComponent("مرحباً، أود حجز موعد في عيادتي")}`;
 
 export default function Home() {
-  const { lang, ready } = useLang();
+  const { lang } = useLang();
   const t = translations[lang];
   const isRtl = lang === "ar";
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -158,10 +159,6 @@ export default function Home() {
   ];
   const slideSubtitles = [t.slide1Subtitle, t.slide2Subtitle, t.slide3Subtitle];
 
-  if (!ready) {
-    return <div className="min-h-screen bg-surface" />;
-  }
-
   return (
     <div className="bg-surface font-body text-on-surface antialiased overflow-x-hidden">
       {/* Main Navigation */}
@@ -183,8 +180,10 @@ export default function Home() {
         </div>
         <div className="max-w-7xl mx-auto px-4 md:px-8 w-full flex flex-col lg:grid lg:grid-cols-12 gap-8 lg:gap-12 items-center relative z-10 py-12 md:py-20">
           {/* Title & Subtitle - order 1 on mobile */}
+          {/* initial={false}: hero must be visible in the server-rendered HTML
+              (an entrance fade would ship opacity:0 and blank the page until JS loads) */}
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
             className="order-1 lg:col-span-6 flex flex-col space-y-6 lg:space-y-8"
@@ -193,7 +192,7 @@ export default function Home() {
               {t.premiumHealthcare}
             </div>
             <div className="space-y-4">
-              <AnimatePresence mode="wait">
+              <AnimatePresence mode="wait" initial={false}>
                 <motion.div
                   key={currentSlide}
                   initial={{ opacity: 0, y: 20 }}
@@ -227,14 +226,14 @@ export default function Home() {
 
           {/* Image Slider - order 2 on mobile (between title & buttons), right column on desktop */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
+            initial={false}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1, delay: 0.2 }}
             className="order-2 lg:col-span-6 lg:row-span-2 relative w-full"
           >
             <div className="relative w-full aspect-[4/5] lg:aspect-square">
               <div className="absolute inset-0 rounded-3xl overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,77,153,0.3)] border-4 md:border-8 border-white group bg-surface-container">
-                <AnimatePresence mode="wait">
+                <AnimatePresence mode="wait" initial={false}>
                   <motion.div
                     key={currentSlide}
                     initial={{ opacity: 0 }}
@@ -249,7 +248,7 @@ export default function Home() {
                       fill
                       className="object-cover"
                       sizes="(max-width: 1024px) 100vw, 50vw"
-                      priority={currentSlide === 0}
+                      preload={currentSlide === 0}
                     />
                   </motion.div>
                 </AnimatePresence>
@@ -282,7 +281,7 @@ export default function Home() {
 
           {/* Buttons & Rating - order 3 on mobile (after image) */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
             className="order-3 lg:col-span-6 flex flex-col space-y-6 lg:space-y-8"
@@ -302,7 +301,7 @@ export default function Home() {
                 onClick={() => { trackWhatsAppClick(); window.open(WHATSAPP_LINK, '_blank'); }}
                 className="cursor-pointer px-6 md:px-10 py-4 md:py-5 bg-white text-primary border-2 border-primary/10 rounded-full font-bold text-sm md:text-base shadow-xl hover:bg-surface-container-low hover:border-primary/20 transition-all flex items-center gap-2"
               >
-                <Image src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" width={20} height={20} className="pointer-events-none" unoptimized />
+                <WhatsAppIcon className="pointer-events-none text-[20px] text-[#25D366]" />
                 {t.whatsappUs}
               </button>
             </div>

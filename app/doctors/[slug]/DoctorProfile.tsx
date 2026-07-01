@@ -8,6 +8,7 @@ import translations, { type TranslationKey } from "@/app/i18n/translations";
 import { specNameToKey } from "@/app/lib/specialties";
 import { trackWhatsAppClick } from "@/app/lib/tracking";
 import type { Doctor } from "@/app/lib/doctors";
+import { WhatsAppIcon } from "@/app/components/icons";
 
 export default function DoctorProfile({ doctor }: { doctor: Doctor }) {
   const { lang } = useLang();
@@ -39,7 +40,7 @@ export default function DoctorProfile({ doctor }: { doctor: Doctor }) {
         <motion.div initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }} className="lg:col-span-5">
           <div className="relative aspect-[4/5] rounded-[2rem] overflow-hidden bg-surface-container shadow-[0_40px_80px_-30px_rgba(0,77,153,0.35)] border-4 border-white">
             {doctor.image_url && (
-              <Image src={doctor.image_url} alt={doctor.name_en} fill priority className="object-cover object-top" sizes="(max-width:1024px) 100vw, 40vw" />
+              <Image src={doctor.image_url} alt={doctor.name_en} fill preload className="object-cover object-top" sizes="(max-width:1024px) 100vw, 40vw" />
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-primary/30 to-transparent" />
           </div>
@@ -91,7 +92,7 @@ export default function DoctorProfile({ doctor }: { doctor: Doctor }) {
               {t.requestAppointment}
             </Link>
             <a href={wa} onClick={trackWhatsAppClick} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 bg-surface-container-lowest text-primary border border-outline-variant/40 px-7 py-4 rounded-full font-bold hover:border-primary/40 transition-colors">
-              <i className="fa-brands fa-whatsapp text-lg text-[#25D366]" />
+              <WhatsAppIcon className="text-lg text-[#25D366]" />
               {isRtl ? "واتساب" : "WhatsApp"}
             </a>
           </div>

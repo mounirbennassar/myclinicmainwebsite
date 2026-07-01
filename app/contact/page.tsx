@@ -6,6 +6,7 @@ import { useLang } from "@/app/i18n/context";
 import { trackFormSubmit, trackPhoneClick, trackWhatsAppClick } from "@/app/lib/tracking";
 import SiteNav from "@/app/components/SiteNav";
 import SiteFooter from "@/app/components/SiteFooter";
+import { BrandIcon, WhatsAppIcon } from "@/app/components/icons";
 
 const PHONE_TEL = "920022811";
 const PHONE_DISPLAY = "920 022 811";
@@ -188,7 +189,7 @@ export default function ContactPage() {
                   className="group flex items-center gap-4 bg-white rounded-2xl p-4 md:p-5 shadow-clinical ring-1 ring-outline-variant/30 hover:ring-[#25D366]/50 hover:-translate-y-0.5 transition-all"
                 >
                   <span className="w-12 h-12 rounded-xl bg-[#25D366]/12 text-[#1faa52] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                    <i className="fa-brands fa-whatsapp text-2xl"></i>
+                    <WhatsAppIcon className="text-2xl" />
                   </span>
                   <span className="min-w-0">
                     <span className="block text-[12px] font-bold text-on-surface-variant uppercase tracking-wider">{isRtl ? "واتساب" : "WhatsApp"}</span>
@@ -237,7 +238,7 @@ export default function ContactPage() {
                       title={s.label}
                       className="w-10 h-10 rounded-full bg-surface-container text-on-surface-variant flex items-center justify-center hover:bg-primary hover:text-white transition-colors"
                     >
-                      <i className={`fa-brands ${s.icon} text-base`}></i>
+                      <BrandIcon name={s.icon} className="text-base" />
                     </a>
                   ))}
                 </div>

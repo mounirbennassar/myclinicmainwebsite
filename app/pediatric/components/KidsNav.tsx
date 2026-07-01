@@ -11,7 +11,7 @@ export default function KidsNav() {
     <header className="sticky top-0 w-full z-50 bg-white/85 backdrop-blur-xl border-b border-[#004d99]/10">
       <div className="flex justify-between items-center max-w-7xl mx-auto px-4 md:px-8 py-3.5">
         <Link href="/" className="flex items-center gap-2">
-          <Image src="/myclinic-frame-logo.webp" alt="My Clinic Kids" width={150} height={40} className="h-10 w-auto" priority />
+          <Image src="/myclinic-frame-logo.webp" alt="My Clinic Kids" width={150} height={40} className="h-10 w-auto" preload />
           <span className={`hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-sky-400/15 to-amber-300/20 text-[#004d99] font-bold ${isRtl ? "text-[11px]" : "text-[10px] uppercase tracking-wider"}`}>
             <span className="material-symbols-outlined text-[13px]" style={{ fontVariationSettings: "'FILL' 1" }}>child_care</span>
             {isRtl ? "الأطفال" : "Kids"}

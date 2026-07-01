@@ -7,12 +7,10 @@ import DentalBookingForm from "./DentalBookingForm";
 import { dentalServiceCatalog } from "../content/services";
 
 export default function DentalComingSoon({ slug }: { slug: string }) {
-  const { lang, ready } = useLang();
+  const { lang } = useLang();
   const isRtl = lang === "ar";
   const item = dentalServiceCatalog.find((s) => s.slug === slug);
   const title = item ? (isRtl ? item.ar : item.en) : (isRtl ? "خدمة الأسنان" : "Dental Service");
-
-  if (!ready) return <div className="min-h-screen bg-white" />;
 
   return (
     <div dir={isRtl ? "rtl" : "ltr"} className="min-h-screen bg-white flex flex-col">

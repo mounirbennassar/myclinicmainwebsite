@@ -11,7 +11,7 @@ export default function DentalNav() {
     <header className="sticky top-0 w-full z-50 bg-white/85 backdrop-blur-xl border-b border-[#003867]/10">
       <div className="flex justify-between items-center max-w-7xl mx-auto px-4 md:px-8 py-3.5">
         <Link href="/dental" className="flex items-center gap-2">
-          <Image src="/myclinic-frame-logo.webp" alt="My Clinic Dental" width={150} height={40} className="h-10 w-auto" priority />
+          <Image src="/myclinic-frame-logo.webp" alt="My Clinic Dental" width={150} height={40} className="h-10 w-auto" preload />
           <span className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#003867]/5 text-[#003867] text-[10px] font-bold uppercase tracking-wider">
             <span className="w-1.5 h-1.5 rounded-full bg-[#003867]" />
             {isRtl ? "الأسنان" : "Dental"}

@@ -2,6 +2,7 @@
 import Image from "next/image";
 import { useLang } from "@/app/i18n/context";
 import { trackPhoneClick } from "@/app/lib/tracking";
+import { BrandIcon } from "@/app/components/icons";
 
 export default function DentalFooter() {
   const { lang } = useLang();
@@ -70,7 +71,7 @@ export default function DentalFooter() {
                 aria-label={s.label}
                 title={s.label}
               >
-                <i className={`fa-brands ${s.icon} text-base`}></i>
+                <BrandIcon name={s.icon} className="text-base" />
               </a>
             ))}
           </div>

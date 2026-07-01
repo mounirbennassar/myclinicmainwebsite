@@ -3,7 +3,14 @@ import { useLang } from "@/app/i18n/context";
 import DentalNav from "./DentalNav";
 import DentalHero from "./DentalHero";
 import DentalTrustStrip from "./DentalTrustStrip";
-import DentalDoctorsStrip from "./DentalDoctorsStrip";
+import dynamic from "next/dynamic";
+
+// Carries the full doctors dataset; client-only keeps it out of the service
+// pages' critical JS (below the fold — placeholder avoids layout shift).
+const DentalDoctorsStrip = dynamic(() => import("./DentalDoctorsStrip"), {
+  ssr: false,
+  loading: () => <div className="min-h-[520px]" />,
+});
 import DentalServicesGrid from "./DentalServicesGrid";
 import DentalBookingForm from "./DentalBookingForm";
 import DentalFooter from "./DentalFooter";

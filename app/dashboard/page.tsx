@@ -2,9 +2,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useUser, useVertical, VERTICAL_LABELS, VERTICAL_BADGE } from "./layout";
 import { dentalServiceCatalog } from "../dental/content/services";
-import * as XLSX from "xlsx";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 
 type Appointment = {
   id: string;
@@ -192,9 +189,13 @@ export default function Dashboard() {
     setShowExportMenu(false);
   };
 
-  const exportExcel = () => {
+  // xlsx / jspdf are heavy (~1MB source combined) and only needed when an
+  // export button is clicked, so they are imported on demand instead of being
+  // bundled into the dashboard page.
+  const exportExcel = async () => {
     const rows = getExportData();
     if (!rows.length) return;
+    const XLSX = await import("xlsx");
     const ws = XLSX.utils.json_to_sheet(rows);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Appointments");
@@ -202,9 +203,13 @@ export default function Dashboard() {
     setShowExportMenu(false);
   };
 
-  const exportPDF = () => {
+  const exportPDF = async () => {
     const rows = getExportData();
     if (!rows.length) return;
+    const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+      import("jspdf"),
+      import("jspdf-autotable"),
+    ]);
     const doc = new jsPDF();
     doc.setFontSize(16);
     doc.text("My Clinic — Appointments", 14, 18);

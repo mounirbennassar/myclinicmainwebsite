@@ -5,6 +5,7 @@ import { useRef } from "react";
 import { motion } from "framer-motion";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
+import { WhatsAppIcon } from "@/app/components/icons";
 
 gsap.registerPlugin(useGSAP);
 
@@ -246,14 +247,7 @@ export default function DentalHeroSplit({
             whileTap={{ scale: 0.97 }}
             className="dhs-cta cursor-pointer px-6 py-3.5 bg-white text-[#003867] border-2 border-[#00677d]/20 rounded-full font-bold shadow-sm hover:bg-[#00677d]/5 hover:border-[#00677d]/50 transition-colors flex items-center gap-2"
           >
-            <Image
-              src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg"
-              alt="WhatsApp"
-              width={18}
-              height={18}
-              className="pointer-events-none"
-              unoptimized
-            />
+            <WhatsAppIcon className="pointer-events-none text-[18px] text-[#25D366]" />
             {c.ctaWhatsApp}
           </motion.button>
         </div>

@@ -26,11 +26,11 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://myclinicsa.com.sa"),
   title: "My Clinic | عيادتي — عيادات متخصصة في جدة والرياض",
   description:
-    "عيادتي — تجربة رعاية صحية متكاملة وفاخرة. أكثر من 22 تخصصاً طبياً و100 طبيب في جدة والرياض. احجز موعدك الآن 920022811. My Clinic — Premium healthcare with 22+ specialties & 100+ doctors across Jeddah & Riyadh. Book now.",
+    "عيادتي — تجربة رعاية صحية متكاملة وفاخرة. أكثر من 22 تخصصا طبيا و100 طبيب في جدة والرياض. احجز موعدك الآن 920022811. My Clinic — Premium healthcare with 22+ specialties & 100+ doctors across Jeddah & Riyadh. Book now.",
   openGraph: {
     title: "My Clinic | عيادتي — عيادات متخصصة في جدة والرياض",
     description:
-      "تجربة صحية متكاملة وفاخرة — أكثر من 22 تخصصاً طبياً و100 طبيب في جدة والرياض. احجز موعدك الآن 920022811.",
+      "تجربة صحية متكاملة وفاخرة — أكثر من 22 تخصصا طبيا و100 طبيب في جدة والرياض. احجز موعدك الآن 920022811.",
     siteName: "My Clinic | عيادتي",
     images: [
       {
@@ -47,10 +47,18 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "My Clinic | عيادتي — عيادات متخصصة في جدة والرياض",
     description:
-      "تجربة صحية متكاملة وفاخرة — أكثر من 22 تخصصاً طبياً و100 طبيب في جدة والرياض. احجز موعدك الآن 920022811.",
+      "تجربة صحية متكاملة وفاخرة — أكثر من 22 تخصصا طبيا و100 طبيب في جدة والرياض. احجز موعدك الآن 920022811.",
     images: ["/myclinic-frame-logo.webp"],
   },
 };
+
+// Subset of Material Symbols glyphs actually rendered by the site. Keeping the
+// list in the CSS URL makes Google Fonts serve a ~50KB font instead of the full
+// ~1.1MB icon set. If you add a new icon name in code, append it here too.
+const MATERIAL_SYMBOLS_ICONS =
+  "accessibility,add,align_horizontal_center,allergy,apartment,arrow_back,arrow_forward,auto_awesome,biotech,bloodtype,bolt,build,cake,calendar_month,call,cardiology,check,check_circle,checklist,chevron_left,chevron_right,child_care,child_friendly,clinical_notes,close,dentistry,dermatology,diagnosis,diamond,diversity_1,diversity_3,ecg_heart,elderly,emergency,endocrinology,ent,event,event_available,family_restroom,favorite,gastroenterology,groups,gynecology,health_and_safety,hearing,history,home,home_health,laser_pointer,lightbulb,local_pharmacy,location_on,lock,mail,mark_chat_read,medical_services,medication,menu,metabolism,monitor_heart,monitor_weight,nephrology,neurology,payments,person,physical_therapy,pin_drop,precision_manufacturing,pregnant_woman,psychology,public,pulmonology,radiology,receipt_long,restaurant,rheumatology,rocket_launch,sanitizer,schedule,school,science,screw_top,search,search_off,send,sentiment_very_satisfied,shield,shield_with_heart,shower,skeleton,smartphone,spa,sports_soccer,stadia_controller,star,stethoscope,straighten,support_agent,surgical,touch_app,translate,vaccines,verified,verified_user,video_call,videocam,visibility,visibility_off,vital_signs,volunteer_activism,water_drop,work,zoom_in";
+
+const MATERIAL_SYMBOLS_CSS = `https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&icon_names=${MATERIAL_SYMBOLS_ICONS}&display=block`;
 
 export default function RootLayout({
   children,
@@ -58,21 +66,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" dir="ltr" className={`${manrope.variable} ${poppins.variable} ${tajawal.variable} h-full antialiased`} suppressHydrationWarning>
+    <html lang="ar" dir="rtl" className={`${manrope.variable} ${poppins.variable} ${tajawal.variable} h-full antialiased`} suppressHydrationWarning>
       <head>
-        <link
-          rel="preload"
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block"
-          as="style"
+        {/* Apply the saved language before first paint so statically rendered
+            pages show correctly-oriented content immediately (no JS wait). */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              'try{var l=localStorage.getItem("lang");var v=l==="en"?"en":"ar";var d=document.documentElement;d.lang=v;d.dir=v==="ar"?"rtl":"ltr";}catch(e){}',
+          }}
         />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block"
-          rel="stylesheet"
-        />
-        <link
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-          rel="stylesheet"
-        />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="preload" href={MATERIAL_SYMBOLS_CSS} as="style" />
+        <link href={MATERIAL_SYMBOLS_CSS} rel="stylesheet" />
       </head>
       {/* Google Ads + Google Analytics 4 (shared gtag.js) */}
       <Script src="https://www.googletagmanager.com/gtag/js?id=G-G0PQZ40KCR" strategy="afterInteractive" />
@@ -98,8 +105,9 @@ export default function RootLayout({
         fbq('track', 'PageView');
       `}</Script>
 
-      {/* TikTok Pixel */}
-      <Script id="tiktok-pixel" strategy="afterInteractive">{`
+      {/* TikTok Pixel — lazyOnload: fires after the page is fully loaded so
+          secondary ad pixels stop competing with content for bandwidth. */}
+      <Script id="tiktok-pixel" strategy="lazyOnload">{`
         !function (w, d, t) {
           w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie","holdConsent","revokeConsent","grantConsent"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var r="https://analytics.tiktok.com/i18n/pixel/events.js",o=n&&n.partner;ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=r,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};n=document.createElement("script");n.type="text/javascript",n.async=!0,n.src=r+"?sdkid="+e+"&lib="+t;e=document.getElementsByTagName("script")[0];e.parentNode.insertBefore(n,e)};
           ttq.load('D1H2LVBC77U195PQP88G');
@@ -108,7 +116,7 @@ export default function RootLayout({
       `}</Script>
 
       {/* Snapchat Pixel */}
-      <Script id="snap-pixel" strategy="afterInteractive">{`
+      <Script id="snap-pixel" strategy="lazyOnload">{`
         (function(e,t,n){if(e.snaptr)return;var a=e.snaptr=function()
         {a.handleRequest?a.handleRequest.apply(a,arguments):a.queue.push(arguments)};
         a.queue=[];var s='script';r=t.createElement(s);r.async=!0;
@@ -120,7 +128,7 @@ export default function RootLayout({
       `}</Script>
 
       {/* X (Twitter) Pixel */}
-      <Script id="x-pixel" strategy="afterInteractive">{`
+      <Script id="x-pixel" strategy="lazyOnload">{`
         !function(e,t,n,s,u,a){e.twq||(s=e.twq=function(){s.exe?s.exe.apply(s,arguments):s.queue.push(arguments);
         },s.version='1.1',s.queue=[],u=t.createElement(n),u.async=!0,u.src='https://static.ads-twitter.com/uwt.js',
         a=t.getElementsByTagName(n)[0],a.parentNode.insertBefore(u,a))}(window,document,'script');
@@ -128,7 +136,7 @@ export default function RootLayout({
       `}</Script>
 
       {/* LinkedIn Insight Tag */}
-      <Script id="linkedin-pixel" strategy="afterInteractive">{`
+      <Script id="linkedin-pixel" strategy="lazyOnload">{`
         _linkedin_partner_id = "9937545";
         window._linkedin_data_partner_ids = window._linkedin_data_partner_ids || [];
         window._linkedin_data_partner_ids.push(_linkedin_partner_id);

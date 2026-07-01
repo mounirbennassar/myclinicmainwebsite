@@ -4,10 +4,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { useLang } from "@/app/i18n/context";
 import { trackPhoneClick, trackWhatsAppClick } from "@/app/lib/tracking";
+import { BrandIcon, WhatsAppIcon } from "./icons";
 
 const PHONE_TEL = "920022811";
 const PHONE_DISPLAY = "920 022 811";
-const WHATSAPP_LINK = `https://wa.me/966920022811?text=${encodeURIComponent("مرحباً، أود حجز موعد في عيادتي")}`;
+const WHATSAPP_LINK = `https://wa.me/966920022811?text=${encodeURIComponent("مرحبا، أود حجز موعد في عيادتي")}`;
 
 const SOCIALS = [
   { href: "https://www.instagram.com/myclinicksa/", icon: "fa-instagram", label: "Instagram" },
@@ -31,7 +32,7 @@ export default function SiteFooter() {
 
   const serviceLinks = [
     { href: "/health-homecare", en: "Home Healthcare", ar: "الرعاية المنزلية" },
-    { href: "/telemedicine", en: "Telemedicine", ar: "الطب عن بُعد" },
+    { href: "/telemedicine", en: "Telemedicine", ar: "الطب عن بعد" },
     { href: "/dental", en: "Dental Care", ar: "طب الأسنان" },
     { href: "/pediatric", en: "Pediatrics", ar: "طب الأطفال" },
   ];
@@ -47,7 +48,7 @@ export default function SiteFooter() {
             <Image src="/logo-dark.svg" alt="My Clinic" width={150} height={40} className="h-9 w-auto brightness-0 invert" />
             <p className="text-sm leading-relaxed text-white/60 max-w-xs">
               {isRtl
-                ? "رعاية صحية متعددة التخصصات في جدة والرياض — أكثر من 27 تخصصاً و100 طبيب، بتجربة واحدة متكاملة."
+                ? "رعاية صحية متعددة التخصصات في جدة والرياض — أكثر من 27 تخصصا و100 طبيب، بتجربة واحدة متكاملة."
                 : "Premium multispecialty healthcare across Jeddah & Riyadh — 27+ specialties, 100+ doctors, one connected experience."}
             </p>
             <div className="flex gap-2.5">
@@ -61,7 +62,7 @@ export default function SiteFooter() {
                   title={s.label}
                   className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-white/80 hover:bg-secondary-fixed-dim hover:text-[#0b1f3a] transition-colors"
                 >
-                  <i className={`fa-brands ${s.icon} text-sm`} />
+                  <BrandIcon name={s.icon} className="text-sm" />
                 </a>
               ))}
             </div>
@@ -99,7 +100,7 @@ export default function SiteFooter() {
               {PHONE_DISPLAY}
             </a>
             <a href={WHATSAPP_LINK} onClick={trackWhatsAppClick} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-sm text-white/80 hover:text-white transition-colors w-fit">
-              <i className="fa-brands fa-whatsapp text-lg text-[#25D366]" />
+              <WhatsAppIcon className="text-lg text-[#25D366]" />
               {isRtl ? "تواصل عبر واتساب" : "Chat on WhatsApp"}
             </a>
             <div className="flex items-start gap-3 text-sm text-white/60">

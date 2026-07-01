@@ -6,6 +6,12 @@ import { getAllActiveDoctors, getDoctorsBySpecialty, uniqueDoctorSlug } from "@/
 // must render per-request rather than be statically cached. POST is gated.
 export const dynamic = "force-dynamic";
 
+// The doctor list changes rarely but is fetched by every homepage visitor, so
+// results are memoized in-process for a few minutes. Admin edits appear after
+// the TTL (same order of staleness as the site's 1-hour ISR pages).
+const CACHE_TTL_MS = 5 * 60 * 1000;
+const doctorsCache = new Map<string, { body: unknown; expiresAt: number }>();
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -13,11 +19,23 @@ export async function GET(request: Request) {
     const limitParam = Number(searchParams.get("limit"));
     const limit = Number.isFinite(limitParam) && limitParam > 0 ? limitParam : undefined;
 
-    const doctors = specialty
-      ? await getDoctorsBySpecialty(specialty, limit ?? 16)
-      : await getAllActiveDoctors();
+    const cacheKey = `${specialty ?? ""}|${limit ?? ""}`;
+    const hit = doctorsCache.get(cacheKey);
+    const now = Date.now();
+    let body: unknown;
+    if (hit && hit.expiresAt > now) {
+      body = hit.body;
+    } else {
+      const doctors = specialty
+        ? await getDoctorsBySpecialty(specialty, limit ?? 16)
+        : await getAllActiveDoctors();
+      body = { doctors };
+      doctorsCache.set(cacheKey, { body, expiresAt: now + CACHE_TTL_MS });
+    }
 
-    return NextResponse.json({ doctors });
+    return NextResponse.json(body, {
+      headers: { "Cache-Control": "public, max-age=300" },
+    });
   } catch {
     return NextResponse.json({ error: "Failed to fetch doctors" }, { status: 500 });
   }
@@ -48,6 +66,7 @@ export async function POST(request: Request) {
         b.is_active === false ? false : true, Number(b.sort_order) || 0,
       ]
     );
+    doctorsCache.clear();
     return NextResponse.json({ doctor });
   } catch (err) {
     console.error("Doctor create error:", err);

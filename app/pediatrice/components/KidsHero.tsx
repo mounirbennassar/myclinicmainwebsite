@@ -233,7 +233,7 @@ export default function KidsHero({
               src="/kids/hero.jpg"
               alt={c.imageAlt}
               fill
-              priority
+              preload
               sizes="(max-width: 1024px) 100vw, 50vw"
               quality={80}
               className="object-cover object-center"
