@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: "Find a Doctor | ابحث عن طبيب — عيادتي My Clinic",
   description:
     "Search 100+ specialist doctors across 27 specialties at My Clinic in Jeddah & Riyadh. Filter by specialty and city, view profiles and book an appointment. ابحث بين أكثر من 100 طبيب متخصص في عيادتي — حسب التخصص والمدينة.",
-  alternates: { canonical: "/find-a-doctor" },
+  alternates: { canonical: "/find-doctor" },
   openGraph: {
     title: "Find a Doctor | ابحث عن طبيب — عيادتي My Clinic",
     description:

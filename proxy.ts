@@ -52,7 +52,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // The public doctor list (carousels, find-a-doctor) is open; doctor CRUD,
+  // The public doctor list (carousels, find-doctor) is open; doctor CRUD,
   // image upload and the admin /manage list stay gated.
   if (pathname === "/api/doctors" && request.method === "GET") {
     return NextResponse.next();

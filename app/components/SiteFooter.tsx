@@ -23,7 +23,7 @@ export default function SiteFooter() {
 
   const quickLinks = [
     { href: "/", en: "Home", ar: "الرئيسية" },
-    { href: "/find-a-doctor", en: "Find a Doctor", ar: "ابحث عن طبيب" },
+    { href: "/find-doctor", en: "Find a Doctor", ar: "ابحث عن طبيب" },
     { href: "/specialties", en: "Specialties", ar: "التخصصات" },
     { href: "/about-us", en: "About Us", ar: "من نحن" },
     { href: "/contact", en: "Contact", ar: "تواصل معنا" },

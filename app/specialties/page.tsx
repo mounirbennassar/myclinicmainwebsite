@@ -26,7 +26,7 @@ export default function SpecialtiesPage() {
   // landing pages — feature them first and link straight to those experiences
   // instead of the doctor finder. Obstetrics & Gynecology and Family Medicine
   // both route into the shared Women & Family Medicine hub. Every other
-  // specialty keeps its /find-a-doctor deep-link.
+  // specialty keeps its /find-doctor deep-link.
   const FEATURED_HREF: Partial<Record<SpecKey, string>> = {
     pediatrics: "/pediatric",
     dental: "/dental",
@@ -75,7 +75,7 @@ export default function SpecialtiesPage() {
               const filter = doctorFilters[i];
               const count = counts[filter] || 0;
               const featured = Boolean(FEATURED_HREF[key]);
-              const href = FEATURED_HREF[key] ?? `/find-a-doctor?spec=${encodeURIComponent(filter)}`;
+              const href = FEATURED_HREF[key] ?? `/find-doctor?spec=${encodeURIComponent(filter)}`;
               return (
                 <motion.div
                   key={key}
@@ -135,7 +135,7 @@ export default function SpecialtiesPage() {
               </p>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-3 shrink-0">
-              <Link href="/find-a-doctor" className="bg-white text-primary px-6 py-3.5 rounded-full font-bold shadow-lg hover:scale-105 transition-transform whitespace-nowrap">
+              <Link href="/find-doctor" className="bg-white text-primary px-6 py-3.5 rounded-full font-bold shadow-lg hover:scale-105 transition-transform whitespace-nowrap">
                 {isRtl ? "عرض جميع الأطباء" : "View All Doctors"}
               </Link>
               <Link href="/#booking-form" className="bg-white/15 text-white border border-white/30 px-6 py-3.5 rounded-full font-bold hover:bg-white/25 transition-colors whitespace-nowrap">

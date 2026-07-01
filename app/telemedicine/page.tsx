@@ -158,7 +158,7 @@ export default function TelemedicinePage() {
                   </a>
                 </div>
 
-                <Link href="/find-a-doctor" className="mt-5 inline-flex items-center gap-1.5 text-white/80 hover:text-white font-bold text-sm transition-colors">
+                <Link href="/find-doctor" className="mt-5 inline-flex items-center gap-1.5 text-white/80 hover:text-white font-bold text-sm transition-colors">
                   {isRtl ? "أو تصفّح أطباءنا المتخصصين" : "or browse our specialists"}
                   <span className={`material-symbols-outlined text-[18px] ${isRtl ? "rotate-180" : ""}`}>arrow_forward</span>
                 </Link>
@@ -356,7 +356,7 @@ export default function TelemedicinePage() {
             {SUITABLE.map((s, i) => (
               <Reveal key={s.spec} delay={(i % 6) * 0.05}>
                 <Link
-                  href={`/find-a-doctor?spec=${encodeURIComponent(s.spec)}`}
+                  href={`/find-doctor?spec=${encodeURIComponent(s.spec)}`}
                   className="group h-full flex flex-col items-center text-center gap-3 bg-white rounded-2xl p-5 ring-1 ring-outline-variant/30 shadow-clinical hover:border-primary/30 hover:-translate-y-1 hover:shadow-[0_22px_44px_-28px_rgba(0,77,153,0.5)] transition-all"
                 >
                   <span className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">

@@ -29,7 +29,7 @@ export default function DoctorProfile({ doctor }: { doctor: Doctor }) {
 
   return (
     <div className="max-w-6xl mx-auto px-4 md:px-8 py-8 md:py-12 w-full">
-      <Link href="/find-a-doctor" className="inline-flex items-center gap-1.5 text-on-surface-variant hover:text-primary font-bold text-sm mb-6 transition-colors">
+      <Link href="/find-doctor" className="inline-flex items-center gap-1.5 text-on-surface-variant hover:text-primary font-bold text-sm mb-6 transition-colors">
         <span className={`material-symbols-outlined text-base ${isRtl ? "rotate-180" : ""}`}>arrow_back</span>
         {isRtl ? "كل الأطباء" : "All doctors"}
       </Link>

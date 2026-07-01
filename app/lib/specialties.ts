@@ -1,5 +1,5 @@
 // Single source of truth for the clinic's medical specialties.
-// Used by the homepage, /specialties, /find-a-doctor and /telemedicine so the
+// Used by the homepage, /specialties, /find-doctor and /telemedicine so the
 // list, icons and translation keys never drift between pages.
 
 export const specKeys = [
@@ -54,6 +54,6 @@ specEnNames.forEach((name, i) => { specNameToKey[name] = specKeys[i]; });
 specNameToKey["Gastroenterology & Hepatology"] = "gastroenterology";
 
 // Map a specialty key back to the doctor-filter label (what doctors-data.ts uses
-// in its `spec` field) so /specialties can deep-link into /find-a-doctor.
+// in its `spec` field) so /specialties can deep-link into /find-doctor.
 export const keyToDoctorFilter: Record<SpecKey, string> = {} as Record<SpecKey, string>;
 specKeys.forEach((key, i) => { keyToDoctorFilter[key] = doctorFilters[i]; });

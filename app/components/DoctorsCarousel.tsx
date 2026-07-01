@@ -91,7 +91,7 @@ export default function DoctorsCarousel({ specialty, showTabs = false, limit, in
           <h2 className="text-3xl md:text-5xl font-headline font-extrabold text-on-surface tracking-tight">{heading}</h2>
         </div>
         <div className="flex items-center gap-3">
-          <Link href="/find-a-doctor" className="inline-flex items-center gap-2 bg-primary hover:bg-primary-container text-white px-5 py-3 rounded-full text-sm font-bold shadow-lg shadow-primary/20 active:scale-95 transition-all whitespace-nowrap">
+          <Link href="/find-doctor" className="inline-flex items-center gap-2 bg-primary hover:bg-primary-container text-white px-5 py-3 rounded-full text-sm font-bold shadow-lg shadow-primary/20 active:scale-95 transition-all whitespace-nowrap">
             {isRtl ? "ابحث عن طبيب" : "Find a Doctor"}
             <span className={`material-symbols-outlined text-base ${isRtl ? "rotate-180" : ""}`}>arrow_forward</span>
           </Link>

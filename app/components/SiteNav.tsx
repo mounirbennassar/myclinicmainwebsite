@@ -15,7 +15,7 @@ const PHONE_DISPLAY = "920 022 811";
 // self-contained — matching the existing DentalNav / KidsNav pattern.
 export const NAV_LINKS: { href: string; en: string; ar: string; icon: string }[] = [
   { href: "/", en: "Home", ar: "الرئيسية", icon: "home" },
-  { href: "/find-a-doctor", en: "Find a Doctor", ar: "ابحث عن طبيب", icon: "stethoscope" },
+  { href: "/find-doctor", en: "Find a Doctor", ar: "ابحث عن طبيب", icon: "stethoscope" },
   { href: "/specialties", en: "Specialties", ar: "التخصصات", icon: "medical_services" },
   { href: "/health-homecare", en: "Home Healthcare", ar: "الرعاية المنزلية", icon: "home_health" },
   { href: "/telemedicine", en: "Telemedicine", ar: "الطب عن بُعد", icon: "video_call" },
