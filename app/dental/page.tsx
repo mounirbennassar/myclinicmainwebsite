@@ -1,5 +1,6 @@
 "use client";
 import Image from "next/image";
+import Link from "next/link";
 import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useLang } from "@/app/i18n/context";
@@ -12,6 +13,7 @@ import DentalDoctorsStrip from "./components/DentalDoctorsStrip";
 import DentalTestimonials from "./components/DentalTestimonials";
 import DentalHoursAndBooking from "./components/DentalHoursAndBooking";
 import SiteFooter from "@/app/components/SiteFooter";
+import { dentalServiceCatalog } from "./content/services";
 
 const WHATSAPP_LINK = `https://wa.me/966920022811?text=${encodeURIComponent("مرحباً، أود حجز موعد في عيادة الأسنان بعيادتي")}`;
 
@@ -194,24 +196,25 @@ export default function DentalHub() {
               className="flex gap-5 w-max will-change-transform"
               animate={{ x: isRtl ? ["-66.6667%", "0%"] : ["0%", "-66.6667%"] }}
               transition={{
-                duration: 75,
+                duration: 130,
                 ease: "linear",
                 repeat: Infinity,
               }}
             >
-              {[...t.offering.items, ...t.offering.items, ...t.offering.items].map((item, i) => (
-                <div
+              {[...dentalServiceCatalog, ...dentalServiceCatalog, ...dentalServiceCatalog].map((s, i) => (
+                <Link
                   key={i}
-                  className="relative shrink-0 w-[78vw] sm:w-[300px] md:w-[320px] bg-white rounded-2xl p-6 md:p-7 border border-[#003867]/10 hover:border-[#00677d]/40 hover:shadow-xl hover:shadow-[#00677d]/10 transition-all duration-300"
+                  href={`/dental/${s.slug}`}
+                  className="group/card relative shrink-0 w-[78vw] sm:w-[300px] md:w-[320px] bg-white rounded-2xl p-6 md:p-7 border border-[#003867]/10 hover:border-[#00677d]/40 hover:shadow-xl hover:shadow-[#00677d]/10 transition-all duration-300"
                   dir={isRtl ? "rtl" : "ltr"}
                 >
                   <span className="absolute inset-x-0 top-0 h-[2px] rounded-t-2xl bg-gradient-to-r from-[#003867]/0 via-[#00677d] to-[#003867]/0" />
                   <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#003867]/10 to-[#00677d]/15 text-[#00677d] flex items-center justify-center">
-                    <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>{item.icon}</span>
+                    <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>{s.icon}</span>
                   </div>
-                  <h3 className="mt-5 text-lg font-extrabold text-slate-900">{item.title}</h3>
-                  <p className="mt-2 text-sm text-slate-600 leading-relaxed">{item.body}</p>
-                </div>
+                  <h3 className="mt-5 text-lg font-extrabold text-slate-900">{isRtl ? s.ar : s.en}</h3>
+                  <p className="mt-2 text-sm text-slate-600 leading-relaxed">{isRtl ? s.blurb.ar : s.blurb.en}</p>
+                </Link>
               ))}
             </motion.div>
           </div>
@@ -381,7 +384,7 @@ export default function DentalHub() {
       </section>
 
       {/* ── Doctors / Testimonials / Hours+Form / Footer ─ */}
-      <DentalDoctorsStrip />
+      <DentalDoctorsStrip limit={99} />
       <DentalTestimonials />
       <DentalHoursAndBooking service="general" />
       <SiteFooter />
@@ -455,7 +458,7 @@ const EN = {
     ctaWhatsApp: "WhatsApp us",
     imageAlt: "A patient in consultation with a My Clinic dental specialist",
     badgeLabel: "Trusted by families across Saudi Arabia",
-    badgeValue: "20+ dental specialists · 2 cities",
+    badgeValue: "70+ dental specialists · 2 cities",
     ratingLabel: "Patients rate us",
   },
   promises: [
@@ -538,11 +541,11 @@ const AR = {
     ctaWhatsApp: "تواصل واتساب",
     imageAlt: "مريض في استشارة مع طبيب أسنان استشاري في عيادتي",
     badgeLabel: "ثقة العائلات في المملكة",
-    badgeValue: "+20 طبيب واستشاري أسنان",
+    badgeValue: "+70 طبيب واستشاري أسنان",
     ratingLabel: "تقييم المرضى",
   },
   promises: [
-    { icon: "verified_user", title: "+20 طبيب واستشاري أسنان", body: "نخبة من الأطباء والاستشاريين." },
+    { icon: "verified_user", title: "+70 طبيب واستشاري أسنان", body: "نخبة من الأطباء والاستشاريين." },
     { icon: "shield", title: "نظافة على أعلى المستويات", body: "تعقيم بمعايير المستشفيات." },
     { icon: "schedule", title: "مواعيد مرنة", body: "تناسب جدولك ومتطلباتك." },
     { icon: "support_agent", title: "إجراءات تأمين مبسطة", body: "نتولى الإجراءات بدلاً عنك." },

@@ -33,7 +33,7 @@ const COPY: { en: HeroCopy; ar: HeroCopy } = {
     ctaWhatsApp: "WhatsApp us",
     badgeLabel: "Patient rating · Google",
     badgeValue: "4.8 / 5",
-    ratingLabel: "+20 specialists & consultants",
+    ratingLabel: "+70 specialists & consultants",
     imageAlt: "A patient in consultation with a My Clinic dental specialist",
     smileTag: "Smile with confidence",
     verifiedLabel: "Board-certified specialists",
@@ -48,7 +48,7 @@ const COPY: { en: HeroCopy; ar: HeroCopy } = {
     ctaWhatsApp: "تواصل واتساب",
     badgeLabel: "تقييم المرضى · Google",
     badgeValue: "4.8 / 5",
-    ratingLabel: "+20 طبيب واستشاري أسنان",
+    ratingLabel: "+70 طبيب واستشاري أسنان",
     imageAlt: "مريض في استشارة مع طبيب أسنان استشاري في عيادتي",
     smileTag: "ابتسم بثقة",
     verifiedLabel: "أطباء استشاريون معتمدون",
@@ -192,7 +192,7 @@ export default function DentalHeroSplit({
         className={`relative ${isRtl ? "lg:order-1 text-right" : "lg:order-2 text-left"}`}
         dir={isRtl ? "rtl" : "ltr"}
       >
-        <span className="dhs-eyebrow inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/85 backdrop-blur text-[#00677d] text-[11px] font-bold uppercase tracking-[0.18em] ring-1 ring-[#00677d]/20 shadow-sm">
+        <span className={`dhs-eyebrow inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/85 backdrop-blur text-[#00677d] text-[11px] font-bold ${isRtl ? "" : "uppercase tracking-[0.18em]"} ring-1 ring-[#00677d]/20 shadow-sm`}>
           <span
             className="material-symbols-outlined text-sm"
             style={{ fontVariationSettings: "'FILL' 1" }}

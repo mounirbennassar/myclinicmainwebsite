@@ -51,7 +51,7 @@ export default function DentalHero({ copy }: { copy: { en: HeroCopy; ar: HeroCop
             </div>
             <div>
               <p className="text-xs text-slate-500 font-medium">{lang === "ar" ? "أطباء استشاريون" : "Board-certified specialists"}</p>
-              <p className="text-sm font-bold text-slate-900">{lang === "ar" ? "+٢٠ طبيب أسنان" : "20+ dental specialists"}</p>
+              <p className="text-sm font-bold text-slate-900">{lang === "ar" ? "+٧٠ طبيب أسنان" : "70+ dental specialists"}</p>
             </div>
           </div>
         </div>

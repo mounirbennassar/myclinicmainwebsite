@@ -83,8 +83,8 @@ export default function DentalHoursAndBooking({ service = "general" }: { service
         </div>
 
         <div className="grid lg:grid-cols-2 gap-6 md:gap-8 items-stretch">
-          {/* ── Left column: Opening Hours ── */}
-          <div className="bg-[#003867] text-white p-8 md:p-10 rounded-3xl shadow-2xl shadow-[#003867]/20 relative overflow-hidden">
+          {/* ── Left column: Opening Hours (below the form on mobile) ── */}
+          <div className="order-2 lg:order-1 bg-[#003867] text-white p-8 md:p-10 rounded-3xl shadow-2xl shadow-[#003867]/20 relative overflow-hidden">
             <div className="absolute -top-20 -right-20 w-72 h-72 rounded-full bg-white/5 blur-3xl pointer-events-none" />
             <div className="absolute -bottom-24 -left-24 w-80 h-80 rounded-full bg-white/5 blur-3xl pointer-events-none" />
 
@@ -136,11 +136,11 @@ export default function DentalHoursAndBooking({ service = "general" }: { service
             </div>
           </div>
 
-          {/* ── Right column: Booking form ── */}
-          <div className="bg-white rounded-3xl shadow-xl shadow-[#003867]/5 border border-[#003867]/10 overflow-hidden flex flex-col">
+          {/* ── Right column: Booking form (first on mobile so booking CTAs land here) ── */}
+          <div className="order-1 lg:order-2 bg-white rounded-3xl shadow-xl shadow-[#003867]/5 border border-[#003867]/10 overflow-hidden flex flex-col">
             <div className="bg-[#003867] text-white p-8 md:p-10">
               <h3 className="text-2xl md:text-3xl font-extrabold">
-                {isRtl ? "احجز استشارتك المجانية" : "Book your free consultation"}
+                {isRtl ? "احجز موعدك الآن" : "Book your appointment"}
               </h3>
               <p className="mt-2 text-white/80">
                 {isRtl ? "سيتواصل معك فريقنا خلال ساعة في أوقات العمل." : "Our team will reach out within an hour during working hours."}

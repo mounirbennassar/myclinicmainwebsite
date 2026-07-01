@@ -24,7 +24,7 @@ const COPY: { en: Copy; ar: Copy } = {
     promises: [
       {
         icon: "verified_user",
-        title: "+20 specialists & consultants",
+        title: "+70 specialists & consultants",
         body: "A hand-picked team of board-certified specialists.",
       },
       {
@@ -51,7 +51,7 @@ const COPY: { en: Copy; ar: Copy } = {
     promises: [
       {
         icon: "verified_user",
-        title: "+20 طبيب واستشاري أسنان",
+        title: "+70 طبيب واستشاري أسنان",
         body: "نخبة من الأطباء والاستشاريين.",
       },
       {
