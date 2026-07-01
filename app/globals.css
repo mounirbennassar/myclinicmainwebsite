@@ -140,3 +140,34 @@ html[dir="rtl"] .tracking-label {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-10px); }
 }
+
+/* Women & Family Medicine landing-page motion (namespaced ff-* so it never
+   collides with other pages). */
+@keyframes ff-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+}
+@keyframes ff-float2 {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(13px); }
+}
+@keyframes ff-drift {
+  0% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(26px, -22px) scale(1.06); }
+  66% { transform: translate(-22px, 16px) scale(0.95); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+@keyframes ff-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.45); }
+  70% { box-shadow: 0 0 0 16px rgba(37, 211, 102, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+}
+@keyframes ff-dot {
+  0% { transform: translateY(-2px); opacity: 0; }
+  30% { opacity: 1; }
+  70% { transform: translateY(10px); opacity: 0; }
+  100% { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  [class*="animate-[ff-"] { animation: none !important; }
+}

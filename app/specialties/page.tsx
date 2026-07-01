@@ -22,13 +22,22 @@ export default function SpecialtiesPage() {
     return map;
   }, []);
 
-  // Pediatrics & Dental have their own dedicated landing pages — feature them
-  // first (in that order) and link straight to those experiences instead of the
-  // doctor finder. Every other specialty keeps its /find-a-doctor deep-link.
-  const FEATURED_HREF: Partial<Record<SpecKey, string>> = { pediatrics: "/pediatric", dental: "/dental" };
+  // Pediatrics, Dental and Women & Family Medicine have their own dedicated
+  // landing pages — feature them first and link straight to those experiences
+  // instead of the doctor finder. Obstetrics & Gynecology and Family Medicine
+  // both route into the shared Women & Family Medicine hub. Every other
+  // specialty keeps its /find-a-doctor deep-link.
+  const FEATURED_HREF: Partial<Record<SpecKey, string>> = {
+    pediatrics: "/pediatric",
+    dental: "/dental",
+    obGyn: "/female-family-medicine",
+    familyMedicine: "/female-family-medicine",
+  };
   const orderedKeys: SpecKey[] = [
     "pediatrics",
     "dental",
+    "obGyn",
+    "familyMedicine",
     ...specKeys.filter((k) => !FEATURED_HREF[k]),
   ];
 

@@ -44,9 +44,11 @@ const STATS = [
 ];
 
 const CENTERS = [
-  { en: "My Clinic Al Mohammadiyah", ar: "عيادتي المحمدية", metaEn: "Jeddah · CBAHI accredited", metaAr: "جدة · معتمد من CBAHI", flag: true },
+  { en: "My Clinic Al Mohammadiyah", ar: "عيادتي المحمدية", metaEn: "Jeddah", metaAr: "جدة", flag: true },
   { en: "My Clinic Al Safa", ar: "عيادتي الصفا", metaEn: "Jeddah", metaAr: "جدة" },
   { en: "My Clinic Dental Center", ar: "مركز عيادتي لطب الأسنان", metaEn: "Al Khalidiyah, Jeddah", metaAr: "الخالدية، جدة" },
+  { en: "My Clinic Al Tahlia", ar: "عيادتي التحلية", metaEn: "Jeddah", metaAr: "جدة" },
+  { en: "My Clinic Obhour", ar: "عيادتي أبحر", metaEn: "Jeddah", metaAr: "جدة" },
   { en: "My Clinic Riyadh", ar: "عيادتي الرياض", metaEn: "Riyadh · New flagship", metaAr: "الرياض · المركز الجديد", flag: true },
 ];
 
