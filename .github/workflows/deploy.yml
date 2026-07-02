@@ -56,6 +56,8 @@ jobs:
             echo "── health checks ──"
             curl -fsS http://127.0.0.1:3000/api/health
             curl -fsS -o /dev/null -w 'site: %{http_code}\n' http://127.0.0.1:3000/
+            curl -fsS -o /dev/null -w 'portal login: %{http_code}\n' http://127.0.0.1:3001/login
+            curl -fsS http://127.0.0.1:3001/api/health
 
             echo "── pruning old images ──"
             docker image prune -f

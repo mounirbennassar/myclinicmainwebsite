@@ -1,24 +1,31 @@
 # Deployment
 
-Three Docker services, orchestrated by `docker-compose.yml` — the database is
-self-hosted on the server, no external database service required:
+Four Docker services, orchestrated by `docker-compose.yml` — the database is
+self-hosted on the server, no external database service required. The admin
+dashboard lives on its own subdomain (**portal.myclinic.com.sa**) served by a
+dedicated container:
 
 ```
-                        ┌────────────────────────────┐
-  internet ── nginx ──► │ web (Next.js, port 3000)   │
-              (SSL)     │  · site + dashboard UI     │
-                        │  · rewrites /api/* ──────┐ │
-                        └──────────────────────────┼─┘
-                        ┌──────────────────────────▼─┐   ┌──────────────────┐
-                        │ backend (FastAPI, :8020)   │──►│ db (Postgres 17) │
-                        │  · auth, leads CRM, team,  │   │  pgdata volume   │
-                        │    doctors, UTM, content   │   └──────────────────┘
-                        │  · /app/uploads volume     │
-                        └────────────────────────────┘
+  myclinicsa.com.sa ──────► ┌────────────────────────────┐
+        │ nginx (SSL)       │ web    (Next.js, :3000)    │──┐
+        │                   └────────────────────────────┘  │ /api/* rewrite
+  portal.myclinic.com.sa ─► ┌────────────────────────────┐  │
+                            │ portal (Next.js, :3001)    │──┤
+                            └────────────────────────────┘  │
+                            ┌───────────────────────────────▼┐  ┌──────────────────┐
+                            │ backend (FastAPI, :8020)       │─►│ db (Postgres 17) │
+                            │  auth · leads CRM · team ·     │  │  pgdata volume   │
+                            │  doctors · UTM · content CMS   │  └──────────────────┘
+                            │  /app/uploads volume           │
+                            └────────────────────────────────┘
 ```
 
-Only port 3000 is published to the network (Postgres is loopback-only on the
-host). Two named volumes persist across deploys: `pgdata` (the database) and
+`web` and `portal` run the **same image** in different modes: the portal
+serves the dashboard (`/` → `/dashboard`, responses noindexed), while the main
+site redirects any `/login` / `/dashboard` hit to `PORTAL_URL`. All published
+ports bind to 127.0.0.1 only — nginx is the sole public entry point.
+
+Two named volumes persist across deploys: `pgdata` (the database) and
 `uploads` (uploaded images). **Never run `docker compose down -v`** — it
 deletes both.
 
@@ -84,22 +91,36 @@ Put the matching public key in the server's `~/.ssh/authorized_keys`.
 
 ## Reverse proxy (nginx + SSL)
 
+DNS: point both the main domain and the `portal.` subdomain at the server.
+
 ```nginx
+# Main website → web container
 server {
-    server_name example.com;
+    server_name myclinicsa.com.sa www.myclinicsa.com.sa;
     location / {
         proxy_pass http://127.0.0.1:3000;
         proxy_set_header Host $host;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-        client_max_body_size 10m;   # image uploads go up to 8 MB
+    }
+}
+
+# Dashboard portal → portal container
+server {
+    server_name portal.myclinic.com.sa;
+    location / {
+        proxy_pass http://127.0.0.1:3001;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        client_max_body_size 10m;   # dashboard image uploads go up to 8 MB
     }
 }
 ```
 
 ```bash
 sudo apt-get install -y nginx certbot python3-certbot-nginx
-sudo certbot --nginx -d example.com
+sudo certbot --nginx -d myclinicsa.com.sa -d www.myclinicsa.com.sa -d portal.myclinic.com.sa
 ```
 
 ## Day-2 operations
