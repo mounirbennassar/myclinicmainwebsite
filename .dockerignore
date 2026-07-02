@@ -1,0 +1,36 @@
+# VCS / envs / local tooling
+.git
+.gitignore
+.env*
+.claude
+.agents
+.vercel
+
+# Build outputs & deps (rebuilt inside the image)
+node_modules
+.next
+*.tsbuildinfo
+
+# The Python backend has its own image (backend/Dockerfile)
+backend
+
+# Raw asset originals (gitignored; optimized copies live in /public/clinic)
+public/images
+public/pediatricegallery
+
+# Docs, source assets and local scratch — not needed in the web image
+docs
+content
+clientsmodifications
+imagespreview
+scripts
+*.pdf
+*.xlsx
+*.docx
+team-credentials.md
+pediatric-doctors-check.txt
+README.md
+
+# Editor junk / duplicate files
+.DS_Store
+**/* 2.tsx

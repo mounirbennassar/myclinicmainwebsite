@@ -1,0 +1,41 @@
+# MyClinic — full stack.
+#
+# Configuration comes from a `.env` file next to this compose file (see
+# .env.example). `docker compose up -d --build` builds and starts everything;
+# the GitHub Actions workflow runs exactly that on every push to main.
+
+services:
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - uploads:/app/uploads
+    expose:
+      - "8020"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8020/api/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  web:
+    build:
+      context: .
+      args:
+        # Doctor pages are statically generated from the DB during the build.
+        DATABASE_URL: ${DATABASE_URL}
+        BACKEND_ORIGIN: http://backend:8020
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      BACKEND_ORIGIN: http://backend:8020
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  uploads:

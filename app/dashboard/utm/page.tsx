@@ -60,7 +60,7 @@ export default function UtmPage() {
   const [formSubmitting, setFormSubmitting] = useState(false);
 
   useEffect(() => {
-    if (user && user.role !== "super_admin" && user.role !== "admin") {
+    if (user && user.role !== "super_admin" && user.role !== "admin" && user.role !== "marketing") {
       router.push("/dashboard");
     }
   }, [user, router]);

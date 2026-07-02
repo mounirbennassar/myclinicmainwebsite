@@ -3,13 +3,23 @@ import { useState, useEffect, createContext, useContext, Suspense } from "react"
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import Image from "next/image";
 
+export type Role = "super_admin" | "admin" | "agent" | "marketing" | "content_manager";
+
 type User = {
   id: string;
   email: string;
   name: string;
-  role: "super_admin" | "admin" | "agent";
+  role: Role;
   allowed_cities: string[];
   can_export: boolean;
+};
+
+export const ROLE_LABELS: Record<Role, string> = {
+  super_admin: "Super Admin",
+  admin: "Admin",
+  agent: "Agent",
+  marketing: "Marketing",
+  content_manager: "Content Manager",
 };
 
 const UserContext = createContext<User | null>(null);
@@ -101,6 +111,13 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
       .finally(() => setLoading(false));
   }, [router]);
 
+  // Content managers have no lead access — their home is the content CMS.
+  useEffect(() => {
+    if (user?.role === "content_manager" && pathname === "/dashboard") {
+      router.replace("/dashboard/content");
+    }
+  }, [user, pathname, router]);
+
   const logout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
     router.push("/login");
@@ -121,15 +138,28 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   // instead of silently resetting to All. (UTM/Team ignore it; it just rides
   // along so returning to a vertical-aware page restores the selection.)
   const vQuery = vertical !== "all" ? `?vertical=${vertical}` : "";
+  const isAdmin = user.role === "super_admin" || user.role === "admin";
+  const isMarketing = user.role === "marketing";
+  const isContent = user.role === "content_manager";
   const navItems = [
-    { label: "Appointments", href: `/dashboard${vQuery}`, active: pathname === "/dashboard" },
-    ...(user.role === "super_admin" || user.role === "admin"
+    // Leads pipeline: everyone except content managers (agents see only theirs).
+    ...(!isContent
+      ? [{ label: "Leads", href: `/dashboard${vQuery}`, active: pathname === "/dashboard" }]
+      : []),
+    ...(isAdmin || isMarketing
       ? [
           { label: "Reports", href: `/dashboard/reports${vQuery}`, active: pathname === "/dashboard/reports" },
           { label: "UTM Links", href: `/dashboard/utm${vQuery}`, active: pathname === "/dashboard/utm" },
+        ]
+      : []),
+    ...(isAdmin
+      ? [
           { label: "Doctors", href: `/dashboard/doctors${vQuery}`, active: pathname === "/dashboard/doctors" },
           { label: "Team", href: `/dashboard/team${vQuery}`, active: pathname === "/dashboard/team" },
         ]
+      : []),
+    ...(isAdmin || isContent
+      ? [{ label: "Content", href: "/dashboard/content", active: pathname === "/dashboard/content" }]
       : []),
   ];
 
@@ -158,12 +188,12 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
               </nav>
             </div>
             <div className="flex items-center gap-3">
-              {(user.role === "super_admin" || user.role === "admin") && pathname.startsWith("/dashboard") && pathname !== "/dashboard/team" && pathname !== "/dashboard/utm" && pathname !== "/dashboard/whatsapp" && pathname !== "/dashboard/doctors" && (
+              {(isAdmin || isMarketing) && (pathname === "/dashboard" || pathname === "/dashboard/reports") && (
                 <VerticalToggle />
               )}
               <div className="hidden md:flex flex-col items-end">
                 <span className="text-sm font-semibold text-slate-700">{user.name}</span>
-                <span className="text-[10px] text-slate-400">{user.role === "super_admin" ? "Super Admin" : user.role === "admin" ? "Admin" : "Agent"}</span>
+                <span className="text-[10px] text-slate-400">{ROLE_LABELS[user.role] ?? user.role}</span>
               </div>
               <div className="w-8 h-8 rounded-full bg-[#004d99] flex items-center justify-center text-white text-xs font-bold">
                 {user.name.charAt(0).toUpperCase()}

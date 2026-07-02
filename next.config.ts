@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Self-contained server bundle for the Docker image (see Dockerfile).
+  output: "standalone",
   compress: true,
   poweredByHeader: false,
   reactStrictMode: true,
@@ -24,6 +26,17 @@ const nextConfig: NextConfig = {
         hostname: "*.public.blob.vercel-storage.com",
       },
     ],
+  },
+  // Every /api/* request is served by the FastAPI backend (backend/). The
+  // rewrite keeps the API same-origin so the session cookie just rides along.
+  async rewrites() {
+    const backend = process.env.BACKEND_ORIGIN || "http://127.0.0.1:8020";
+    return [
+      {
+        source: "/api/:path*",
+        destination: `${backend}/api/:path*`,
+      },
+    ];
   },
   async redirects() {
     return [

@@ -142,7 +142,7 @@ export default function ReportsPage() {
   const [showExportMenu, setShowExportMenu] = useState<string | null>(null);
 
   useEffect(() => {
-    if (user && user.role !== "super_admin" && user.role !== "admin") {
+    if (user && user.role !== "super_admin" && user.role !== "admin" && user.role !== "marketing") {
       router.push("/dashboard");
     }
   }, [user, router]);
@@ -452,7 +452,7 @@ export default function ReportsPage() {
     </div>
   );
 
-  if (user?.role !== "super_admin" && user?.role !== "admin") return null;
+  if (user?.role !== "super_admin" && user?.role !== "admin" && user?.role !== "marketing") return null;
 
   return (
     <main className="max-w-7xl mx-auto px-4 md:px-8 py-6 md:py-8">

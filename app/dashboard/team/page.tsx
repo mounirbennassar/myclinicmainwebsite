@@ -3,11 +3,34 @@ import { useState, useEffect } from "react";
 import { useUser } from "../layout";
 import { useRouter } from "next/navigation";
 
+const ROLE_OPTIONS = [
+  { value: "agent", label: "Agent" },
+  { value: "admin", label: "Admin" },
+  { value: "super_admin", label: "Super Admin" },
+  { value: "marketing", label: "Marketing" },
+  { value: "content_manager", label: "Content Manager" },
+] as const;
+type Role = (typeof ROLE_OPTIONS)[number]["value"];
+
+const ROLE_BADGE: Record<Role, string> = {
+  super_admin: "bg-purple-100 text-purple-700",
+  admin: "bg-blue-100 text-blue-700",
+  agent: "bg-teal-100 text-teal-700",
+  marketing: "bg-amber-100 text-amber-700",
+  content_manager: "bg-rose-100 text-rose-700",
+};
+
+const roleLabel = (r: Role) => ROLE_OPTIONS.find((o) => o.value === r)?.label ?? r;
+
+// Roles whose lead visibility is scoped by allowed_cities. Content managers
+// never see leads, super admins always see everything — neither needs cities.
+const CITY_SCOPED_ROLES: Role[] = ["agent", "admin", "marketing"];
+
 type TeamMember = {
   id: string;
   email: string;
   name: string;
-  role: "super_admin" | "admin" | "agent";
+  role: Role;
   allowed_cities: string[];
   is_active: boolean;
   can_export: boolean;
@@ -25,7 +48,7 @@ export default function TeamPage() {
   const [editMember, setEditMember] = useState<TeamMember | null>(null);
   const [generatedPassword, setGeneratedPassword] = useState("");
   const [filterActive, setFilterActive] = useState<"" | "active" | "inactive">("");
-  const [filterRole, setFilterRole] = useState<"" | "super_admin" | "admin" | "agent">("");
+  const [filterRole, setFilterRole] = useState<"" | Role>("");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const perPage = 10;
@@ -34,7 +57,7 @@ export default function TeamPage() {
   const [formName, setFormName] = useState("");
   const [formEmail, setFormEmail] = useState("");
   const [formCities, setFormCities] = useState<string[]>([]);
-  const [formRole, setFormRole] = useState<"super_admin" | "admin" | "agent">("agent");
+  const [formRole, setFormRole] = useState<Role>("agent");
   const [formCanExport, setFormCanExport] = useState(false);
   const [formError, setFormError] = useState("");
   const [formLoading, setFormLoading] = useState(false);
@@ -193,9 +216,9 @@ export default function TeamPage() {
           </div>
           <select value={filterRole} onChange={(e) => setFilterRole(e.target.value as typeof filterRole)} className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm text-slate-600">
             <option value="">All Roles</option>
-            <option value="super_admin">Super Admin</option>
-            <option value="admin">Admin</option>
-            <option value="agent">Agent</option>
+            {ROLE_OPTIONS.map((r) => (
+              <option key={r.value} value={r.value}>{r.label}</option>
+            ))}
           </select>
           <select value={filterActive} onChange={(e) => setFilterActive(e.target.value as typeof filterActive)} className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm text-slate-600">
             <option value="">All Status</option>
@@ -228,15 +251,7 @@ export default function TeamPage() {
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <p className="font-semibold text-slate-800 text-sm truncate">{m.name}</p>
-                      {m.role === "super_admin" && (
-                        <span className="bg-purple-100 text-purple-700 text-[10px] font-bold px-1.5 py-0.5 rounded">Super Admin</span>
-                      )}
-                      {m.role === "admin" && (
-                        <span className="bg-blue-100 text-blue-700 text-[10px] font-bold px-1.5 py-0.5 rounded">Admin</span>
-                      )}
-                      {m.role === "agent" && (
-                        <span className="bg-teal-100 text-teal-700 text-[10px] font-bold px-1.5 py-0.5 rounded">Agent</span>
-                      )}
+                      <span className={`${ROLE_BADGE[m.role] || "bg-slate-100 text-slate-600"} text-[10px] font-bold px-1.5 py-0.5 rounded`}>{roleLabel(m.role)}</span>
                       {m.can_export && (
                         <span className="bg-emerald-50 text-emerald-600 text-[10px] font-bold px-1.5 py-0.5 rounded">Export</span>
                       )}
@@ -248,10 +263,10 @@ export default function TeamPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 md:gap-3 flex-wrap">
-                  {(m.role === "agent" || m.role === "admin") && m.allowed_cities?.map((city) => (
+                  {CITY_SCOPED_ROLES.includes(m.role) && m.allowed_cities?.map((city) => (
                     <span key={city} className="bg-slate-100 text-slate-600 text-[10px] font-semibold px-2 py-0.5 rounded-full">{city}</span>
                   ))}
-                  {(m.role === "agent" || m.role === "admin") && (!m.allowed_cities || m.allowed_cities.length === 0) && (
+                  {CITY_SCOPED_ROLES.includes(m.role) && (!m.allowed_cities || m.allowed_cities.length === 0) && (
                     <span className="text-[10px] text-slate-300">No cities</span>
                   )}
                   <div className="flex items-center gap-1 ml-auto md:ml-4">
@@ -333,12 +348,12 @@ export default function TeamPage() {
               <div>
                 <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">Role</label>
                 <select value={formRole} onChange={(e) => setFormRole(e.target.value as typeof formRole)} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-sm">
-                  <option value="agent">Agent</option>
-                  <option value="admin">Admin</option>
-                  <option value="super_admin">Super Admin</option>
+                  {ROLE_OPTIONS.map((r) => (
+                    <option key={r.value} value={r.value}>{r.label}</option>
+                  ))}
                 </select>
               </div>
-              {(formRole === "agent" || formRole === "admin") && (
+              {CITY_SCOPED_ROLES.includes(formRole) && (
                 <div>
                   <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">Allowed Cities</label>
                   <div className="flex gap-2">
@@ -384,12 +399,12 @@ export default function TeamPage() {
               <div>
                 <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">Role</label>
                 <select value={formRole} onChange={(e) => setFormRole(e.target.value as typeof formRole)} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-sm">
-                  <option value="agent">Agent</option>
-                  <option value="admin">Admin</option>
-                  <option value="super_admin">Super Admin</option>
+                  {ROLE_OPTIONS.map((r) => (
+                    <option key={r.value} value={r.value}>{r.label}</option>
+                  ))}
                 </select>
               </div>
-              {(formRole === "agent" || formRole === "admin") && (
+              {CITY_SCOPED_ROLES.includes(formRole) && (
                 <div>
                   <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">Allowed Cities</label>
                   <div className="flex gap-2">

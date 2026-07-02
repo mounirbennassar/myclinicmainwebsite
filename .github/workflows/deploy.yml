@@ -1,0 +1,58 @@
+# Auto-deploy: every push to main SSHes into the production server, pulls the
+# latest code and rebuilds the Docker stack. The server must be prepared once
+# (clone + .env) — see DEPLOYMENT.md.
+#
+# Required repository secrets (Settings → Secrets and variables → Actions):
+#   DEPLOY_HOST      server IP or hostname
+#   DEPLOY_USER      SSH user (e.g. ubuntu / deploy)
+#   DEPLOY_SSH_KEY   private key whose public half is in the server's
+#                    ~/.ssh/authorized_keys
+#   DEPLOY_PORT      (optional) SSH port, defaults to 22
+#   DEPLOY_PATH      (optional) checkout path, defaults to /opt/myclinic
+
+name: Deploy to production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pull & rebuild on server
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: ${{ secrets.DEPLOY_PORT }}
+          command_timeout: 30m
+          script: |
+            set -euo pipefail
+            APP_DIR="${{ secrets.DEPLOY_PATH }}"
+            APP_DIR="${APP_DIR:-/opt/myclinic}"
+            cd "$APP_DIR"
+
+            echo "── pulling latest main ──"
+            git fetch origin main
+            git reset --hard origin/main
+
+            echo "── rebuilding containers ──"
+            docker compose up -d --build
+
+            echo "── waiting for services ──"
+            sleep 10
+            docker compose ps
+
+            echo "── health checks ──"
+            curl -fsS http://127.0.0.1:3000/api/health
+            curl -fsS -o /dev/null -w 'site: %{http_code}\n' http://127.0.0.1:3000/
+
+            echo "── pruning old images ──"
+            docker image prune -f

@@ -25,7 +25,8 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (res.ok) {
-        router.push("/dashboard");
+        // Content managers land on the CMS — they have no lead access.
+        router.push(data.user?.role === "content_manager" ? "/dashboard/content" : "/dashboard");
       } else {
         setError(data.error || "Login failed");
       }
