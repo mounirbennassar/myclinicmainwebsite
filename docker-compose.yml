@@ -1,10 +1,36 @@
-# MyClinic — full stack.
+# MyClinic — full stack, self-hosted Postgres included.
 #
 # Configuration comes from a `.env` file next to this compose file (see
-# .env.example). `docker compose up -d --build` builds and starts everything;
-# the GitHub Actions workflow runs exactly that on every push to main.
+# .env.example). Deploy = `docker compose up -d db && docker compose up -d
+# --build`; the GitHub Actions workflow runs exactly that on every push.
+#
+# NOTE on the web build: `next build` pre-renders the doctor pages from the
+# database, so the db service must be RUNNING when the web image builds. The
+# build runs with host networking and reaches Postgres through the
+# loopback-only published port (127.0.0.1:5432) via DATABASE_URL_BUILD.
 
 services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      # Loopback only — never exposed to the internet. Needed for the web
+      # image build and handy for admin/psql access from the server itself.
+      # Override POSTGRES_PORT in .env if 5432 is already taken on the host.
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
   backend:
     build: ./backend
     restart: unless-stopped
@@ -13,6 +39,9 @@ services:
       - uploads:/app/uploads
     expose:
       - "8020"
+    depends_on:
+      db:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8020/api/health')"]
       interval: 30s
@@ -23,9 +52,10 @@ services:
   web:
     build:
       context: .
+      network: host
       args:
-        # Doctor pages are statically generated from the DB during the build.
-        DATABASE_URL: ${DATABASE_URL}
+        # Build-time DB access (SSG of doctor pages) — see note above.
+        DATABASE_URL: ${DATABASE_URL_BUILD}
         BACKEND_ORIGIN: http://backend:8020
     restart: unless-stopped
     env_file: .env
@@ -38,4 +68,5 @@ services:
         condition: service_healthy
 
 volumes:
+  pgdata:
   uploads:

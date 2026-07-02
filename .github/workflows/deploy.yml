@@ -43,6 +43,9 @@ jobs:
             git fetch origin main
             git reset --hard origin/main
 
+            echo "── ensuring database is up (web build reads it) ──"
+            docker compose up -d --wait db
+
             echo "── rebuilding containers ──"
             docker compose up -d --build
 

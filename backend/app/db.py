@@ -1,13 +1,16 @@
-"""asyncpg pool against Neon Postgres.
+"""asyncpg pool for Postgres — the Docker `db` service in production, or a
+cloud instance like Neon.
 
-Neon's pooled DSNs carry query params (sslmode, channel_binding) that asyncpg
-doesn't accept, so the DSN is normalized here and SSL is forced explicitly.
-statement_cache_size=0 keeps prepared statements out of pgbouncer's way.
+Cloud DSNs carry query params (sslmode, channel_binding) that asyncpg doesn't
+accept, so the DSN is normalized here and SSL is decided from its `sslmode`:
+`require`/`verify-*` → TLS with certifi's CA bundle (python.org macOS builds
+don't ship system certs); anything else (the in-cluster db service) → plain
+TCP. statement_cache_size=0 keeps prepared statements pgbouncer-safe.
 """
 import ssl
 from datetime import date, datetime
 from typing import Any
-from urllib.parse import urlsplit, urlunsplit
+from urllib.parse import parse_qs, urlsplit, urlunsplit
 from uuid import UUID
 
 import asyncpg
@@ -18,9 +21,12 @@ from .config import settings
 _pool: asyncpg.Pool | None = None
 
 
-def ssl_context() -> ssl.SSLContext:
-    # certifi's bundle: python.org macOS builds don't ship system CA certs.
-    return ssl.create_default_context(cafile=certifi.where())
+def ssl_context() -> ssl.SSLContext | None:
+    url = settings.database_url
+    sslmode = parse_qs(urlsplit(url).query).get("sslmode", [""])[0]
+    if sslmode in ("require", "verify-ca", "verify-full"):
+        return ssl.create_default_context(cafile=certifi.where())
+    return None
 
 
 def _normalized_dsn() -> str:
