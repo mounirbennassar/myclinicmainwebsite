@@ -1,0 +1,252 @@
+===================================CLICKSALESMEDIA==============================
+================================================================================
+ MY CLINIC — WEBSITE + PORTAL DASHBOARD & CMS : SERVER DEPLOYMENT HANDOVER
+ For: Infrastructure / Server team
+ Date: 2026-07-02
+
+ Changes vs v2:
+   - The admin dashboard now runs as its OWN container on the subdomain
+     portal.myclinic.com.sa (main domain no longer serves the dashboard).
+   - All secret values were removed from this document — the .env file and
+     the data-import URL are provided SEPARATELY and securely by Mounir.
+================================================================================
+
+1. WHAT THIS IS
+--------------------------------------------------------------------------------
+The My Clinic public website plus its admin dashboard (leads CRM, doctors
+management, content CMS). It ships as FOUR Docker containers managed by one
+docker-compose file:
+
+  - web      : Next.js — the public website        → nginx: myclinicsa.com.sa
+               published on 127.0.0.1:3000
+  - portal   : Next.js — the admin dashboard       → nginx: portal.myclinic.com.sa
+               published on 127.0.0.1:3001
+  - backend  : Python FastAPI API, internal port 8020 (both web and portal
+               proxy /api/* to it — never exposed publicly)
+  - db       : Postgres 17, published on 127.0.0.1:5432 only
+
+web and portal run the SAME image in different modes — nothing extra to
+build for the portal. The main domain automatically redirects any /login or
+/dashboard request to the portal subdomain.
+
+ALL container ports bind to 127.0.0.1 — nginx is the only public entry point.
+
+Persistent data lives in two Docker named volumes that MUST survive deploys:
+  - pgdata   : the whole database
+  - uploads  : uploaded images (doctor photos, article covers)
+NEVER run `docker compose down -v` — the -v flag deletes both volumes.
+
+2. REPOSITORY
+--------------------------------------------------------------------------------
+  Repo   : https://github.com/mounirbennassar/myclinicmainwebsite.git
+  Branch : main
+
+The repository is private — ask the repo owner (Mounir) to either:
+  a) add your GitHub account as a collaborator, or
+  b) generate a fine-grained Personal Access Token (repo: contents read)
+     for cloning: git clone https://<TOKEN>@github.com/mounirbennassar/myclinicmainwebsite.git
+
+3. DNS
+--------------------------------------------------------------------------------
+Point BOTH names at the server's public IP:
+
+  A  myclinicsa.com.sa           → <server IP>     (+ www if desired)
+  A  portal.myclinic.com.sa      → <server IP>
+
+4. SERVER REQUIREMENTS
+--------------------------------------------------------------------------------
+  OS        : Ubuntu 24.04 LTS
+              (Next.js Docker build needs ~2 GB RAM; DB + images grow on disk)
+  Network   : outbound HTTPS (npm, Docker Hub, Google Fonts, Anantya API).
+              Inbound: 22 (SSH), 80/443 (nginx). Nothing else — 3000/3001/5432
+              are loopback-only.
+  Software  : git + Docker Engine with the compose plugin. Install with:
+
+      sudo apt-get update && sudo apt-get install -y git curl ca-certificates
+      curl -fsSL https://get.docker.com | sudo sh
+      sudo usermod -aG docker $USER && newgrp docker
+
+  No Node.js, Python, or Postgres needs to be installed on the host —
+  everything runs inside the containers.
+
+5. ENVIRONMENT FILE  (/opt/myclinic/.env)  — PROVIDED SEPARATELY
+--------------------------------------------------------------------------------
+The complete .env file (with real values) is delivered to you securely by
+Mounir — place it at /opt/myclinic/.env before building. For reference, the
+variables it contains:
+
+  POSTGRES_USER        Postgres user for the db container
+  POSTGRES_PASSWORD    Postgres password (also embedded in both URLs below)
+  POSTGRES_DB          database name
+  POSTGRES_PORT        host port Postgres publishes on loopback (default 5432;
+                       change it if 5432 is busy and mirror the change in
+                       DATABASE_URL_BUILD)
+  DATABASE_URL         runtime connection string (host `db`, in-cluster)
+  DATABASE_URL_BUILD   build-time connection string (host 127.0.0.1 — the web
+                       image build pre-renders doctor pages from the DB)
+  PORTAL_URL           https://portal.myclinic.com.sa (where the dashboard
+                       lives; the main site redirects /dashboard there)
+  JWT_SECRET           signs dashboard session cookies — must NEVER change
+                       between deploys (changing it logs everyone out)
+  ANANTYA_BASE_URL     WhatsApp gateway base URL
+  ANANTYA_API_KEY      WhatsApp gateway API key
+
+A template with the exact shape (placeholder values) is committed in the repo
+as `.env.example`. Never commit the real .env (it is gitignored).
+
+6. FIRST-TIME DEPLOYMENT (one time only)
+--------------------------------------------------------------------------------
+  # 1) Get the code
+  sudo mkdir -p /opt/myclinic && sudo chown $USER /opt/myclinic
+  git clone https://github.com/mounirbennassar/myclinicmainwebsite.git /opt/myclinic
+  cd /opt/myclinic
+
+  # 2) Place the provided .env file
+  #    (delivered securely — see section 5)
+
+  # 3) Start the database FIRST (the web build reads it — see note below)
+  docker compose up -d --wait db
+
+  # 4) IMPORT THE EXISTING PRODUCTION DATA (~3,000 leads, 314 doctors, team
+  #    accounts, UTM history). The source database URL is provided securely
+  #    together with the .env. One command, runs inside the db container:
+  docker compose exec -T db sh -c \
+    "pg_dump '<SOURCE_DATABASE_URL>' --no-owner --no-privileges | psql -q -U myclinic -d myclinic"
+
+  # 5) Build and start everything (first build takes ~5–10 minutes)
+  docker compose up -d --build
+
+  # 6) Verify
+  docker compose ps                                  # all four running/healthy
+  curl -s  http://127.0.0.1:3000/api/health          # → {"ok":true}
+  curl -sI http://127.0.0.1:3000/ | head -1          # → 200 (website)
+  curl -sI http://127.0.0.1:3001/login | head -1     # → 200 (portal login)
+  curl -sI http://127.0.0.1:3001/ | head -1          # → 307 → /dashboard
+
+Notes:
+  - Schema migrations run automatically on every backend start (idempotent).
+  - The Next.js build pre-renders doctor pages FROM THE DATABASE, which is why
+    the db container must be up (and ideally already imported) before the
+    build. If you build before importing, just rebuild after the import:
+    docker compose up -d --build
+
+7. AUTOMATIC DEPLOYS FROM GITHUB (set up once)
+--------------------------------------------------------------------------------
+Every push to the main branch auto-deploys via GitHub Actions
+(.github/workflows/deploy.yml): the workflow SSHes into this server, pulls the
+latest code, makes sure the db is up, rebuilds the containers and
+health-checks the result (site + portal).
+
+To enable it:
+
+  # 1) On the server, create a deploy SSH keypair (no passphrase):
+  ssh-keygen -t ed25519 -f ~/.ssh/github_deploy -N ""
+  cat ~/.ssh/github_deploy.pub >> ~/.ssh/authorized_keys
+  cat ~/.ssh/github_deploy        # <- this PRIVATE key goes to GitHub
+
+  # 2) In GitHub → repo → Settings → Secrets and variables → Actions,
+  #    add these repository secrets:
+  DEPLOY_HOST     = <server public IP or hostname>
+  DEPLOY_USER     = <ssh user, e.g. ubuntu>
+  DEPLOY_SSH_KEY  = <contents of ~/.ssh/github_deploy  (the private key)>
+  DEPLOY_PORT     = 22            (only if different from 22)
+  DEPLOY_PATH     = /opt/myclinic (only if you cloned somewhere else)
+
+  # 3) Test: GitHub → Actions → "Deploy to production" → Run workflow.
+
+Note: the git checkout in /opt/myclinic must be able to `git fetch` — if the
+repo is private, clone it using a read-only access token (section 2) so the
+URL already carries credentials, or configure a GitHub deploy key.
+
+8. REVERSE PROXY + SSL (nginx) — one server block per domain
+--------------------------------------------------------------------------------
+  sudo apt-get install -y nginx certbot python3-certbot-nginx
+
+  # /etc/nginx/sites-available/myclinic
+  # Main website → web container (:3000)
+  server {
+      server_name myclinicsa.com.sa www.myclinicsa.com.sa;
+      location / {
+          proxy_pass http://127.0.0.1:3000;
+          proxy_set_header Host $host;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto $scheme;
+      }
+  }
+
+  # Dashboard portal → portal container (:3001)
+  server {
+      server_name portal.myclinic.com.sa;
+      location / {
+          proxy_pass http://127.0.0.1:3001;
+          proxy_set_header Host $host;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto $scheme;
+          client_max_body_size 10m;    # dashboard image uploads (max 8 MB)
+      }
+  }
+
+  sudo ln -s /etc/nginx/sites-available/myclinic /etc/nginx/sites-enabled/
+  sudo nginx -t && sudo systemctl reload nginx
+  sudo certbot --nginx -d myclinicsa.com.sa -d www.myclinicsa.com.sa \
+                       -d portal.myclinic.com.sa
+
+The portal marks all its responses "X-Robots-Tag: noindex" by itself, so the
+subdomain will not appear in search engines.
+
+9. DAY-2 OPERATIONS
+--------------------------------------------------------------------------------
+  cd /opt/myclinic
+  docker compose ps                          # status
+  docker compose logs -f web                 # website logs
+  docker compose logs -f portal              # dashboard logs
+  docker compose logs -f backend             # API logs
+  docker compose logs -f db                  # database logs
+  docker compose up -d --build               # manual deploy (same as CI does)
+  docker compose restart backend             # restart one service
+  docker image prune -f                      # clean old images
+
+  # BACKUPS — set up a nightly cron for both of these:
+  # database:
+  docker compose exec -T db pg_dump -U myclinic myclinic | gzip > /backup/db-$(date +%F).sql.gz
+  # uploaded images:
+  docker run --rm -v myclinic_uploads:/u -v /backup:/backup alpine \
+    tar czf /backup/uploads-$(date +%F).tgz -C /u .
+
+  # RESTORE a database backup:
+  gunzip -c /backup/db-YYYY-MM-DD.sql.gz | docker compose exec -T db psql -q -U myclinic -d myclinic
+
+10. HEALTH CHECKS / MONITORING
+--------------------------------------------------------------------------------
+  http://127.0.0.1:3000/api/health   → {"ok":true}   (web → backend → db)
+  http://127.0.0.1:3001/api/health   → {"ok":true}   (portal → backend → db)
+  http://127.0.0.1:3000/             → 200           (website)
+  http://127.0.0.1:3001/login        → 200           (portal)
+  `docker compose ps` shows built-in healthchecks for db and backend.
+
+11. TROUBLESHOOTING
+--------------------------------------------------------------------------------
+  - Web build fails with a database/connection error:
+      The db container must be up before building (docker compose up -d
+      --wait db) and DATABASE_URL_BUILD must point at the published loopback
+      port (127.0.0.1:POSTGRES_PORT).
+  - Port 5432 already in use on the host:
+      Set POSTGRES_PORT in .env and mirror it inside DATABASE_URL_BUILD (the
+      runtime DATABASE_URL keeps db:5432 — internal Docker network).
+  - Main domain shows the dashboard / portal redirect loops:
+      Check PORTAL_URL in .env — it must be the full https URL of the portal
+      subdomain, and only the portal container has APP_MODE=portal (compose
+      already sets this).
+  - 401/redirect loops on the dashboard login:
+      JWT_SECRET changed — restore the original value.
+  - Doctor pages empty right after first deploy:
+      Data was imported after the web image was built — rebuild once:
+      docker compose up -d --build
+  - Uploaded images 404 after redeploy:
+      The uploads volume was removed; restore from backup (section 9).
+  - Ports 3000/3001 already in use on the host:
+      Change the host side of the mapping in docker-compose.yml and update
+      the matching nginx proxy_pass.
+
+Questions → repository owner: Mounir (clicksalesmedia@gmail.com)
+================================================================================

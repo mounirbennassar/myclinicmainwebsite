@@ -1,0 +1,43 @@
+name: Bug report
+description: Something on the website, portal, or API is broken
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Public website (myclinicsa.com.sa)
+        - Portal / dashboard (portal.myclinic.com.sa)
+        - Backend API
+        - Database / data
+        - Deployment / server
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you see, and what did you expect instead?
+      placeholder: The doctors page shows no photos on mobile...
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open https://...
+        2. Click ...
+        3. See error
+  - type: input
+    id: url
+    attributes:
+      label: Page URL
+      placeholder: https://myclinicsa.com.sa/...
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots / logs
+      description: Drag & drop images or paste error output here.

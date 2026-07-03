@@ -1,0 +1,58 @@
+# Auto-deploy to the private VM (10.97.100.10) via a SELF-HOSTED runner.
+#
+# Why self-hosted: the VM only has a private IP — GitHub's cloud runners
+# (ubuntu-latest) can never reach it over SSH. Instead a runner installed ON
+# the VM polls GitHub over outbound HTTPS and executes this job locally, so
+# no inbound access, SSH keys, or secrets are needed.
+#
+# One-time setup (runner install, clone, .env): docs/VM-Deployment-Guide.md
+#
+# Optional repository variable (Settings → Secrets and variables → Actions →
+# Variables):
+#   DEPLOY_PATH   checkout path on the VM, defaults to /opt/myclinic
+
+name: Deploy to VM (self-hosted)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: vm-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, myclinic-vm]
+    timeout-minutes: 30
+    steps:
+      - name: Pull & rebuild on this server
+        run: |
+          set -euo pipefail
+          APP_DIR="${{ vars.DEPLOY_PATH }}"
+          APP_DIR="${APP_DIR:-/opt/myclinic}"
+          cd "$APP_DIR"
+
+          echo "── pulling latest main ──"
+          git fetch origin main
+          git reset --hard origin/main
+
+          echo "── ensuring database is up (web build reads it) ──"
+          docker compose up -d --wait db
+
+          echo "── rebuilding containers ──"
+          docker compose up -d --build
+
+          echo "── waiting for services ──"
+          sleep 10
+          docker compose ps
+
+          echo "── health checks ──"
+          curl -fsS http://127.0.0.1:3000/api/health
+          curl -fsS -o /dev/null -w 'site: %{http_code}\n' http://127.0.0.1:3000/
+          curl -fsS -o /dev/null -w 'portal login: %{http_code}\n' http://127.0.0.1:3001/login
+          curl -fsS http://127.0.0.1:3001/api/health
+
+          echo "── pruning old images ──"
+          docker image prune -f

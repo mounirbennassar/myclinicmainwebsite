@@ -1,0 +1,34 @@
+name: Task / change request
+description: New feature, content change, or improvement
+title: "[Task]: "
+labels: ["task"]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Public website (myclinicsa.com.sa)
+        - Portal / dashboard (portal.myclinic.com.sa)
+        - Backend API
+        - Content (doctors, articles, pages)
+        - Deployment / server
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: What needs to be done?
+      placeholder: Add a new landing page for the dermatology campaign...
+    validations:
+      required: true
+  - type: input
+    id: deadline
+    attributes:
+      label: Deadline (if any)
+      placeholder: 2026-07-15
+  - type: textarea
+    id: assets
+    attributes:
+      label: Assets / references
+      description: Links, copy, images, or designs needed for this task.
