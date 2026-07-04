@@ -25,6 +25,11 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "*.public.blob.vercel-storage.com",
       },
+      {
+        // Doctor photos + CMS media (Cloudinary).
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+      },
     ],
   },
   // Every /api/* request is served by the FastAPI backend (backend/). The
