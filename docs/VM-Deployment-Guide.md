@@ -506,6 +506,38 @@ sudo ~/actions-runner/svc.sh status | stop | start
 
 ---
 
+## 16. Staging environment (same VM, second stack)
+
+A full copy of the stack at `/opt/myclinic-staging`, deployed automatically on
+every push to the `staging` branch (`.github/workflows/deploy-staging.yml`).
+Ports: web `0.0.0.0:3100`, portal `0.0.0.0:3101`, db `127.0.0.1:5437` — browse
+from the office network at `http://10.97.100.10:3100` (portal `:3101`).
+Production on 3000/3001 is completely separate (own volumes, own image tag).
+
+One-time setup (🐧 server, one line at a time):
+
+```bash
+git clone -b staging https://github.com/mounirbennassar/myclinicmainwebsite.git /opt/myclinic-staging
+cp /opt/myclinic/.env /opt/myclinic-staging/.env
+sed -i -e 's/^POSTGRES_PORT=.*/POSTGRES_PORT=5437/' -e 's/127\.0\.0\.1:5436/127.0.0.1:5437/' -e 's|^PORTAL_URL=.*|PORTAL_URL=http://10.97.100.10:3101|' /opt/myclinic-staging/.env
+printf 'WEB_IMAGE=myclinic-web-staging\nWEB_BIND=0.0.0.0:3100\nPORTAL_BIND=0.0.0.0:3101\n' >> /opt/myclinic-staging/.env
+chmod 600 /opt/myclinic-staging/.env
+cd /opt/myclinic-staging && docker compose up -d --wait db
+docker exec myclinic-db-1 pg_dump -U myclinic myclinic | docker exec -i myclinic-staging-db-1 psql -q -U myclinic -d myclinic
+docker compose up -d --build
+```
+
+Refresh staging data from production anytime (staging DB is wiped first):
+
+```bash
+cd /opt/myclinic-staging && docker compose down && docker volume rm myclinic-staging_pgdata && docker compose up -d --wait db
+docker exec myclinic-db-1 pg_dump -U myclinic myclinic | docker exec -i myclinic-staging-db-1 psql -q -U myclinic -d myclinic
+cd /opt/myclinic-staging && docker compose up -d
+```
+
+Workflow: feature branch → merge/push to `staging` → auto-deploys → review at
+`:3100` / `:3101` → PR `staging → main` → merge → production auto-deploys.
+
 ## Quick checklist
 
 - [ ] §2 SSH works, outbound HTTPS to GitHub/Docker Hub confirmed

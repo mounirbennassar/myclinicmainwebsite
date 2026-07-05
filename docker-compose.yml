@@ -59,13 +59,17 @@ services:
         # Build-time DB access (SSG of doctor pages) — see note above.
         DATABASE_URL: ${DATABASE_URL_BUILD}
         BACKEND_ORIGIN: http://backend:8020
-    image: myclinic-web
+    # WEB_IMAGE lets a second stack (staging) build its own tag instead of
+    # overwriting production's image.
+    image: ${WEB_IMAGE:-myclinic-web}
     restart: unless-stopped
     env_file: .env
     environment:
       BACKEND_ORIGIN: http://backend:8020
     ports:
-      - "127.0.0.1:3000:3000"
+      # Staging overrides WEB_BIND (e.g. 0.0.0.0:3100) to be reachable on the
+      # private network; production keeps the loopback default.
+      - "${WEB_BIND:-127.0.0.1:3000}:3000"
     depends_on:
       backend:
         condition: service_healthy
@@ -73,14 +77,14 @@ services:
   # Dashboard portal — portal.myclinic.com.sa. Same image as web, switched
   # into portal mode: / redirects to /dashboard, responses are noindexed.
   portal:
-    image: myclinic-web
+    image: ${WEB_IMAGE:-myclinic-web}
     restart: unless-stopped
     env_file: .env
     environment:
       BACKEND_ORIGIN: http://backend:8020
       APP_MODE: portal
     ports:
-      - "127.0.0.1:3001:3000"
+      - "${PORTAL_BIND:-127.0.0.1:3001}:3000"
     depends_on:
       web:
         condition: service_started

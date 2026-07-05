@@ -1,0 +1,66 @@
+# Auto-deploy the STAGING stack on the same private VM.
+#
+# Push to the `staging` branch -> this deploys /opt/myclinic-staging, a second
+# compose project with its own database, volumes, image tag and ports:
+#   web    0.0.0.0:3100   (browse http://10.97.100.10:3100 from the office network)
+#   portal 0.0.0.0:3101
+#   db     127.0.0.1:5437
+# Production (/opt/myclinic, ports 3000/3001) is untouched.
+#
+# One-time server setup: docs/VM-Deployment-Guide.md, "Staging" section.
+
+name: Deploy STAGING to VM (self-hosted)
+
+on:
+  push:
+    branches: [staging]
+  workflow_dispatch:
+
+concurrency:
+  group: vm-deploy-staging
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, myclinic-vm]
+    timeout-minutes: 30
+    steps:
+      - name: Pull & rebuild the staging stack
+        run: |
+          set -euo pipefail
+          APP_DIR="${{ vars.STAGING_DEPLOY_PATH }}"
+          APP_DIR="${APP_DIR:-/opt/myclinic-staging}"
+
+          if [ ! -d "$APP_DIR/.git" ]; then
+            echo "── first run: cloning staging checkout ──"
+            git clone -b staging https://github.com/${{ github.repository }}.git "$APP_DIR"
+          fi
+          cd "$APP_DIR"
+
+          if [ ! -f .env ]; then
+            echo "::error::$APP_DIR/.env is missing — create it once (see docs/VM-Deployment-Guide.md, Staging section), then re-run this workflow."
+            exit 1
+          fi
+
+          echo "── pulling latest staging ──"
+          git fetch origin staging
+          git reset --hard origin/staging
+
+          echo "── ensuring database is up (web build reads it) ──"
+          docker compose up -d --wait db
+
+          echo "── rebuilding containers ──"
+          docker compose up -d --build
+
+          echo "── waiting for services ──"
+          sleep 10
+          docker compose ps
+
+          echo "── health checks ──"
+          curl -fsS http://127.0.0.1:3100/api/health
+          curl -fsS -o /dev/null -w 'staging site: %{http_code}\n' http://127.0.0.1:3100/
+          curl -fsS -o /dev/null -w 'staging portal login: %{http_code}\n' http://127.0.0.1:3101/login
+          curl -fsS http://127.0.0.1:3101/api/health
+
+          echo "── pruning old images ──"
+          docker image prune -f
