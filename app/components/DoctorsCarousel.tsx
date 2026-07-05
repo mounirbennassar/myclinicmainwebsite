@@ -32,7 +32,16 @@ export default function DoctorsCarousel({ specialty, showTabs = false, limit, in
   const hasInitial = Array.isArray(initialDoctors);
   const [doctors, setDoctors] = useState<Doctor[]>(initialDoctors ?? []);
   const [loading, setLoading] = useState(!hasInitial);
-  const [activeTab, setActiveTab] = useState<string>(specialty ?? "");
+  // With server-provided doctors the fetch effect below (which used to pick
+  // the first populated tab) is skipped, so seed the active tab here instead.
+  const [activeTab, setActiveTab] = useState<string>(() => {
+    if (specialty) return specialty;
+    if (showTabs && initialDoctors?.length) {
+      const present = new Set(initialDoctors.flatMap((d) => d.specialties));
+      return doctorFilters.find((s) => present.has(s)) || "";
+    }
+    return "";
+  });
 
   const tSpec = (name: string) => {
     const key = specNameToKey[name];
