@@ -23,7 +23,7 @@ const HERO_BG = "linear-gradient(155deg,#FBEAF1 0%,#EDF3FD 46%,#F1FBFA 100%)";
 
 const PHONE_TEL = "920022811";
 const PHONE_DISPLAY = "920 022 811";
-const WA_TEXT = "مرحبا، أود حجز موعد في قسم طب المرأة والأسرة في عيادتي";
+const WA_TEXT = "مرحبا، أود حجز موعد في قسم صحة المرأة في عيادتي";
 const WHATSAPP_LINK = `https://wa.me/966920022811?text=${encodeURIComponent(WA_TEXT)}`;
 
 /* Branches — same source data as the homepage locations rail. */
@@ -38,40 +38,40 @@ const branches = [
 /* Services — value maps to the note sent with the lead. Card photos live in
    /public/female-family/services (AI-generated, Saudi-culture art direction). */
 const SERVICES = [
-  { icon: "pregnant_woman", accent: ROSE, img: "/female-family/services/pregnancy.webp", altEn: "A Saudi mother-to-be with her doctor during a pregnancy follow-up", altAr: "أم حامل مع طبيبتها أثناء متابعة الحمل", en: ["Pregnancy & Childbirth", "Complete care before, during and after birth — reassurance for you and your baby at every step."], ar: ["متابعة الحمل والولادة", "رعاية شاملة قبل وأثناء وبعد الولادة، لطمأنينتك وسلامة طفلك في كل خطوة."] },
-  { icon: "child_care", accent: TEAL, img: "/female-family/services/mother-baby.webp", altEn: "A pediatric doctor checking a newborn held by his Saudi mother", altAr: "طبيبة أطفال تفحص رضيعا بين ذراعي أمه", en: ["Mother & Baby Care", "Close monitoring of your baby's growth and your health through the first journey of motherhood."], ar: ["رعاية الأم والطفل", "متابعة دقيقة لنمو طفلك وصحتك في رحلة الأمومة الأولى، بدعم متواصل."] },
-  { icon: "health_and_safety", accent: ROSE, img: "/female-family/services/screening.webp", altEn: "A Saudi woman reviewing preventive screening results with her doctor", altAr: "امرأة سعودية تراجع نتائج الفحوصات الوقائية مع طبيبتها", en: ["Women's Health & Screening", "Preventive screening programmes tailored to every stage of life for early detection and peace of mind."], ar: ["صحة المرأة والفحوصات الدورية", "برامج فحص وقائية مصممة لكل مرحلة عمرية، لاكتشاف مبكر واطمئنان دائم."] },
-  { icon: "gynecology", accent: TEAL, img: "/female-family/services/gynecology.webp", altEn: "A private consultation with a female gynecologist", altAr: "استشارة خاصة مع طبيبة أمراض النساء", en: ["Gynecology & Reproductive", "Precise diagnosis and treatment with the latest technology — in complete privacy and understanding."], ar: ["أمراض النساء والصحة الإنجابية", "تشخيص وعلاج دقيق بأحدث التقنيات، بخصوصية تامة وعناية تتفهم احتياجاتك."] },
-  { icon: "family_restroom", accent: ROSE, img: "/female-family/services/family.webp", altEn: "A Saudi family welcomed by their family doctor at the clinic", altAr: "عائلة سعودية تستقبلها طبيبة الأسرة في العيادة", en: ["Family & Primary Care", "One doctor who knows your family's history and cares for every member, from childhood onward."], ar: ["طب الأسرة والرعاية الأولية", "طبيب واحد يعرف تاريخ عائلتك ويعتني بكل أفرادها، من الطفولة حتى ما بعدها."] },
-  { icon: "spa", accent: TEAL, img: "/female-family/services/nutrition.webp", altEn: "A nutrition and wellbeing consultation at the clinic", altAr: "استشارة تغذية وصحة نفسية في العيادة", en: ["Nutrition & Wellbeing", "Integrated support for body and mind at every stage — nutrition plans and specialist counselling."], ar: ["التغذية والصحة النفسية", "دعم متكامل لجسدك وعقلك في كل مرحلة، ببرامج تغذية واستشارات نفسية متخصصة."] },
+  { icon: "pregnant_woman", accent: ROSE, img: "/female-family/services/pregnancy.webp", altEn: "A Saudi mother-to-be with her doctor during a pregnancy follow-up", altAr: "أم حامل مع طبيبتها أثناء متابعة الحمل", en: ["Pregnancy & Childbirth", "We're with you from your first visit through after birth — precise monitoring of your health and your baby's, and a care plan for every stage of pregnancy."], ar: ["متابعة الحمل والولادة", "نرافقك منذ أول زيارة وحتى ما بعد الولادة، بمتابعة دقيقة لصحتك وصحة طفلك، وخطة رعاية تناسب كل مرحلة من مراحل الحمل."] },
+  { icon: "child_care", accent: TEAL, img: "/female-family/services/mother-baby.webp", altEn: "A pediatric doctor checking a newborn held by his Saudi mother", altAr: "طبيبة أطفال تفحص رضيعا بين ذراعي أمه", en: ["Mother & Baby Care", "Specialist care for you and your baby through the first days, with follow-up that helps you begin motherhood with confidence and reassurance."], ar: ["رعاية الأم والطفل", "نقدم رعاية متخصصة لصحتك وصحة طفلك خلال الأيام الأولى، مع متابعة تساعدك على بدء رحلة الأمومة بثقة واطمئنان."] },
+  { icon: "health_and_safety", accent: ROSE, img: "/female-family/services/screening.webp", altEn: "A Saudi woman reviewing preventive screening results with her doctor", altAr: "امرأة سعودية تراجع نتائج الفحوصات الوقائية مع طبيبتها", en: ["Women's Health & Screening", "Preventive screening programmes tailored to every stage of life for early detection and lasting peace of mind."], ar: ["صحة المرأة والفحوصات الدورية", "برامج فحص وقائية مصممة لكل مرحلة عمرية، لاكتشاف مبكر واطمئنان دائم."] },
+  { icon: "gynecology", accent: TEAL, img: "/female-family/services/gynecology.webp", altEn: "A private consultation with a female gynecologist", altAr: "استشارة خاصة مع طبيبة أمراض النساء", en: ["Gynecology & Reproductive", "Diagnosis and treatment of a wide range of women's conditions with the latest medical methods — in an environment that gives you privacy, comfort and trust."], ar: ["أمراض النساء والصحة الإنجابية", "تشخيص وعلاج مختلف الحالات النسائية بأحدث الأساليب الطبية، في بيئة تمنحك الخصوصية والراحة والثقة."] },
+  { icon: "stethoscope", accent: ROSE, img: "/female-family/services/family.webp", altEn: "A Saudi woman with her doctor during a primary-care visit", altAr: "امرأة سعودية مع طبيبتها في زيارة الرعاية الأولية", en: ["Women's & Primary Care", "Ongoing care for your varied health needs, with follow-up that supports prevention, early detection and a health plan built around you."], ar: ["طب المرأة والرعاية الأولية", "رعاية مستمرة لمختلف احتياجاتك الصحية، مع متابعة تساعد على الوقاية والاكتشاف المبكر وبناء خطة صحية تناسبك."] },
+  { icon: "spa", accent: TEAL, img: "/female-family/services/nutrition.webp", altEn: "A nutrition and wellbeing consultation at the clinic", altAr: "استشارة تغذية وصحة نفسية في العيادة", en: ["Nutrition & Wellbeing", "Nutrition consultations and psychological support that help you reach a healthy balance for a better quality of life at every stage."], ar: ["التغذية والصحة النفسية", "استشارات تغذية ودعم نفسي يساعدانك على الوصول إلى توازن صحي يدعم جودة حياتك في مختلف مراحلها."] },
 ];
 
 const STATS = [
   { to: 15, prefix: "+", suffix: "", color: NAVY, en: "Years of care", ar: "سنة من الخبرة" },
-  { to: 22, prefix: "+", suffix: "", color: NAVY, en: "Women's specialists", ar: "طبيبة متخصصة" },
-  { to: 18, prefix: "", suffix: "K+", color: ROSE, en: "Patients cared for", ar: "مريضة سعيدة" },
+  { to: 22, prefix: "+", suffix: "", color: NAVY, en: "Consultants & specialists", ar: "استشارية وأخصائية" },
+  { to: 18, prefix: "", suffix: "K+", color: ROSE, en: "Women who trust us", ar: "مراجعة تثق بعيادتي" },
   { to: 98, prefix: "", suffix: "%", color: TEAL, en: "Patient satisfaction", ar: "نسبة رضا المريضات" },
 ];
 
 const JOURNEY = [
-  { en: ["Book your appointment", "In a few simple steps by phone, WhatsApp or online — pick the time that suits you."], ar: ["احجزي موعدك", "بخطوات بسيطة عبر الهاتف أو واتساب أو الموقع، اختاري الوقت الأنسب لك."] },
-  { en: ["Consultation & diagnosis", "A thorough session with your specialist to understand your case and reach a clear diagnosis."], ar: ["الاستشارة والتشخيص", "جلسة دقيقة مع الطبيبة المختصة لفهم حالتك ووضع تشخيص واضح."] },
-  { en: ["A personalized care plan", "A treatment and follow-up plan designed just for you, explained with full clarity."], ar: ["خطة رعاية متكاملة", "خطة علاج ومتابعة مصممة خصيصا لك، نشرحها لك بكل وضوح وشفافية."] },
-  { en: ["Ongoing follow-up", "We stay by your side every step, with regular follow-ups for lasting reassurance."], ar: ["المتابعة المستمرة", "نبقى إلى جانبك في كل خطوة، مع متابعة دورية لاطمئنانك الدائم."] },
+  { en: ["Book your appointment", "Choose the time that suits you and book by phone, WhatsApp or online."], ar: ["احجزي موعدك", "اختاري الوقت المناسب لك واحجزي موعدك عبر الهاتف أو واتساب أو الموقع الإلكتروني."] },
+  { en: ["A consultation just for you", "A session with your specialist to understand your case and answer all your questions."], ar: ["استشارة خاصة بك", "جلسة مع الطبيبة المختصة لفهم حالتك والإجابة عن جميع استفساراتك."] },
+  { en: ["A plan for your needs", "A clear treatment and follow-up plan that maps out your care journey in full, so you're reassured at every step."], ar: ["خطة تناسب احتياجك", "خطة علاج ومتابعة واضحة توضح رحلتك العلاجية بكل تفاصيلها لتكوني مطمئنة في كل خطوة."] },
+  { en: ["Ongoing follow-up", "We monitor your condition and stay by your side until the best results are achieved."], ar: ["متابعة مستمرة", "نتابع حالتك ونبقى إلى جانبك حتى تحقيق أفضل النتائج."] },
 ];
 
 const WHY = [
-  { icon: "verified", en: ["Specialist expertise", "Deep experience in women's & family medicine."], ar: ["خبرة متخصصة", "خبرات عالية في طب المرأة والأسرة."] },
-  { icon: "lock", en: ["Complete privacy", "An environment designed for your comfort on every visit."], ar: ["خصوصية تامة", "بيئة مصممة لراحتك في كل زيارة."] },
-  { icon: "biotech", en: ["Latest technology", "Precise diagnosis with the most advanced medicine offers."], ar: ["أحدث التقنيات", "تشخيص دقيق بأحدث ما توصل إليه الطب."] },
-  { icon: "schedule", en: ["Flexible scheduling", "We respect your time with punctual appointments, no waiting."], ar: ["مواعيد مرنة", "نحترم وقتك بمواعيد دقيقة بلا انتظار."] },
-  { icon: "medical_services", en: ["Integrated care", "Everything you and your family need under one roof."], ar: ["رعاية متكاملة", "كل ما تحتاجينه أنت وأسرتك تحت سقف واحد."] },
-  { icon: "smartphone", en: ["Digital health record", "Track your results and appointments easily through our app."], ar: ["ملف صحي رقمي", "تابعي نتائجك ومواعيدك بسهولة عبر تطبيقنا."] },
+  { icon: "verified", en: ["Specialist expertise", "Expert doctors and consultants across a range of specialties."], ar: ["خبرات متخصصة", "نخبة من الأطباء والاستشاريين في مختلف التخصصات."] },
+  { icon: "lock", en: ["Complete privacy", "A comfortable environment that respects your privacy on every visit."], ar: ["خصوصية تامة", "بيئة مريحة تحترم خصوصيتك في كل زيارة."] },
+  { icon: "biotech", en: ["Latest technology", "Modern devices and technology supporting precise diagnosis and quality care."], ar: ["تجهيز بأحدث التقنيات", "أجهزة وتقنيات حديثة تدعم التشخيص الدقيق وجودة الرعاية."] },
+  { icon: "schedule", en: ["Flexible scheduling", "Appointments that fit your day, with an organised experience that cuts waiting time."], ar: ["مواعيد مرنة", "مواعيد تناسب يومك مع تجربة منظمة تقلل وقت الانتظار."] },
+  { icon: "medical_services", en: ["Comprehensive care", "Everything you need in health services, all in one place."], ar: ["رعاية شاملة", "كل ما تحتاجينه من خدمات صحية في مكان واحد."] },
+  { icon: "smartphone", en: ["Digital health record", "View your results and appointments easily through the My Clinic app."], ar: ["ملف صحي رقمي", "اطلعي على نتائجك ومواعيدك بكل سهولة عبر تطبيق عيادتي."] },
 ];
 
 const TESTIMONIALS = [
   { grad: "linear-gradient(135deg,#F8B7CD,#E5688E)", enName: "Noura Al-Mutairi", arName: "نورة المطيري", enTag: "Pregnancy & birth", arTag: "متابعة حمل وولادة", en: "An experience that reassured me through the hardest stage of my pregnancy. My doctor truly listened, and the follow-up was precise at every step until my delivery.", ar: "«تجربة طمأنتني في أصعب مراحل حملي. الطبيبة أصغت لي بصدق حقيقي، وكانت المتابعة دقيقة في كل خطوة حتى لحظة ولادتي.»" },
-  { grad: "linear-gradient(135deg,#7FD0CE,#0E7C84)", enName: "Amal Al-Dosari", arName: "أمل الدوسري", enTag: "Family medicine", arTag: "طب الأسرة", en: "I finally found a place that cares for my health and my family's together. The privacy and professionalism exceeded my expectations — My Clinic is now our first choice.", ar: "«أخيرا وجدت مكانا يعتني بصحتي وصحة عائلتي معا. الخصوصية والاحترافية فاقت توقعاتي، وأصبحت عيادتي وجهتنا الأولى.»" },
+  { grad: "linear-gradient(135deg,#7FD0CE,#0E7C84)", enName: "Amal Al-Dosari", arName: "أمل الدوسري", enTag: "Women's health", arTag: "صحة المرأة", en: "I finally found a place that cares for my health as a woman with complete privacy and professionalism. The experience exceeded my expectations — My Clinic is now my first choice.", ar: "«أخيرا وجدت مكانا يعتني بصحتي كامرأة بكل خصوصية واحترافية. تجاوزت التجربة توقعاتي، وأصبحت عيادتي وجهتي الأولى.»" },
   { grad: "linear-gradient(135deg,#9DBEE6,#0A4C8E)", enName: "Hind Al-Anzi", arName: "هند العنزي", enTag: "Routine screening", arTag: "فحوصات دورية", en: "From booking to follow-up, everything was easy and comfortable. I felt I was in safe hands. I recommend every woman try the care here.", ar: "«من الحجز حتى المتابعة، كان كل شيء سهلا ومريحا. شعرت بأنني في أيد أمينة. أنصح كل امرأة بتجربة الرعاية هنا.»" },
 ];
 
@@ -219,7 +219,7 @@ export default function WomenFamilyMedicine({ doctors }: { doctors: Doctor[] }) 
     } catch { /* ignore */ }
 
     const svc = SERVICES.find((s) => s.en[0] === formService);
-    const noteParts = ["Women & Family Medicine"];
+    const noteParts = ["Women's Health"];
     if (svc) noteParts.push(`Service: ${svc.en[0]}`);
     if (formDate) noteParts.push(`Preferred date: ${formDate}`);
 
@@ -293,27 +293,27 @@ export default function WomenFamilyMedicine({ doctors }: { doctors: Doctor[] }) 
               <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
                 className="inline-flex items-center gap-2.5 bg-white/75 backdrop-blur border border-[#F3D2E0] pl-4 pr-3.5 py-2 md:py-2.5 rounded-full shadow-[0_14px_30px_-18px_rgba(201,72,111,0.45)] mb-5 md:mb-6">
                 <span className="w-2.5 h-2.5 rounded-full animate-[ff-dot_2.4s_ease-in-out_infinite]" style={{ background: ROSE, boxShadow: "0 0 0 4px rgba(229,104,142,0.18)" }} />
-                <span className="text-[13px] md:text-sm font-bold" style={{ color: NAVY }}>{isRtl ? "رعاية متكاملة للمرأة والأسرة" : "Complete care for women & family"}</span>
+                <span className="text-[13px] md:text-sm font-bold" style={{ color: NAVY }}>{isRtl ? "رعاية متكاملة لصحة المرأة" : "Complete care for women's health"}</span>
               </motion.div>
 
               <motion.h1 initial={false} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.06 }}
                 className={`font-headline font-extrabold text-[#0B3D78] tracking-tight mb-5 md:mb-6 text-[2rem] sm:text-4xl md:text-5xl xl:text-[3.6rem] ${isRtl ? "leading-[1.3]" : "leading-[1.08]"}`}>
                 {isRtl ? (
-                  <>عناية تليق بك في{" "}<span className="relative whitespace-nowrap" style={{ color: ROSE }}>كل مرحلة
+                  <>لأن صحتك تستحق رعاية{" "}<span className="relative whitespace-nowrap" style={{ color: ROSE }}>تليق بها
                     <svg viewBox="0 0 230 24" preserveAspectRatio="none" className="absolute left-0 right-0 -bottom-3 w-full h-[14px]" fill="none"><path d="M4 14C54 5 150 4 226 12" stroke={ROSE} strokeWidth="5" strokeLinecap="round" opacity=".5" /></svg>
-                  </span>{" "}من حياتك.</>
+                  </span>.</>
                 ) : (
-                  <>Care worthy of you at{" "}<span className="relative whitespace-nowrap" style={{ color: ROSE }}>every stage
+                  <>Because your health deserves care{" "}<span className="relative whitespace-nowrap" style={{ color: ROSE }}>worthy of it
                     <svg viewBox="0 0 230 24" preserveAspectRatio="none" className="absolute left-0 right-0 -bottom-3 w-full h-[14px]" fill="none"><path d="M4 14C54 5 150 4 226 12" stroke={ROSE} strokeWidth="5" strokeLinecap="round" opacity=".5" /></svg>
-                  </span>{" "}of life.</>
+                  </span>.</>
                 )}
               </motion.h1>
 
               <motion.p initial={false} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.14 }}
                 className="text-[#55677E] text-[15px] md:text-[19px] leading-[1.8] md:leading-[1.9] max-w-xl mb-7 md:mb-8">
                 {isRtl
-                  ? "من متابعة الحمل والولادة إلى صحة الأسرة، نقدم لك رعاية دقيقة ومتكاملة على أيدي نخبة من المتخصصين في صحة المرأة والأسرة — بخصوصية تامة وراحة تستحقينها."
-                  : "From pregnancy and childbirth to whole-family health, we deliver precise, integrated care from specialists devoted to women's & family health — in complete privacy and the comfort you deserve."}
+                  ? "نقدم لك في عيادتي رعاية متخصصة في صحة المرأة على يد نخبة من الاستشاريات والاستشاريين، لنرافقك في كل خطوة، من الفحوصات الوقائية إلى متابعة الحمل والصحة الإنجابية، في بيئة تحترم خصوصيتك وتضع راحتك أولا."
+                  : "At My Clinic we deliver specialist women's-health care led by expert consultants, accompanying you at every step — from preventive screening to pregnancy follow-up and reproductive health — in an environment that respects your privacy and puts your comfort first."}
               </motion.p>
 
               <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.22 }}
@@ -378,10 +378,10 @@ export default function WomenFamilyMedicine({ doctors }: { doctors: Doctor[] }) 
           <Reveal className="max-w-[720px] mx-auto text-center mb-12 md:mb-16">
             {eyebrow(isRtl ? "خدماتنا" : "Our services", true)}
             <h2 className="font-headline text-[clamp(30px,4.2vw,48px)] font-extrabold text-[#0B3D78] leading-[1.18] tracking-tight mb-4">
-              {isRtl ? "رعاية شاملة لكل مرحلة من حياتك" : "Comprehensive care for every stage of your life"}
+              {isRtl ? "رعاية ترافقك في جميع مراحل حياتك" : "Care that accompanies you through every stage of life"}
             </h2>
             <p className="text-[#5C6E85] text-base md:text-lg leading-[1.9]">
-              {isRtl ? "برامج طبية متكاملة مصممة بعناية لتلبية احتياجات المرأة والأسرة في مختلف المراحل العمرية." : "Integrated medical programmes carefully designed for the needs of women and families at every age."}
+              {isRtl ? "نوفر خدمات طبية متخصصة ترافقك من الفحوصات الوقائية إلى الحمل والولادة بإشراف نخبة من الأطباء والاستشاريين." : "Specialist medical services that accompany you from preventive screening to pregnancy and childbirth, led by our expert consultants."}
             </p>
           </Reveal>
 
@@ -421,9 +421,12 @@ export default function WomenFamilyMedicine({ doctors }: { doctors: Doctor[] }) 
           <div className="max-w-[1240px] mx-auto px-4 md:px-8">
             <Reveal className="max-w-[720px] mx-auto text-center mb-14 md:mb-20">
               {eyebrow(isRtl ? "رحلتك معنا" : "Your journey", true)}
-              <h2 className="font-headline text-[clamp(30px,4.2vw,48px)] font-extrabold text-[#0B3D78] leading-[1.18] tracking-tight">
-                {isRtl ? "أربع خطوات نحو رعاية تطمئنين إليها" : "Four steps to care you can trust"}
+              <h2 className="font-headline text-[clamp(30px,4.2vw,48px)] font-extrabold text-[#0B3D78] leading-[1.18] tracking-tight mb-4">
+                {isRtl ? "رحلة رعاية... تبدأ بك" : "A care journey that begins with you"}
               </h2>
+              <p className="text-[#5C6E85] text-base md:text-lg leading-[1.9]">
+                {isRtl ? "كل خطوة في عيادتي صممت لتمنحك تجربة أكثر راحة وسلاسة." : "Every step at My Clinic is designed to give you a smoother, more comfortable experience."}
+              </p>
             </Reveal>
 
             <div className="relative">
@@ -472,10 +475,10 @@ export default function WomenFamilyMedicine({ doctors }: { doctors: Doctor[] }) 
                   <span className="text-sm font-extrabold tracking-wide" style={{ color: "#7FE0DE" }}>{isRtl ? "لماذا عيادتي؟" : "Why My Clinic?"}</span>
                 </div>
                 <h2 className="font-headline text-[clamp(28px,3.8vw,44px)] font-extrabold text-white leading-[1.2] tracking-tight mb-4">
-                  {isRtl ? "تجربة طبية بمعايير تستحقينها أنت وأسرتك" : "A medical experience worthy of you and your family"}
+                  {isRtl ? "تجربة طبية بمعايير تستحقينها" : "A medical experience worthy of you"}
                 </h2>
                 <p className="text-[16.5px] leading-[1.9] text-[#BCD2E8] max-w-[50ch] mb-9">
-                  {isRtl ? "نجمع بين الكفاءة الطبية العالية ولمسة إنسانية صادقة، لنمنحك رعاية تشعرين معها بالثقة والاطمئنان." : "We combine high clinical excellence with a genuine human touch, giving you care that feels confident and reassuring."}
+                  {isRtl ? "نعمل على أن تكون كل زيارة تجربة تشعرك بالثقة والخصوصية والاهتمام، منذ لحظة وصولك وحتى انتهاء رحلتك العلاجية." : "We work to make every visit an experience that feels confident, private and attentive — from the moment you arrive until your care journey is complete."}
                 </p>
               </Reveal>
 
@@ -501,9 +504,9 @@ export default function WomenFamilyMedicine({ doctors }: { doctors: Doctor[] }) 
           <DoctorsCarousel
             initialDoctors={doctors}
             eyebrowEn="Our medical team"
-            eyebrowAr="فريقنا الطبي"
-            headingEn="Meet our women's & family specialists"
-            headingAr="أطباء طب المرأة والأسرة"
+            eyebrowAr="الفريق الطبي"
+            headingEn="Expertise you can trust"
+            headingAr="خبرات تثقين بها"
           />
         </div>
 
@@ -514,7 +517,7 @@ export default function WomenFamilyMedicine({ doctors }: { doctors: Doctor[] }) 
               <Reveal>
                 {eyebrow(isRtl ? "فروعنا" : "Our branches")}
                 <h2 className="font-headline text-[clamp(28px,3.8vw,44px)] font-extrabold text-[#0B3D78] leading-[1.18] tracking-tight">
-                  {isRtl ? "قريبون منك في جدة والرياض" : "Close to you in Jeddah & Riyadh"}
+                  {isRtl ? "عيادتي أقرب لك" : "My Clinic, closer to you"}
                 </h2>
               </Reveal>
               <div className="hidden md:flex gap-3 shrink-0 pb-1">
@@ -579,9 +582,9 @@ export default function WomenFamilyMedicine({ doctors }: { doctors: Doctor[] }) 
         <section id="reviews" className="py-20 md:py-28" style={{ background: "linear-gradient(180deg,#EEF4FC,#FFFFFF)" }}>
           <div className="max-w-[920px] mx-auto px-4 md:px-8 text-center">
             <Reveal>
-              {eyebrow(isRtl ? "آراء المريضات" : "Patient stories", true)}
+              {eyebrow(isRtl ? "آراء المراجعات" : "Patient stories", true)}
               <h2 className="font-headline text-[clamp(30px,4.2vw,48px)] font-extrabold text-[#0B3D78] leading-[1.18] tracking-tight mb-12">
-                {isRtl ? "ثقة تتجدد مع كل زيارة" : "Trust renewed with every visit"}
+                {isRtl ? "ثقة تبنى مع كل زيارة" : "Trust built with every visit"}
               </h2>
             </Reveal>
 
@@ -632,13 +635,13 @@ export default function WomenFamilyMedicine({ doctors }: { doctors: Doctor[] }) 
               <Reveal>
                 <div className="inline-flex items-center gap-2.5 mb-4">
                   <span className="w-6 h-0.5 rounded-full" style={{ background: "#5FD0CE" }} />
-                  <span className="text-sm font-extrabold tracking-wide" style={{ color: "#7FE0DE" }}>{isRtl ? "احجزي موعدك" : "Book your visit"}</span>
+                  <span className="text-sm font-extrabold tracking-wide" style={{ color: "#7FE0DE" }}>{isRtl ? "الحجز" : "Booking"}</span>
                 </div>
                 <h2 className="font-headline text-[clamp(30px,4vw,46px)] font-extrabold text-white leading-[1.18] tracking-tight mb-4">
-                  {isRtl ? "نسعد بالعناية بك" : "We'd be delighted to care for you"}
+                  {isRtl ? "ابدئي رحلتك الصحية اليوم" : "Start your health journey today"}
                 </h2>
                 <p className="text-[16.5px] leading-[1.9] text-[#BCD2E8] max-w-[46ch] mb-8">
-                  {isRtl ? "احجزي موعدك في دقائق، وسيتواصل معك فريقنا لتأكيد الموعد واختيار الطبيب المناسب لحالتك." : "Book in minutes and our team will call you to confirm the time and match you with the right specialist for your needs."}
+                  {isRtl ? "احجزي موعدك بكل سهولة، وسيتواصل معك فريقنا لاختيار الموعد والطبيبة الأنسب لاحتياجك." : "Book your appointment easily and our team will reach out to arrange the time and the doctor best suited to your needs."}
                 </p>
               </Reveal>
 
@@ -686,7 +689,7 @@ export default function WomenFamilyMedicine({ doctors }: { doctors: Doctor[] }) 
                 ) : (
                   <>
                     <h3 className="text-[23px] font-extrabold text-[#0B3D78] mb-1.5">{isRtl ? "نموذج الحجز" : "Booking form"}</h3>
-                    <p className="text-[14.5px] text-[#7587A0] mb-6">{isRtl ? "املئي بياناتك وسنتواصل معك في أقرب وقت." : "Fill in your details and we'll get back to you shortly."}</p>
+                    <p className="text-[14.5px] text-[#7587A0] mb-6">{isRtl ? "سيتواصل معك فريقنا في أقرب وقت لتأكيد موعدك والإجابة عن استفساراتك." : "Our team will contact you shortly to confirm your appointment and answer your questions."}</p>
                     <form className="flex flex-col gap-4" onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
                       {error && <div className="bg-red-50 text-red-700 text-sm px-4 py-3 rounded-xl font-medium">{error}</div>}
                       <div>
