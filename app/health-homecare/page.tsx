@@ -45,15 +45,17 @@ function Reveal({ children, className, delay = 0 }: { children: ReactNode; class
 /* What you get — the full Telehome offering at a glance */
 const OFFERINGS: { phase: "virtual" | "home"; icon: string; en: string; ar: string }[] = [
   { phase: "virtual", icon: "video_call", en: "Teleconsultation", ar: "استشارة عن بُعد" },
-  { phase: "home", icon: "science", en: "Lab at home", ar: "مختبر منزلي" },
+  { phase: "home", icon: "science", en: "Lab Extraction", ar: "سحب العينات" },
   { phase: "home", icon: "medication", en: "Medication delivery", ar: "توصيل الأدوية" },
-  { phase: "home", icon: "vaccines", en: "Home nursing", ar: "تمريض منزلي" },
+  { phase: "home", icon: "vaccines", en: "Nurse", ar: "ممرض" },
   { phase: "home", icon: "physical_therapy", en: "Physiotherapy", ar: "علاج طبيعي" },
-  { phase: "home", icon: "stethoscope", en: "Doctor visit", ar: "زيارة طبيب" },
+  { phase: "home", icon: "stethoscope", en: "Doctor", ar: "طبيب" },
 ];
 
 /* The journey — from your screen to your front door */
 const JOURNEY: { phase: "virtual" | "home"; icon: string; en: [string, string]; ar: [string, string] }[] = [
+  { phase: "virtual", icon: "calendar_month", en: ["Book your slot", "Request a virtual visit by phone, WhatsApp or our app and pick a time that suits you."], ar: ["احجز موعدك", "اطلب زيارة افتراضية عبر الهاتف أو واتساب أو تطبيقنا واختر الوقت الذي يناسبك."] },
+  { phase: "virtual", icon: "credit_card", en: ["Pay & check in via the app", "Complete the payment and check-in process to be ready for the consultation."], ar: ["ادفع وسجل الدخول عبر التطبيق", "أكمل الدفع وتسجيل الدخول لتكون جاهزا للاستشارة."] },
   { phase: "virtual", icon: "video_call", en: ["Talk to a doctor", "A teleconsultation, from the comfort of your home."], ar: ["تحدّث إلى طبيب", "استشارة عن بُعد من راحة منزلك."] },
   { phase: "virtual", icon: "clinical_notes", en: ["Get your care plan", "Tests, meds, nursing or a doctor visit — added to your plan."], ar: ["احصل على خطتك", "فحوصات أو أدوية أو تمريض أو زيارة طبيب — تُضاف إلى خطتك."] },
   { phase: "home", icon: "pin_drop", en: ["Share where & when", "Your National Address and a time that suits you."], ar: ["حدّد المكان والوقت", "عنوانك الوطني والوقت الذي يناسبك."] },
@@ -82,13 +84,13 @@ const SERVICES: Service[] = [
     icon: "video_call",
     en: {
       title: "Teleconsultation",
-      what: "A scheduled video consultation with our doctors — your starting point for almost everything else. The doctor listens, assesses, and agrees a plan with you.",
+      what: "A scheduled video consultation with the very same consultants who see patients in our Jeddah & Riyadh clinics — your starting point for almost everything else. The doctor listens, assesses, and agrees a plan with you.",
       how: "Book your session through our app, then meet your doctor by video. Prescriptions and onward requests are issued straight from the consultation.",
       expect: "The same standard of care as an in-clinic visit. You leave with a clear plan and, if needed, a prescription or onward request.",
     },
     ar: {
       title: "استشارة عن بُعد",
-      what: "استشارة مجدولة بالفيديو مع أطبائنا — نقطة البداية لكل شيء تقريباً. يستمع الطبيب ويقيّم ويتّفق معك على خطة.",
+      what: "استشارة مجدولة بالفيديو مع نفس الاستشاريين الذين يعالجون المرضى في عياداتنا بجدة والرياض — نقطة البداية لكل شيء تقريباً. يستمع الطبيب ويقيّم ويتّفق معك على خطة.",
       how: "احجز جلستك عبر تطبيقنا، ثم قابل طبيبك بالفيديو. تصدر الوصفات والطلبات اللاحقة مباشرةً من الاستشارة.",
       expect: "نفس مستوى الرعاية في العيادة. تُنهي الاستشارة بخطة واضحة، ووصفة أو إحالة عند الحاجة.",
     },
@@ -217,7 +219,7 @@ export default function HealthHomecarePage() {
               >
                 <span className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 ring-1 ring-white/20 backdrop-blur text-white font-extrabold ${isRtl ? "text-[13px]" : "text-[11px] uppercase tracking-[0.18em]"}`}>
                   <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>home_health</span>
-                  Telehome · تيلي هوم
+                  {isRtl ? "الاستشارة عن بعد والرعاية المنزلية" : "Tele-consultation & Homecare"}
                 </span>
 
                 <h1 className={`mt-6 font-headline font-extrabold text-4xl md:text-5xl xl:text-[3.75rem] ${isRtl ? "leading-[1.25]" : "tracking-tight leading-[1.05]"} [text-wrap:balance]`}>
@@ -230,15 +232,15 @@ export default function HealthHomecarePage() {
 
                 <p className="mt-5 text-white/75 text-base md:text-lg max-w-xl leading-relaxed [text-wrap:pretty]">
                   {isRtl
-                    ? "ابدأ باستشارة عن بُعد، ثم دع البقية تأتي إليك — فحوصات وأدوية وتمريض وعلاج طبيعي وزيارات طبيب، يوصلها فريقنا إلى باب منزلك. فريق واحد، تطبيق واحد، رحلة واحدة — من أول اتصال إلى آخر متابعة."
-                    : "Start with a teleconsultation, then let the rest come to you — lab tests, medication, nursing, physiotherapy and doctor visits, brought to your door by our own team. One team, one app, one journey — from the first call to the final follow-up."}
+                    ? "ابدأ باستشارة عن بعد مع نخبة من استشاريينا عبر مكالمة فيديو آمنة، ثم دع البقية تأتي إليك. فريق واحد، تطبيق واحد، رحلة واحدة — من أول اتصال إلى آخر متابعة."
+                    : "Start with a teleconsultation with our leading specialists over a secure video call, then let the rest come to you. One team, one app, one journey — from the first call to the final follow-up."}
                 </p>
 
                 <ul className="mt-7 flex flex-wrap gap-x-5 gap-y-2.5">
                   {[
                     { en: "Virtual + at-home care", ar: "رعاية افتراضية ومنزلية" },
                     { en: "Jeddah & Riyadh", ar: "جدة والرياض" },
-                    { en: "Licensed professionals", ar: "مختصّون مرخّصون" },
+                    { en: "Encrypted & private", ar: "مشفرة وخاصة" },
                   ].map((t) => (
                     <li key={t.en} className="inline-flex items-center gap-1.5 text-white/85 text-sm font-bold">
                       <span className="material-symbols-outlined text-[18px]" style={{ color: AQUA, fontVariationSettings: "'FILL' 1" }}>check_circle</span>
@@ -347,16 +349,16 @@ export default function HealthHomecarePage() {
             </h2>
             <p className="mt-5 text-on-surface-variant leading-[1.9] [text-wrap:pretty]">
               {isRtl
-                ? "ست خطوات بسيطة: تبدأ باستشارة افتراضية، ثم تأتي إليك الرعاية إلى المنزل."
-                : "Six simple steps: it begins with a virtual visit, then the care comes home to you."}
+                ? "ثماني خطوات بسيطة: تبدأ باستشارة افتراضية، ثم تأتي إليك الرعاية إلى المنزل."
+                : "Eight simple steps: it begins with a virtual visit, then the care comes home to you."}
             </p>
           </Reveal>
 
           <Reveal delay={0.1} className="mt-12">
             <div className="bg-white rounded-[2.5rem] ring-1 ring-outline-variant/30 shadow-clinical p-6 sm:p-10 md:p-12">
               {/* phase legend */}
-              <div className="hidden lg:grid grid-cols-6 gap-5 mb-6">
-                <div className="col-span-2 flex items-center gap-2">
+              <div className="hidden lg:grid grid-cols-8 gap-4 mb-6">
+                <div className="col-span-4 flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full" style={{ background: TEAL }} />
                   <span className="text-[11px] font-extrabold uppercase tracking-[0.14em]" style={{ color: TEAL }}>{isRtl ? "على شاشتك" : "On your screen"}</span>
                   <span className="flex-1 h-px bg-outline-variant/40 ms-1" />
@@ -372,10 +374,10 @@ export default function HealthHomecarePage() {
               <div className="hidden lg:block relative">
                 <div
                   className="absolute top-7 h-0.5 rounded-full"
-                  style={{ left: "8.33%", right: "8.33%", background: `linear-gradient(to ${isRtl ? "left" : "right"}, ${AQUA}, ${TEAL} 32%, ${NAVY})` }}
+                  style={{ left: "6.25%", right: "6.25%", background: `linear-gradient(to ${isRtl ? "left" : "right"}, ${AQUA}, ${TEAL} 45%, ${NAVY} 60%)` }}
                   aria-hidden
                 />
-                <ol className="relative grid grid-cols-6 gap-5">
+                <ol className="relative grid grid-cols-8 gap-4">
                   {JOURNEY.map((s, i) => {
                     const accent = s.phase === "virtual" ? TEAL : NAVY;
                     return (
