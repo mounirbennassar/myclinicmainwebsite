@@ -4,7 +4,7 @@ import HomeClient from "./HomeClient";
 
 // Doctors are fetched on the server (cached hourly) and baked into the page,
 // so the home carousel never depends on a client-side API call — same pattern
-// as /pediatric and /female-family-medicine.
+// as /pediatric and /female-medicine.
 export const revalidate = 3600;
 
 export default async function Home() {

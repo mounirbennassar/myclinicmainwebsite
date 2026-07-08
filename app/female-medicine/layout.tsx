@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   title: "Women's Health | صحة المرأة — عيادتي My Clinic",
   description:
     "رعاية متكاملة لصحة المرأة في عيادتي — متابعة الحمل والولادة، أمراض النساء، الفحوصات الدورية، رعاية الأم والطفل والصحة الإنجابية على أيدي نخبة من الاستشاريات المتخصصات في جدة والرياض. احجزي موعدك 920022811. Comprehensive women's healthcare — pregnancy, gynecology, screenings and reproductive care by our specialists in Jeddah & Riyadh.",
-  alternates: { canonical: "/female-family-medicine" },
+  alternates: { canonical: "/female-medicine" },
   openGraph: {
     title: "Women's Health | صحة المرأة — عيادتي My Clinic",
     description:

@@ -55,6 +55,13 @@ const nextConfig: NextConfig = {
         destination: "/contact",
         permanent: true,
       },
+      // The women's-health landing page dropped "family" from its slug.
+      // Keep the old URL alive for existing links, ads and search indexes.
+      {
+        source: "/female-family-medicine",
+        destination: "/female-medicine",
+        permanent: true,
+      },
     ];
   },
   async headers() {

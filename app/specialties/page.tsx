@@ -35,8 +35,8 @@ export default function SpecialtiesPage() {
   const FEATURED_HREF: Partial<Record<SpecKey, string>> = {
     pediatrics: "/pediatric",
     dental: "/dental",
-    obGyn: "/female-family-medicine",
-    familyMedicine: "/female-family-medicine",
+    obGyn: "/female-medicine",
+    familyMedicine: "/female-medicine",
   };
   const orderedKeys: SpecKey[] = [
     "pediatrics",
