@@ -324,270 +324,6 @@ export const doctorsData: Doctor[] = [
     "location": "Riyadh Al Sahafa"
   },
   {
-    "name": "RDH. Fotoun Abualfaraj",
-    "nameAr": "RDH. فتون أبو الفرج",
-    "title": "Dental Hygienist",
-    "titleAr": "أخصائية صحة الفم والأسنان",
-    "spec": "Dental",
-    "img": "/doctors/fotoun-abualfaraj.webp",
-    "education": [
-      "Bachelor's Degree of Oral & Dental Hygiene - USA"
-    ],
-    "educationAr": [
-      "بكالوريوس صحة الفم والأسنان - الولايات المتحدة"
-    ],
-    "languages": "English, Arabic",
-    "location": "Jeddah Al Khalidiyyah"
-  },
-  {
-    "name": "Dr. Walaa Alamoudi",
-    "nameAr": "د. ولاء العمودي",
-    "title": "Pediatric Dentistry Senior Specialist",
-    "titleAr": "أخصائي أول طب أسنان الأطفال",
-    "spec": "Dental",
-    "img": "/doctors/walaa-alamoudi.webp",
-    "education": [
-      "Master's Degree in Pediatric Dentistry"
-    ],
-    "educationAr": [
-      "ماجستير في طب أسنان الأطفال"
-    ],
-    "languages": "English, Arabic",
-    "location": "Jeddah Al Mohammadiyah"
-  },
-  {
-    "name": "Dr. Wafaa Kattan",
-    "nameAr": "د. وفاء كتن",
-    "title": "Restorative and Esthetic Dentistry Senior Specialist",
-    "titleAr": "أخصائي أول طب الأسنان التجميلي والترميمي",
-    "spec": "Dental",
-    "img": "/doctors/wafaa-kattan.webp",
-    "education": [
-      "Board in Restorative and Esthetic Dentistry"
-    ],
-    "educationAr": [
-      "بورد في طب الأسنان التجميلي والترميمي"
-    ],
-    "languages": "English, Arabic",
-    "location": "Jeddah Al Khalidiyyah"
-  },
-  {
-    "name": "Dr. Usra Khadwardi",
-    "nameAr": "د. يسرى خدوردي",
-    "title": "Dentist",
-    "titleAr": "طبيب أسنان",
-    "spec": "Dental",
-    "img": "/doctors/usra-khadwardi.webp",
-    "education": [
-      "Bachelor's Degree of Dental Medicine & Surgery"
-    ],
-    "educationAr": [
-      "بكالوريوس طب وجراحة الأسنان"
-    ],
-    "languages": "English, Arabic",
-    "location": "Jeddah Al Mohammadiyah"
-  },
-  {
-    "name": "Dr. Tahani Azizalrahman",
-    "nameAr": "د. تهاني عزيز الرحمن",
-    "title": "Senior Specialist Pediatric Dentistry",
-    "titleAr": "أخصائي أول طب أسنان الأطفال",
-    "spec": "Dental",
-    "img": "/doctors/tahani-azizalrahman.webp",
-    "education": [
-      "Master's Degree in Pediatric Dentistry"
-    ],
-    "educationAr": [
-      "ماجستير في طب أسنان الأطفال"
-    ],
-    "languages": "English, Arabic",
-    "location": "Jeddah Al Mohammadiyah"
-  },
-  {
-    "name": "Dr. Siraj Dakhil",
-    "nameAr": "د. سراج دخيل",
-    "title": "Endodontics Consultant",
-    "titleAr": "استشاري علاج الجذور والأعصاب",
-    "spec": "Dental",
-    "img": "/doctors/siraj-dakhil.webp",
-    "languages": "English, Arabic",
-    "location": "Jeddah Al Mohammadiyah"
-  },
-  {
-    "name": "Dr. Shahad Abudawood",
-    "nameAr": "د. شهد أبو داود",
-    "title": "Consultant - Pediatric Dentistry",
-    "titleAr": "استشاري طب أسنان الأطفال",
-    "spec": "Dental",
-    "img": "/doctors/shahad-abudawood.webp",
-    "education": [
-      "American Board of Pediatric Dentistry"
-    ],
-    "educationAr": [
-      "البورد الأمريكي لطب أسنان الأطفال"
-    ],
-    "languages": "English, Arabic",
-    "location": "Jeddah Al Khalidiyyah"
-  },
-  {
-    "name": "Dr. Rami Saab",
-    "nameAr": "د. رامي صعب",
-    "title": "Oral & Maxillofacial Surgery Consultant",
-    "titleAr": "استشاري جراحة الفم والوجه والفكين",
-    "spec": "Dental",
-    "img": "/doctors/rami-saab.webp",
-    "languages": "English, Arabic",
-    "location": "Jeddah Al Mohammadiyah"
-  },
-  {
-    "name": "Dr. Nawras Kherallah",
-    "nameAr": "د. نوراس خير الله",
-    "title": "Periodontics Specialist / Prosthodontics Specialist",
-    "titleAr": "أخصائي اللثة / أخصائي التركيبات",
-    "spec": "Dental",
-    "img": "/doctors/nawras-kherallah.webp",
-    "education": [
-      "Board of Periodontics & Oral Implantology Master's Degree in Fixed Prosthodontics",
-      "Master's Degree in Fixed Prosthodontics - France"
-    ],
-    "educationAr": [
-      "بورد علاج اللثة وزراعة الأسنان - ماجستير في التركيبات الثابتة",
-      "ماجستير في التركيبات الثابتة - فرنسا"
-    ],
-    "languages": "English, Arabic",
-    "location": "Jeddah Al Safa"
-  },
-  {
-    "name": "Dr. Muthanna Bajnied",
-    "nameAr": "د. مثنى باجنيد",
-    "title": "Restorative and Esthetic Dentistry Specialist",
-    "titleAr": "أخصائي طب الأسنان التجميلي والترميمي",
-    "spec": "Dental",
-    "img": "/doctors/muthanna-bajnied.webp",
-    "education": [
-      "Master of Science in Esthetic & Restorative Dentistry - USA"
-    ],
-    "educationAr": [
-      "ماجستير العلوم في طب الأسنان التجميلي والترميمي - الولايات المتحدة"
-    ],
-    "languages": "English, Arabic",
-    "location": "Jeddah Al Mohammadiyah + Dental Center"
-  },
-  {
-    "name": "Dr. Mohammed Hefne",
-    "nameAr": "د. محمد حفني",
-    "title": "Prosthodontics Consultant",
-    "titleAr": "استشاري التركيبات السنية",
-    "spec": "Dental",
-    "img": "/doctors/mohammed-hefne.webp",
-    "education": [
-      "Board of Prosthodontics"
-    ],
-    "educationAr": [
-      "بورد التركيبات السنية"
-    ],
-    "languages": "English, Arabic",
-    "location": "Jeddah Al Mohammadiyah + Dental Center"
-  },
-  {
-    "name": "Dr. Hisham Komo",
-    "nameAr": "د. هشام كومو",
-    "title": "Oral & Maxillofacial Surgery Consultant",
-    "titleAr": "استشاري جراحة الفم والوجه والفكين",
-    "spec": "Dental",
-    "img": "/doctors/hisham-komo.webp",
-    "education": [
-      "Board of Oral & Maxillofacial Surgery"
-    ],
-    "educationAr": [
-      "بورد جراحة الفم والوجه والفكين"
-    ],
-    "languages": "English, Arabic",
-    "location": "Jeddah Al Safa"
-  },
-  {
-    "name": "Dr. Hani Mawardi",
-    "nameAr": "د. هاني ماوردي",
-    "title": "Periodontics, Dental Implant & Oral Medicine Consultant",
-    "titleAr": "استشاري اللثة وزراعة الأسنان وطب الفم",
-    "spec": "Dental",
-    "img": "/doctors/hani-mawardi.webp",
-    "education": [
-      "Board of Periodontics, Dental Implant, & Oral Medicine"
-    ],
-    "educationAr": [
-      "بورد علاج اللثة وزراعة الأسنان وطب الفم"
-    ],
-    "languages": "English, Arabic",
-    "location": "Jeddah Al Mohammadiyah"
-  },
-  {
-    "name": "Dr. Fahad Aladwani",
-    "nameAr": "د. فهد العدواني",
-    "title": "Periodontics & Dental Implants Consultant",
-    "titleAr": "استشاري اللثة وزراعة الأسنان",
-    "spec": "Dental",
-    "img": "/doctors/fahad-aladwani.webp",
-    "education": [
-      "Board of Periodontics & Implants"
-    ],
-    "educationAr": [
-      "بورد علاج أمراض اللثة وزراعة الأسنان"
-    ],
-    "languages": "English, Arabic",
-    "location": "Jeddah Al Mohammadiyah + Dental Center"
-  },
-  {
-    "name": "Dr. Dana Alyafi",
-    "nameAr": "د. دانة اليافعي",
-    "title": "Orthodontics Consultant",
-    "titleAr": "استشاري تقويم الأسنان",
-    "spec": "Dental",
-    "img": "/doctors/dana-alyafi.webp",
-    "education": [
-      "Board of Orthodontics"
-    ],
-    "educationAr": [
-      "بورد تقويم الأسنان"
-    ],
-    "languages": "English, Arabic",
-    "location": "Jeddah Al Safa"
-  },
-  {
-    "name": "Dr. Ammar Almarghlani",
-    "nameAr": "د. عمار المرغلاني",
-    "title": "Periodontics & Implant Dentistry Consultant",
-    "titleAr": "استشاري اللثة وزراعة الأسنان",
-    "spec": "Dental",
-    "img": "/doctors/ammar-almarghlani.webp",
-    "education": [
-      "Board of Periodontology & Implant Dentistry Canadian Fellowship in Periodontics",
-      "Fellowship in Periodontics"
-    ],
-    "educationAr": [
-      "بورد علم اللثة وزراعة الأسنان الكندي - زمالة في أمراض اللثة",
-      "زمالة في أمراض اللثة"
-    ],
-    "languages": "English, Arabic",
-    "location": "Jeddah Al Mohammadiyah + Dental Center"
-  },
-  {
-    "name": "Dr. Lilian Bahha",
-    "nameAr": "د. ليليان بهاء",
-    "title": "Consultant - Prosthodontics",
-    "titleAr": "استشاري التركيبات السنية",
-    "spec": "Dental",
-    "img": "/doctors/lilian-bahha.webp",
-    "education": [
-      "Saudi Board in Prosthodontics"
-    ],
-    "educationAr": [
-      "البورد السعودي في التركيبات السنية"
-    ],
-    "languages": "English, Arabic",
-    "location": "Jeddah Al Mohammadiyah + Obhour"
-  },
-  {
     "name": "Dr. Taha Habibullah",
     "nameAr": "د. طه حبيب الله",
     "title": "Dermatology & Aesthetics Medicine Consultant",
@@ -2064,14 +1800,6 @@ export const doctorsData: Doctor[] = [
     "location": "Riyadh Al Sahafa"
   },
   {
-    "name": "Dr. Adeeb Marshad",
-    "title": "Family Dentistry Specialist",
-    "spec": "Dental",
-    "img": "/doctors/adeeb-marshad.webp",
-    "languages": "English, Arabic",
-    "location": "Riyadh Al Sahafa"
-  },
-  {
     "name": "Dr. Ahmad Almousa",
     "nameAr": "د. أحمد الموسى",
     "title": "Dermatology, Laser & Dermatosurgery Consultant",
@@ -2197,16 +1925,6 @@ export const doctorsData: Doctor[] = [
     "location": "Riyadh Al Sahafa"
   },
   {
-    "name": "Dr. Ibrahim Abanmy",
-    "nameAr": "Lara AlSaif \nلارا صافي",
-    "title": "Dentist",
-    "titleAr": "Endodontist \\ طب علاج الجذور",
-    "spec": "Dental",
-    "img": "/doctors/ibrahim-abanmy.webp",
-    "languages": "English, Arabic",
-    "location": "Riyadh Al Sahafa"
-  },
-  {
     "name": "Dr. Ibrahim Alfawaz",
     "nameAr": "د.ابراهيم الفواز",
     "title": "Family Medicine Associate Consultant",
@@ -2234,14 +1952,6 @@ export const doctorsData: Doctor[] = [
     "location": "Riyadh Al Sahafa"
   },
   {
-    "name": "Dr. Lara Safi",
-    "title": "Endodontic Specialist",
-    "spec": "Dental",
-    "img": "/doctors/lara-safi.webp",
-    "languages": "English, Arabic",
-    "location": "Riyadh Al Sahafa"
-  },
-  {
     "name": "Dr. Lolwah Alashgar",
     "nameAr": "د. لولوة الأشقر",
     "title": "Endocrinology Consultant",
@@ -2251,14 +1961,6 @@ export const doctorsData: Doctor[] = [
     "education": [
       "Saudi Fellowship in Endocrinology & Diabetes"
     ],
-    "languages": "English, Arabic",
-    "location": "Riyadh Al Sahafa"
-  },
-  {
-    "name": "Dr. Majed  Almadani",
-    "title": "Restorative, Cosmetic, and Implant Dentistry Specialist",
-    "spec": "Dental",
-    "img": "/doctors/majed-almadani.webp",
     "languages": "English, Arabic",
     "location": "Riyadh Al Sahafa"
   },
@@ -2432,14 +2134,6 @@ export const doctorsData: Doctor[] = [
     "location": "Riyadh Al Sahafa"
   },
   {
-    "name": "Dr. Noura AlOtaibi",
-    "title": "Oral and Maxillofacial Surgery Consultant",
-    "spec": "Dental",
-    "img": "/doctors/noura-alotaibi.webp",
-    "languages": "English, Arabic",
-    "location": "Riyadh Al Sahafa"
-  },
-  {
     "name": "Dr. Omar AlRahbeeni",
     "nameAr": "د. عمر الرهبيني",
     "title": "Family Medicine Associate Consultant",
@@ -2462,14 +2156,6 @@ export const doctorsData: Doctor[] = [
     "education": [
       "Saudi Board in Family Medicine"
     ],
-    "languages": "English, Arabic",
-    "location": "Riyadh Al Sahafa"
-  },
-  {
-    "name": "Dr. Reda Dimashkieh",
-    "title": "Prosthodontics & Cosmetic Dentistry",
-    "spec": "Dental",
-    "img": "/doctors/reda-dimashkieh.webp",
     "languages": "English, Arabic",
     "location": "Riyadh Al Sahafa"
   },
@@ -2554,5 +2240,1033 @@ export const doctorsData: Doctor[] = [
     "img": "/doctors/yazan-aleisawi.webp",
     "languages": "English, Arabic",
     "location": "Riyadh Al Sahafa"
+  },
+  {
+    "name": "Dr. Abdelrahman Alhilou",
+    "nameAr": "د. عبدالرحمن الحلو",
+    "title": "Endodontics Consultant",
+    "titleAr": "استشاري علاج عصب وجذور الأسنان",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "Doctorate of Endodontics - USA"
+    ],
+    "educationAr": [
+      "دكتوراه في علاج عصب وجذور الأسنان - أمريكا"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Abdulrahman Tehsin",
+    "nameAr": "د. عبدالرحمن تحسين",
+    "title": "General Dentist",
+    "titleAr": "طبيب أسنان",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "Bachelor’s Degree of Dental Medicine & Surgery"
+    ],
+    "educationAr": [
+      "بكالوريوس في طب وجراحة الأسنان"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Abrar Almarghalani",
+    "nameAr": "د. أبرار المرغلاني",
+    "title": "Sr. Registrar In Operative & Esthetic Dentistry",
+    "titleAr": "استشاري تجميل و إصحاح الاسنان",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "American Fellowship in Esthetic and Restorative Dentistry\r\nMaster's Degree in Dental Materials Science"
+    ],
+    "educationAr": [
+      "الزماله الامريكيه في تجميل و اصحاح الاسنان، ماجستير علم مواد الاسنان"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Ahmed Elsayed",
+    "nameAr": "د. أحمد السيد",
+    "title": "Prosthodontist",
+    "titleAr": "أخصائي تركيبات أسنان",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "Master of Prosthodontics- Marmara University/Türkiye"
+    ],
+    "educationAr": [
+      "ماجيستير تركيبات أسنان- جامعة مرمرة/تركيا"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Ahmed Ghannam",
+    "nameAr": "د.أحمد غنام",
+    "title": "General Dentist",
+    "titleAr": "طبيب أسنان",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "Bachelor’s Degree of Dental Medicine & Surgery"
+    ],
+    "educationAr": [
+      "بكالوريوس في طب وجراحة الأسنان"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Ahmed Younis",
+    "nameAr": "د. أحمد يونس",
+    "title": "Endodontic Specialist",
+    "titleAr": "أخصائي علاج جذور الأسنان",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "Master’s Degree in Endodontics"
+    ],
+    "educationAr": [
+      "ماجستير في علاج جذور الأسنان"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Ahood Aldahri",
+    "nameAr": "د. عهود الدهري",
+    "title": "General Dentist",
+    "titleAr": "طبيب أسنان",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "Bachelor’s Degree of Dental Medicine & Surgery"
+    ],
+    "educationAr": [
+      "بكالوريوس في طب وجراحة الأسنان"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Alaa Samman",
+    "nameAr": "د. علاء السمان",
+    "title": "Orthodontic Specialist",
+    "titleAr": "أخصائي تقويم الأسنان",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "Board Certificate in Orthodontics"
+    ],
+    "educationAr": [
+      "شهادة البورد في تقويم الأسنان"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Alaa Babeer",
+    "nameAr": "د. علاء بابعير",
+    "title": "Endodontist Sr. Specialist",
+    "titleAr": "أخصائي أول علاج الجذور المجهرية وأعصاب الأسنان",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "Doctorate of Science in Endodontics - USA"
+    ],
+    "educationAr": [
+      "دكتوراه في علاج الجذور وعصب الأسنان المجهري - أمريكا"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Alaa Kabbarah",
+    "nameAr": "علاء كباره",
+    "title": "Consultant Dental Public health",
+    "titleAr": "استشاري الصحة العامه للفم و الاسنان",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "Candaian Board in Dental Public Health"
+    ],
+    "educationAr": [
+      "البورد الكندي في الصحة العامه للفم و الاسنان"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Alamuddin Bakhit",
+    "nameAr": "د. علم الدين بخيت",
+    "title": "Endodontics Consultant",
+    "titleAr": "استشاري علاج عصب و جذور الأسنان",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "Doctorate in Endodontics – Japan"
+    ],
+    "educationAr": [
+      "دكتوراه في أعصاب و جذور الأسنان - اليابان"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Ali Elatrouni",
+    "nameAr": "د. علي العطروني",
+    "title": "Oral Maxillo Facial Surgery & implantology Consultant",
+    "titleAr": "استشاري جراحة الفم والفكين والوجه وزراعة الأسنان",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "French Board of Oral Maxillo Facial Surgery"
+    ],
+    "educationAr": [
+      "البورد الفرنسي في جراحة الفم والفكين"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Ammar Almarghlani",
+    "nameAr": "د. عمار المرغلاني",
+    "title": "Consultant in Periodontics and Implant Dentistry",
+    "titleAr": "استشاري طب وجراحة اللثة وزراعة الأسنان",
+    "spec": "Dental",
+    "img": "/doctors/ammar-almarghlani.webp",
+    "education": [
+      "Board of Periodontology & Implant Dentistry Canadian Fellowship in Periodontics",
+      "Fellowship in Periodontics"
+    ],
+    "educationAr": [
+      "بورد علم اللثة وزراعة الأسنان الكندي - زمالة في أمراض اللثة",
+      "زمالة في أمراض اللثة"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah Al Mohammadiyah + Dental Center"
+  },
+  {
+    "name": "Dr. Amr Azhari",
+    "nameAr": "د. عمرو أزهري",
+    "title": "Consultant in Restorative and Cosmetic Dentistry",
+    "titleAr": "استشاري إصحاح وتجميل الأسنان",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "Doctorate of Philosophy in Community Oral Health-USA"
+    ],
+    "educationAr": [
+      "دكتوراه صحة الأسنان في المجتمع  - أمريكا"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Anhar Basunbul",
+    "nameAr": "د. أنهار باسنبل",
+    "title": "Maxillofacial Prosthodontics & Oral Oncology Consultant",
+    "titleAr": "استشاري تركيبات وتجميل الأسنان والوجه والفكين وأورام الفم",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "American Board of Prosthodontics-Maxillofacial Prosthodontics & Oral Oncology\r\nDoctorate of Prosthodontics Restorative Biomaterials - USA"
+    ],
+    "educationAr": [
+      "البورد الأمريكي في تركيبات وتجميل الأسنان والوجه والفكين وأورام الفم\r\nدكتوراه في مواد التركيبات وتجميل الأسنان - أمريكا"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Bayan Alsharif",
+    "nameAr": "د. بيان الشريف",
+    "title": "General Dentist",
+    "titleAr": "طبيب أسنان",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "Bachelor’s Degree of Dental Medicine & Surgery"
+    ],
+    "educationAr": [
+      "بكالوريوس في طب وجراحة الأسنان"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Dana Alyafi",
+    "nameAr": "د. دانة اليافي",
+    "title": "Orthodontics Consultant",
+    "titleAr": "استشاري تقويم الأسنان",
+    "spec": "Dental",
+    "img": "/doctors/dana-alyafi.webp",
+    "education": [
+      "Board of Orthodontics"
+    ],
+    "educationAr": [
+      "بورد تقويم الأسنان"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah Al Safa"
+  },
+  {
+    "name": "Dr. Emad Albadawi",
+    "nameAr": "د. عماد البدوي",
+    "title": "Pediatric Dentistry Consultant \r\nTMJ Disorders and Orofacial Pain Consultant",
+    "titleAr": "استشاري طب أسنان الأطفال \r\nاستشاري أمراض مفصل الفك وألم الوجه والفكين",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "Doctorate in Pediatric Dentistry – USA\r\nAmerican Board Certified in Pediatric Dentistry"
+    ],
+    "educationAr": [
+      "دكتوراه في طب أسنان الأطفال - أمريكا \r\nالبورد الأمريكي في طب أسنان الأطفال"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Elham Elsahafi",
+    "nameAr": "د. إالهام الصحفي",
+    "title": "Consultant in Oral Medicine and Aesthetic Dentistry",
+    "titleAr": "استشاري طب الفم وتجميل الأسنان",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "Doctorate in Oral Medicine – King's College London, UK"
+    ],
+    "educationAr": [
+      "دكتوراه في طب الفم - جامعة كينجز - المملكة المتحدة"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Eyad Fathi",
+    "nameAr": "د. إياد فتحي",
+    "title": "Prosthodontics Specialist",
+    "titleAr": "أخصائي تركيبات وتجميل الأسنان",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "Bachelor’s Degree in Dental Medicine & Surgery\r\nMaster’s Degree in Prosthodontics"
+    ],
+    "educationAr": [
+      "بكالوريوس في طب وجراحة الأسنان\r\nماجستير في تركيبات وتجميل الأسنان"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Fahad Aladwani",
+    "nameAr": "د. فهد العدواني",
+    "title": "Periodontics & Dental Implants Sr. Specialist",
+    "titleAr": "أخصائي أول - جراحة وتجميل اللثة وزراعة الأسنان",
+    "spec": "Dental",
+    "img": "/doctors/fahad-aladwani.webp",
+    "education": [
+      "Board of Periodontics & Implants"
+    ],
+    "educationAr": [
+      "بورد علاج أمراض اللثة وزراعة الأسنان"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah Al Mohammadiyah + Dental Center"
+  },
+  {
+    "name": "Dr. Fawziah Gomri",
+    "nameAr": "د. فوزيه قمري",
+    "title": "General Dentist",
+    "titleAr": "طبيب أسنان",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "Bachelor’s Degree of Dental Medicine & Surgery"
+    ],
+    "educationAr": [
+      "بكالوريوس في طب وجراحة الأسنان"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Feras Mirdad",
+    "nameAr": "د. فراس مرداد",
+    "title": "Specialist in Prosthodontics and Cosmetic Dentistry",
+    "titleAr": "أخصائي تركيبات وتجميل الأسنان",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "Prosthodontics Boston university \r\nRestorative Dentistry UCLA"
+    ],
+    "educationAr": [
+      "تركيبات و تجميل الاسنان جامعه بوسطن \r\nاصحاح و تجميل الاسنان جامعه كاليفورنيا لوس انجلوس"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Fetoun Alhashemy",
+    "nameAr": "د. فتون الهاشمي",
+    "title": "Pedodontics Sr. Specialist",
+    "titleAr": "أخصائي أول - طب أسنان الأطفال",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "Saudi Board of Pediatric Dentistry"
+    ],
+    "educationAr": [
+      "البورد السعودي في طب أسنان الأطفال"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Futoon Abualfaraj",
+    "nameAr": "د. فتون أبو الفرج",
+    "title": "Dental Hygienist",
+    "titleAr": "أخصائي صحة الفم والأسنان",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "Bachelor’s Degree of Oral & Dental Hygiene - USA"
+    ],
+    "educationAr": [
+      "بكالوريوس في صحة الفم والأسنان - أمريكا"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Hayel Makhashin",
+    "nameAr": "د. هايل مخاشن",
+    "title": "Oral & Maxillofacial Surgery Sr. Specialist",
+    "titleAr": "أخصائي أول - جراحة الفم والوجه والفكين",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "Egyptian Board of Oral & Maxillofacial Surgery"
+    ],
+    "educationAr": [
+      "البورد المصري في طب وجراحة الفم والوجه والفكين"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Hammam Bahammam",
+    "nameAr": "د. همام باهمام",
+    "title": "Pediatric Dentistry Consultant",
+    "titleAr": "استشاري طب أسنان الأطفال",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "Doctor of Science in Pediatric Dentistry (DScD),\r\nBoston University, USA\r\nAmerican Board of Pediatric Dentistry \r\nCanadian Board of Pediatric Dentistry \r\nFellow of the Royal College of Dentist Canada of Pediatric Dentistry"
+    ],
+    "educationAr": [
+      "دكتوراه في العلوم في طب أسنان الاطفال من جامعة بوسطن بالولايات المتحدة الأمريكية \r\nالبورد الأمريكي في طب أسنان الأطفال \r\nالبورد الكندي في طب أسنان الأطفال \r\nزميل الكلية الملكية لأطباء الأسنان في كندا في طب أسنان الأطفال"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Hani Mawardi",
+    "nameAr": "د. هاني ماوردي",
+    "title": "Periodontics, Dental Implant, & Oral Medicine Consultant",
+    "titleAr": "استشاري أمراض وجراحة اللثة، زراعة الأسنان، وطب الفم",
+    "spec": "Dental",
+    "img": "/doctors/hani-mawardi.webp",
+    "education": [
+      "Board of Periodontics, Dental Implant, & Oral Medicine"
+    ],
+    "educationAr": [
+      "بورد علاج اللثة وزراعة الأسنان وطب الفم"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah Al Mohammadiyah"
+  },
+  {
+    "name": "Dr. Hasan Abed",
+    "nameAr": "د. حسن عابد",
+    "title": "Conscious Sedation & Special Care Dentistry Consultant",
+    "titleAr": "استشاري طب أسنان الرعاية الخاصة والتخدير الواعي",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "Doctorate of Special Care Dentistry & Conscious Sedation\r\nMaster’s Degree in Special Care Dentistry\r\nBritish Fellowship in Clinical Conscious Sedation"
+    ],
+    "educationAr": [
+      "دكتوراه في طب أسنان ذوي الرعاية الخاصة والتخدير الواعي \r\nماجستير في طب أسنان ذوي الرعاية الخاصة \r\nالزمالة البريطانية الإكلينيكية في التخدير الواعي لطب الأسنان"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Heba Binabid",
+    "nameAr": "د. هبه بن عابد",
+    "title": "Dental Esthetic & Restorative Specialist",
+    "titleAr": "أخصائي تجميل وترميم الأسنان",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "Certificate in Esthetic & Restorative - USA"
+    ],
+    "educationAr": [
+      "شهادة التخصص في تجميل وترميم الأسنان - أمريكا"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Hisham Komo",
+    "nameAr": "د. هشام كومو",
+    "title": "Oral & Maxillofacial Surgery Consultant",
+    "titleAr": "استشاري جراحة الفم والوجه والفكين",
+    "spec": "Dental",
+    "img": "/doctors/hisham-komo.webp",
+    "education": [
+      "Board of Oral & Maxillofacial Surgery"
+    ],
+    "educationAr": [
+      "بورد جراحة الفم والوجه والفكين"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah Al Safa"
+  },
+  {
+    "name": "Dr. Hussam Shawli",
+    "nameAr": "د. حسام شاولي",
+    "title": "Oral & Maxillofacial Surgery and Dental Implant Consultant",
+    "titleAr": "استشاري جراحة فم و فكين و وجه و زراعة اسنان",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "Saudi Board in Oral and Maxillofacial Surgery"
+    ],
+    "educationAr": [
+      "البورد السعودي في جراحة الوجه والفكين"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Ibrahim Abdulmalik",
+    "nameAr": "د. إبراهيم عبدالمالك",
+    "title": "General Dentist",
+    "titleAr": "طبيب أسنان",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "Bachelor’s Degree of Dental Medicine & Surgery"
+    ],
+    "educationAr": [
+      "بكالوريوس في طب وجراحة الأسنان"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Jawdat Jamluddin",
+    "nameAr": "د. جودت جمال الدين",
+    "title": "Periodonitic Specialist",
+    "titleAr": "أخصائي جراحة وتجميل اللثة",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "Diploma in Periodontics - Lebanon"
+    ],
+    "educationAr": [
+      "دبلوم في أمراض وجراحة اللثة - لبنان"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Kawthar Albeedh",
+    "nameAr": "د. كوثر البيض",
+    "title": "General Dentist",
+    "titleAr": "طبيب أسنان",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "Bachelor’s Degree of Dental Medicine & Surgery"
+    ],
+    "educationAr": [
+      "بكالوريوس في طب وجراحة الأسنان"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Lalyan Bahha",
+    "nameAr": "د. لليان بحه",
+    "title": "Consultant Prosthodontics & Cosmetic Dentistry",
+    "titleAr": "استشاري في تركيبات وتجميل الاسنان",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "Saudi Board in Prosthodontics"
+    ],
+    "educationAr": [
+      "البورد السعودي للاستعاضة السنية"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Lama Samanoudi",
+    "nameAr": "د. لمى سمنودي",
+    "title": "General Dentist",
+    "titleAr": "طبيب أسنان",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "Bachelor’s Degree of Dental Medicine & Surgery"
+    ],
+    "educationAr": [
+      "بكالوريوس في طب وجراحة الأسنان"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Lina AlSharif",
+    "nameAr": "د. لينا الشريف",
+    "title": "Senior Registrar in Endodontics",
+    "titleAr": "نائب أول علاج الجذور وأعصاب الأسنان",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "Saudi Board in Endodontics"
+    ],
+    "educationAr": [
+      "البورد السعودي لعلاج جذور وأعصاب الأسنان"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Lojain Bassyouni",
+    "nameAr": "د. لوجين بسيوني",
+    "title": "Oral & Maxillofacial Surgery Consultant",
+    "titleAr": "استشاري جراحة الفم والوجه والفكين",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "Canadian Board & Fellowship of Oral & Maxillofacial Surgery"
+    ],
+    "educationAr": [
+      "البورد والزمالة الكندية في جراحة الفم والوجه والفكين"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Majed Basharahil",
+    "nameAr": "د. ماجد باشراحيل",
+    "title": "Pedodontics Specialist",
+    "titleAr": "أخصائي طب أسنان الأطفال",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "Master’s Degree in Pediatric Dentistry"
+    ],
+    "educationAr": [
+      "ماجستير في طب أسنان الأطفال"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Majed Althubaiti",
+    "nameAr": "د. ماجد الثبيتي",
+    "title": "Consultant in Periodontics & Implant Dentistry",
+    "titleAr": "استشاري جراحة وتجميل اللثة زراعة الأسنان",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "Saudi Board of Periodontics & Implants"
+    ],
+    "educationAr": [
+      "البورد السعودي في أمراض وجراحة اللثة"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Manab Benten",
+    "nameAr": "د. مناب بنتن",
+    "title": "Orofacial Pain, TMJ & Sleep Medicine Consultant",
+    "titleAr": "استشاري علاج الام الوجه و الفك و اضطرابات النوم وانقطاع التنفس",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "Master's of Oral Sciences from The University at Buffalo\r\nNew York, USA - American Board of Orofacial Pain"
+    ],
+    "educationAr": [
+      "ماجستير علوم الفم - جامعة بفلو نيويورك - البورد الأمريكي"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Marwan Salah Eldin",
+    "nameAr": "د. مروان صلاح الدين",
+    "title": "Endodontics Specialist",
+    "titleAr": "أخصائي علاج الجذور المجهري وأعصاب الأسنان",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "Master’s Degree in Oral & Dental Surgery\r\nItalian Fellowship in Microscopic Endodontics & Microsurgery"
+    ],
+    "educationAr": [
+      "ماجستير في طب وجراحة الفم والأسنان\r\nالزمالة الإيطالية في علاج الجذور المجهري والجراحات الدقيقة"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Maysaa Alsharqawi",
+    "nameAr": "د. ميساء الشرقاوي",
+    "title": "General Dentist",
+    "titleAr": "طبيب أسنان",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "Bachelor’s Degree of Dental Medicine & Surgery"
+    ],
+    "educationAr": [
+      "بكالوريوس في طب وجراحة الأسنان"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Mirfat Moqbel",
+    "nameAr": "د. ميرفت مقبل",
+    "title": "Consultant In Aesthetic & Restorative Dentistry",
+    "titleAr": "استشاري تجميل و اصلاح الأسنان",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "Saudi Board of Restorative Dentistry"
+    ],
+    "educationAr": [
+      "البورد السعودي في إصلاح الأسنان"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Mohammed Hefne",
+    "nameAr": "د. محمد حفني",
+    "title": "Prosthodontics Consultant",
+    "titleAr": "استشاري تركيبات وتجميل الأسنان",
+    "spec": "Dental",
+    "img": "/doctors/mohammed-hefne.webp",
+    "education": [
+      "Board of Prosthodontics"
+    ],
+    "educationAr": [
+      "بورد التركيبات السنية"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah Al Mohammadiyah + Dental Center"
+  },
+  {
+    "name": "Dr. Mohammed Attar",
+    "nameAr": "د. محمد عطار",
+    "title": "General Dentist",
+    "titleAr": "طبيب أسنان",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "Bachelor’s Degree of Dental Medicine & Surgery"
+    ],
+    "educationAr": [
+      "بكالوريوس في طب وجراحة الأسنان"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Muthanna Bajnied",
+    "nameAr": "د. مثنى باجنيد",
+    "title": "Dental Esthetic & Restorative Specialist",
+    "titleAr": "أخصائي تجميل وترميم الأسنان",
+    "spec": "Dental",
+    "img": "/doctors/muthanna-bajnied.webp",
+    "education": [
+      "Master of Science in Esthetic & Restorative Dentistry - USA"
+    ],
+    "educationAr": [
+      "ماجستير العلوم في طب الأسنان التجميلي والترميمي - الولايات المتحدة"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah Al Mohammadiyah + Dental Center"
+  },
+  {
+    "name": "Dr. Nawras Kherallah",
+    "nameAr": "د. نورس خير الله",
+    "title": "Periodontist & Oral Implantologist Specialist",
+    "titleAr": "أخصائي علاج اللثة وزراعة الأسنان",
+    "spec": "Dental",
+    "img": "/doctors/nawras-kherallah.webp",
+    "education": [
+      "Board of Periodontics & Oral Implantology Master's Degree in Fixed Prosthodontics",
+      "Master's Degree in Fixed Prosthodontics - France"
+    ],
+    "educationAr": [
+      "بورد علاج اللثة وزراعة الأسنان - ماجستير في التركيبات الثابتة",
+      "ماجستير في التركيبات الثابتة - فرنسا"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah Al Safa"
+  },
+  {
+    "name": "Dr. Osama Basri",
+    "nameAr": "د. أسامة بصري",
+    "title": "Orthodontics and dentofacial orthopedics",
+    "titleAr": "استشاري تقويم الأسنا ن والفكين",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "Diplomate of the American board of orthodontics\r\nFellow of the Royal College of dentists of Canada in orthodontics \r\nSub speciality in Craniofacial and surgical orthodontics- university of Pittsburgh"
+    ],
+    "educationAr": [
+      "البورد الامريكي في تقويم الاسنان \r\nزماله الكليه الملكيه في كندا لتقويم الاسنان \r\nالتخصص الدقيق في تقويم الاسنان الجراحي و عيوب الوجه والفكين الخلقية"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Rami Saab",
+    "nameAr": "د. رامي صعب",
+    "title": "Oral & Maxillofacial Surgery Consultant",
+    "titleAr": "استشاري جراحة الفم والوجه والفكين",
+    "spec": "Dental",
+    "img": "/doctors/rami-saab.webp",
+    "education": [
+      "Doctorate of Oral & Maxillofacial Surgery - Romania"
+    ],
+    "educationAr": [
+      "دكتوراه في طب وجراحة الفم والوجه والفكين - رومانيا"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah Al Mohammadiyah"
+  },
+  {
+    "name": "Dr. Rawah Eshky",
+    "nameAr": "د. رواح عشقي",
+    "title": "Orthodontics & Dentofacial Orthopedics Consultant",
+    "titleAr": "استشاري تقويم الأسنان والفكين",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "American Board of Orthodontics\r\nCanadian Board of Orthodontics"
+    ],
+    "educationAr": [
+      "البورد الأمريكي في تقويم الأسنان\r\nالبورد الكندي في تقويم الأسنان"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Reyouf Mousa",
+    "nameAr": "د. ريوف موسى",
+    "title": "General Dentist",
+    "titleAr": "طبيب أسنان",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "Bachelor’s Degree of Dental Medicine & Surgery"
+    ],
+    "educationAr": [
+      "بكالوريوس في طب وجراحة الأسنان"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Saeed BinTalib",
+    "nameAr": "د. سعيد بن طالب",
+    "title": "General Dentist",
+    "titleAr": "طبيب أسنان",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "Bachelor’s Degree of Dental Medicine & Surgery"
+    ],
+    "educationAr": [
+      "بكالوريوس في طب وجراحة الأسنان"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Sami Lodhi",
+    "nameAr": "د. سامي لودي",
+    "title": "General Dentist",
+    "titleAr": "طبيب أسنان",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "Bachelor’s Degree of Dental Medicine & Surgery"
+    ],
+    "educationAr": [
+      "بكالوريوس في طب وجراحة الأسنان"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Shahad Abudawood",
+    "nameAr": "د. شهد أبوداود",
+    "title": "Pedodontics Consultant",
+    "titleAr": "استشاري طب أسنان الأطفال",
+    "spec": "Dental",
+    "img": "/doctors/shahad-abudawood.webp",
+    "education": [
+      "American Board of Pediatric Dentistry"
+    ],
+    "educationAr": [
+      "البورد الأمريكي لطب أسنان الأطفال"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah Al Khalidiyyah"
+  },
+  {
+    "name": "Dr. Siraj Dakhil",
+    "nameAr": "د. سراج دخيل",
+    "title": "Endodontics Consultant",
+    "titleAr": "استشاري علاج عصب وجذور الأسنان",
+    "spec": "Dental",
+    "img": "/doctors/siraj-dakhil.webp",
+    "education": [
+      "Doctorate of Endodontics - USA"
+    ],
+    "educationAr": [
+      "دكتوراه في علاج عصب وجذور الأسنان - أمريكا"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah Al Mohammadiyah"
+  },
+  {
+    "name": "Dr. Tahani Azizalrahman",
+    "nameAr": "د. تهاني عزيز الرحمن",
+    "title": "Pediatric Dentistry Specialist",
+    "titleAr": "أخصائي طب أسنان الأطفال",
+    "spec": "Dental",
+    "img": "/doctors/tahani-azizalrahman.webp",
+    "education": [
+      "Master's Degree in Pediatric Dentistry"
+    ],
+    "educationAr": [
+      "ماجستير في طب أسنان الأطفال"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah Al Mohammadiyah"
+  },
+  {
+    "name": "Dr. Yusra Khadwardi",
+    "nameAr": "د. يسرا خداوردي",
+    "title": "General Dentist",
+    "titleAr": "طبيب أسنان",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "Bachelor’s Degree of Dental Medicine & Surgery"
+    ],
+    "educationAr": [
+      "بكالوريوس في طب وجراحة الأسنان"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Waad Bajaber",
+    "nameAr": "د. وعد باجابر",
+    "title": "General Dentist",
+    "titleAr": "طبيب أسنان",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "Bachelor’s Degree of Dental Medicine & Surgery"
+    ],
+    "educationAr": [
+      "بكالوريوس في طب وجراحة الأسنان"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Wafaa Kattan",
+    "nameAr": "د. وفاء قطان",
+    "title": "Operative & Esthetic Dentistry Specialist",
+    "titleAr": "أخصائي العلاج التحفظي وتجميل الأسنان",
+    "spec": "Dental",
+    "img": "/doctors/wafaa-kattan.webp",
+    "education": [
+      "Board in Restorative and Esthetic Dentistry"
+    ],
+    "educationAr": [
+      "بورد في طب الأسنان التجميلي والترميمي"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah Al Khalidiyyah"
+  },
+  {
+    "name": "Dr. Walaa Alamoudi",
+    "nameAr": "د. ولاء العمودي",
+    "title": "Pedodontics Specialist",
+    "titleAr": "أخصائي طب أسنان الأطفال",
+    "spec": "Dental",
+    "img": "/doctors/walaa-alamoudi.webp",
+    "education": [
+      "Master's Degree in Pediatric Dentistry"
+    ],
+    "educationAr": [
+      "ماجستير في طب أسنان الأطفال"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah Al Mohammadiyah"
+  },
+  {
+    "name": "Dr. Walaa Hassan",
+    "nameAr": "د. ولاء حسان",
+    "title": "Endodontic Specialist",
+    "titleAr": "اخصائي علاج عصب وجذور الأسنان",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "Master’s Degree in Endodontics"
+    ],
+    "educationAr": [
+      "ماجستير في علاج جذور وأعصاب الأسنان"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
+  },
+  {
+    "name": "Dr. Waleed Taju",
+    "nameAr": "د. وليد تاجو",
+    "title": "Consultant in Orthodontics and Dentofacial Orthopedics",
+    "titleAr": "استشاري تقويم الأسنان والوجه والفكين",
+    "spec": "Dental",
+    "img": "",
+    "education": [
+      "Membership of the Royal College of Surgeons of Edinburgh"
+    ],
+    "educationAr": [
+      "عضوية تقويم الأسنان من الكلية الملكية للجراحين في إدنبرة"
+    ],
+    "languages": "English, Arabic",
+    "location": "Jeddah"
   }
 ];

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useLang } from "@/app/i18n/context";
 import translations, { type TranslationKey } from "@/app/i18n/translations";
 import { doctorFilters, specNameToKey } from "@/app/lib/specialties";
+import { doctorInitials } from "@/app/lib/doctor-avatar";
 import type { Doctor } from "@/app/lib/doctors";
 
 type Props = {
@@ -32,16 +33,9 @@ export default function DoctorsCarousel({ specialty, showTabs = false, limit, in
   const hasInitial = Array.isArray(initialDoctors);
   const [doctors, setDoctors] = useState<Doctor[]>(initialDoctors ?? []);
   const [loading, setLoading] = useState(!hasInitial);
-  // With server-provided doctors the fetch effect below (which used to pick
-  // the first populated tab) is skipped, so seed the active tab here instead.
-  const [activeTab, setActiveTab] = useState<string>(() => {
-    if (specialty) return specialty;
-    if (showTabs && initialDoctors?.length) {
-      const present = new Set(initialDoctors.flatMap((d) => d.specialties));
-      return doctorFilters.find((s) => present.has(s)) || "";
-    }
-    return "";
-  });
+  // "" = the "All" tab → a shuffled mix across every specialty (dental included).
+  // Landing pages pin a single specialty; the home carousel opens on the mix.
+  const [activeTab, setActiveTab] = useState<string>(specialty ?? "");
 
   const tSpec = (name: string) => {
     const key = specNameToKey[name];
@@ -60,10 +54,6 @@ export default function DoctorsCarousel({ specialty, showTabs = false, limit, in
         if (cancelled) return;
         const list: Doctor[] = d.doctors || [];
         setDoctors(list);
-        if (showTabs && !activeTab) {
-          const present = new Set(list.flatMap((x) => x.specialties));
-          setActiveTab(doctorFilters.find((s) => present.has(s)) || "");
-        }
         setLoading(false);
       })
       .catch(() => !cancelled && setLoading(false));
@@ -78,7 +68,10 @@ export default function DoctorsCarousel({ specialty, showTabs = false, limit, in
   }, [showTabs, doctors]);
 
   const visible = useMemo(() => {
-    if (showTabs && activeTab) return doctors.filter((d) => d.specialties.includes(activeTab));
+    if (showTabs) {
+      if (activeTab) return doctors.filter((d) => d.specialties.includes(activeTab));
+      return doctors.slice(0, 40); // "All" = the shuffled cross-specialty mix, capped for perf
+    }
     return doctors;
   }, [doctors, showTabs, activeTab]);
 
@@ -110,6 +103,9 @@ export default function DoctorsCarousel({ specialty, showTabs = false, limit, in
       {/* Filter tabs (home) */}
       {showTabs && tabs.length > 0 && (
         <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-3 mb-6">
+          <button onClick={() => setActiveTab("")} className={`shrink-0 px-4 py-2 rounded-full text-sm font-bold transition-colors cursor-pointer ${activeTab === "" ? "bg-primary text-white" : "bg-surface-container text-on-surface-variant hover:text-primary"}`}>
+            {isRtl ? "الكل" : "All"}
+          </button>
           {tabs.map((s) => (
             <button key={s} onClick={() => setActiveTab(s)} className={`shrink-0 px-4 py-2 rounded-full text-sm font-bold transition-colors cursor-pointer ${activeTab === s ? "bg-primary text-white" : "bg-surface-container text-on-surface-variant hover:text-primary"}`}>
               {tSpec(s)}
@@ -144,7 +140,13 @@ export default function DoctorsCarousel({ specialty, showTabs = false, limit, in
             : visible.map((d) => (
                 <Link key={d.id} href={`/doctors/${d.slug}`} className="group snap-start shrink-0 w-[260px] bg-surface-container-lowest rounded-3xl overflow-hidden border border-outline-variant/20 shadow-clinical hover:shadow-xl hover:-translate-y-1 transition-all">
                   <div className="relative aspect-[4/5] overflow-hidden bg-surface-container">
-                    {d.image_url && <Image src={d.image_url} alt={d.name_en} fill loading="lazy" className="object-cover object-top group-hover:scale-105 transition-transform duration-500" sizes="260px" />}
+                    {d.image_url ? (
+                      <Image src={d.image_url} alt={d.name_en} fill loading="lazy" className="object-cover object-top group-hover:scale-105 transition-transform duration-500" sizes="260px" />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-primary to-secondary">
+                        <span className="font-headline font-extrabold text-white/95 text-[2.75rem] leading-none tracking-wide select-none">{doctorInitials(d.name_en)}</span>
+                      </div>
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-primary/55 via-transparent to-transparent" />
                     {d.specialties[0] && <span className={`absolute bottom-3 ${isRtl ? "right-3" : "left-3"} bg-secondary-fixed text-on-secondary-fixed px-2.5 py-1 rounded-full text-[10px] font-bold`}>{tSpec(d.specialties[0])}</span>}
                   </div>

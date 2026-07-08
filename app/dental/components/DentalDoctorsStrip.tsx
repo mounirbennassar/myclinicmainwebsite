@@ -4,6 +4,7 @@ import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { doctorsData, type Doctor } from "@/app/doctors-data";
 import { useLang } from "@/app/i18n/context";
+import { doctorInitials } from "@/app/lib/doctor-avatar";
 import DentalDoctorCard from "./DentalDoctorCard";
 
 const locationArMap: Record<string, string> = {
@@ -121,14 +122,20 @@ export default function DentalDoctorsStrip({ match, limit = 8, variant = "sectio
                   className="w-[260px] sm:w-[280px] lg:w-[300px] snap-start shrink-0 group bg-white rounded-2xl p-5 md:p-6 shadow-lg shadow-[#00677d]/10 border border-[#00677d]/10 hover:border-[#00677d]/40 hover:-translate-y-2 hover:shadow-2xl hover:shadow-[#00677d]/15 transition-all duration-300"
                 >
                   <div className="relative w-full aspect-[4/5] rounded-xl overflow-hidden mb-5 bg-gradient-to-br from-[#003867]/5 to-[#00677d]/10">
-                    <Image
-                      alt={name}
-                      src={doc.img}
-                      fill
-                      className="object-cover group-hover:grayscale transition-all duration-500 group-hover:scale-105"
-                      sizes="300px"
-                      loading="lazy"
-                    />
+                    {doc.img ? (
+                      <Image
+                        alt={name}
+                        src={doc.img}
+                        fill
+                        className="object-cover group-hover:grayscale transition-all duration-500 group-hover:scale-105"
+                        sizes="300px"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#003867] to-[#00677d]">
+                        <span className="text-white font-extrabold text-5xl select-none">{doctorInitials(doc.name)}</span>
+                      </div>
+                    )}
                     <div className={`absolute top-3 ${isRtl ? "right-3" : "left-3"} bg-gradient-to-r from-[#003867] to-[#00677d] text-white px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-md`}>
                       {isRtl ? "أسنان" : "Dental"}
                     </div>
@@ -172,7 +179,13 @@ export default function DentalDoctorsStrip({ match, limit = 8, variant = "sectio
               dir={isRtl ? "rtl" : "ltr"}
             >
               <div className="relative h-72 sm:h-96 overflow-hidden">
-                <Image src={selected.img} alt={selected.name} fill className="object-cover object-top" sizes="(max-width: 640px) 100vw, 512px" />
+                {selected.img ? (
+                  <Image src={selected.img} alt={selected.name} fill className="object-cover object-top" sizes="(max-width: 640px) 100vw, 512px" />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#003867] to-[#00677d]">
+                    <span className="text-white font-extrabold text-[5rem] select-none">{doctorInitials(selected.name)}</span>
+                  </div>
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#003867] via-[#00677d]/40 to-transparent" />
                 <button
                   onClick={() => setSelected(null)}
