@@ -56,7 +56,7 @@ const OFFERINGS: Offering[] = [
 /* The journey — from your screen to your front door */
 const JOURNEY: { phase: "virtual" | "home"; icon: string; en: [string, string]; ar: [string, string] }[] = [
   { phase: "virtual", icon: "calendar_month", en: ["Book your slot", "Request a virtual visit by phone, WhatsApp or our app and pick a time that suits you."], ar: ["احجز موعدك", "اطلب زيارة افتراضية عبر الهاتف أو واتساب أو تطبيقنا واختر الوقت الذي يناسبك."] },
-  { phase: "virtual", icon: "credit_card", en: ["Pay & check in via the app", "Complete the payment and check-in process to be ready for the consultation."], ar: ["ادفع وسجل الدخول عبر التطبيق", "أكمل الدفع وتسجيل الدخول لتكون جاهزا للاستشارة."] },
+  { phase: "virtual", icon: "payments", en: ["Pay & check in via the app", "Complete the payment and check-in process to be ready for the consultation."], ar: ["ادفع وسجل الدخول عبر التطبيق", "أكمل الدفع وتسجيل الدخول لتكون جاهزا للاستشارة."] },
   { phase: "virtual", icon: "video_call", en: ["Talk to a doctor", "A teleconsultation, from the comfort of your home."], ar: ["تحدّث إلى طبيب", "استشارة عن بُعد من راحة منزلك."] },
   { phase: "virtual", icon: "clinical_notes", en: ["Get your care plan", "Tests, meds, nursing or a doctor visit — added to your plan."], ar: ["احصل على خطتك", "فحوصات أو أدوية أو تمريض أو زيارة طبيب — تُضاف إلى خطتك."] },
   { phase: "home", icon: "pin_drop", en: ["Share where & when", "Your National Address and a time that suits you."], ar: ["حدّد المكان والوقت", "عنوانك الوطني والوقت الذي يناسبك."] },
