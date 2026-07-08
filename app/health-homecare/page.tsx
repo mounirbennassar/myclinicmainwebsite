@@ -43,7 +43,8 @@ function Reveal({ children, className, delay = 0 }: { children: ReactNode; class
 }
 
 /* What you get — the full Telehome offering at a glance */
-const OFFERINGS: { phase: "virtual" | "home"; icon: string; en: string; ar: string }[] = [
+type Offering = { phase: "virtual" | "home"; icon: string; en: string; ar: string };
+const OFFERINGS: Offering[] = [
   { phase: "virtual", icon: "video_call", en: "Teleconsultation", ar: "استشارة عن بُعد" },
   { phase: "home", icon: "science", en: "Lab Extraction", ar: "سحب العينات" },
   { phase: "home", icon: "medication", en: "Medication delivery", ar: "توصيل الأدوية" },
@@ -191,6 +192,32 @@ export default function HealthHomecarePage() {
   const phaseLabel = (p: "virtual" | "home") =>
     p === "virtual" ? (isRtl ? "افتراضي" : "Virtual") : isRtl ? "في المنزل" : "At home";
 
+  /* Telehome overview bento (mirrors the app card): two stats on the top corners,
+     the video consultation filled in the center, the home services staggered
+     around it. The middle column is nudged down for the honeycomb offset. */
+  const bySvc = (en: string) => OFFERINGS.find((o) => o.en === en)!;
+  const serviceTile = (o: Offering, filled = false, offset = false) => {
+    const accent = o.phase === "virtual" ? TEAL : NAVY;
+    return (
+      <div className={`flex flex-col items-center text-center gap-2 sm:gap-2.5 ${offset ? "mt-5 sm:mt-10" : ""}`}>
+        <span
+          className="w-14 h-14 sm:w-[68px] sm:h-[68px] rounded-[18px] flex items-center justify-center shadow-[0_10px_24px_-14px_rgba(0,77,153,0.5)]"
+          style={filled ? { background: `linear-gradient(135deg, ${TEAL}, ${NAVY})`, color: "#fff" } : { backgroundColor: `${accent}14`, color: accent }}
+        >
+          <span className="material-symbols-outlined text-[26px] sm:text-[32px]" style={{ fontVariationSettings: "'FILL' 1" }}>{o.icon}</span>
+        </span>
+        <span className="text-[12px] sm:text-[15px] font-extrabold text-on-surface leading-tight">{isRtl ? o.ar : o.en}</span>
+        <span className="text-[10.5px] sm:text-[12px] font-extrabold" style={{ color: accent }}>{phaseLabel(o.phase)}</span>
+      </div>
+    );
+  };
+  const statTile = (num: string, label: string) => (
+    <div className="flex flex-col items-center text-center gap-1">
+      <span className="font-headline text-[28px] sm:text-4xl md:text-[44px] font-extrabold leading-none" style={{ color: NAVY }}>{num}</span>
+      <span className="text-[11.5px] sm:text-[14px] font-bold text-on-surface-variant leading-tight">{label}</span>
+    </div>
+  );
+
   return (
     <div dir={isRtl ? "rtl" : "ltr"} className="min-h-screen bg-surface flex flex-col">
       <SiteNav />
@@ -318,22 +345,22 @@ export default function HealthHomecarePage() {
           </div>
         </section>
 
-        {/* ──────────────────── What comes to you (strip) ──────────────────── */}
-        <section className="relative z-20 max-w-7xl mx-auto px-4 md:px-8 -mt-24 md:-mt-28">
-          <Reveal className="bg-white rounded-[2rem] shadow-[0_40px_90px_-45px_rgba(0,77,153,0.5)] ring-1 ring-outline-variant/30 p-6 md:p-8">
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-x-4 gap-y-6">
-              {OFFERINGS.map((o) => {
-                const accent = o.phase === "virtual" ? TEAL : NAVY;
-                return (
-                  <div key={o.en} className="flex flex-col items-center text-center gap-2.5 px-1">
-                    <span className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ backgroundColor: `${accent}14`, color: accent }}>
-                      <span className="material-symbols-outlined text-[25px]" style={{ fontVariationSettings: "'FILL' 1" }}>{o.icon}</span>
-                    </span>
-                    <span className="text-[13px] font-bold text-on-surface leading-tight">{isRtl ? o.ar : o.en}</span>
-                    <span className="text-[10px] font-extrabold tracking-wide" style={{ color: accent }}>{phaseLabel(o.phase)}</span>
-                  </div>
-                );
-              })}
+        {/* ─────────── What comes to you (Telehome overview bento) ─────────── */}
+        <section className="relative z-20 max-w-3xl mx-auto px-4 md:px-8 -mt-24 md:-mt-28">
+          <Reveal className="bg-white rounded-[2rem] shadow-[0_40px_90px_-45px_rgba(0,77,153,0.5)] ring-1 ring-outline-variant/30 p-6 sm:p-10 md:p-12">
+            <div className="grid grid-cols-3 gap-x-3 sm:gap-x-8 gap-y-7 sm:gap-y-9 items-start">
+              {/* Row 1 — stat · teleconsultation (center) · stat */}
+              {statTile("27+", isRtl ? "تخصص" : "Specialties")}
+              {serviceTile(bySvc("Teleconsultation"), true, true)}
+              {statTile("100+", isRtl ? "طبيب" : "Doctors")}
+              {/* Row 2 — medication · lab (center) · nurse */}
+              {serviceTile(bySvc("Medication delivery"))}
+              {serviceTile(bySvc("Lab Extraction"), false, true)}
+              {serviceTile(bySvc("Nurse"))}
+              {/* Row 3 — physiotherapy · (empty) · doctor */}
+              {serviceTile(bySvc("Physiotherapy"))}
+              <div aria-hidden />
+              {serviceTile(bySvc("Doctor"))}
             </div>
           </Reveal>
         </section>
