@@ -388,7 +388,7 @@ export default function WomenFamilyMedicine({ doctors }: { doctors: Doctor[] }) 
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-3.5 md:gap-6">
             {SERVICES.map((s, i) => (
               <Reveal key={i} delay={(i % 3) * 0.08}>
-                <div className="group h-full bg-white border border-[#EAF1F9] rounded-[20px] md:rounded-[28px] overflow-hidden shadow-[0_30px_60px_-40px_rgba(11,61,120,0.32)] hover:-translate-y-2.5 hover:shadow-[0_50px_90px_-40px_rgba(11,61,120,0.5)] transition-all duration-500">
+                <div className="group h-full flex flex-col bg-white border border-[#EAF1F9] rounded-[20px] md:rounded-[28px] overflow-hidden shadow-[0_30px_60px_-40px_rgba(11,61,120,0.32)] hover:-translate-y-2.5 hover:shadow-[0_50px_90px_-40px_rgba(11,61,120,0.5)] transition-all duration-500">
                   {/* photo header — accent gradient sits behind the image as a graceful fallback */}
                   <div className="relative h-[120px] sm:h-[170px] md:h-[210px] overflow-hidden" style={{ background: `linear-gradient(140deg, ${s.accent}22, ${NAVY}14)` }}>
                     <Image src={s.img} alt={isRtl ? s.altAr : s.altEn} fill loading="lazy" quality={78}
@@ -400,10 +400,10 @@ export default function WomenFamilyMedicine({ doctors }: { doctors: Doctor[] }) 
                       <span className="material-symbols-outlined text-[19px] md:text-[26px]" style={{ fontVariationSettings: "'FILL' 1" }}>{s.icon}</span>
                     </span>
                   </div>
-                  <div className="p-4 md:p-7">
+                  <div className="p-4 md:p-7 flex flex-col flex-1">
                     <h3 className="text-[14.5px] md:text-[21px] font-extrabold text-[#0B3D78] mb-1.5 md:mb-3 leading-snug">{isRtl ? s.ar[0] : s.en[0]}</h3>
                     <p className="text-[12px] md:text-[15.5px] leading-[1.7] md:leading-[1.85] text-[#5C6E85] mb-3 md:mb-5">{isRtl ? s.ar[1] : s.en[1]}</p>
-                    <button onClick={() => document.getElementById("book")?.scrollIntoView({ behavior: "smooth" })} className="flex items-center justify-between w-full cursor-pointer">
+                    <button onClick={() => document.getElementById("book")?.scrollIntoView({ behavior: "smooth" })} className="mt-auto flex items-center justify-between w-full cursor-pointer">
                       <span className="font-bold text-[13px] md:text-[15px]" style={{ color: s.accent }}>{isRtl ? "احجزي الآن" : "Book now"}</span>
                       <span className="w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center transition-all group-hover:scale-110" style={{ background: `${s.accent}18`, color: s.accent }}>
                         <ArrowIcon isRtl={isRtl} className="text-[16px] md:text-[18px]" />
