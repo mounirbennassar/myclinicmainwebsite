@@ -24,7 +24,7 @@ function mixDoctors(list: Doctor[]): Doctor[] {
 
 // Doctors are fetched on the server (cached hourly) and baked into the page,
 // so the home carousel never depends on a client-side API call — same pattern
-// as /pediatric and /female-medicine.
+// as /pediatric and /women-care.
 export const revalidate = 3600;
 
 export default async function Home() {
