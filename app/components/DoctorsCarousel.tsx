@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useLang } from "@/app/i18n/context";
 import translations, { type TranslationKey } from "@/app/i18n/translations";
 import { doctorFilters, specNameToKey } from "@/app/lib/specialties";
-import { doctorInitials } from "@/app/lib/doctor-avatar";
+import { doctorAvatar } from "@/app/lib/doctor-avatar";
 import type { Doctor } from "@/app/lib/doctors";
 
 type Props = {
@@ -140,13 +140,7 @@ export default function DoctorsCarousel({ specialty, showTabs = false, limit, in
             : visible.map((d) => (
                 <Link key={d.id} href={`/doctors/${d.slug}`} className="group snap-start shrink-0 w-[260px] bg-surface-container-lowest rounded-3xl overflow-hidden border border-outline-variant/20 shadow-clinical hover:shadow-xl hover:-translate-y-1 transition-all">
                   <div className="relative aspect-[4/5] overflow-hidden bg-surface-container">
-                    {d.image_url ? (
-                      <Image src={d.image_url} alt={d.name_en} fill loading="lazy" className="object-cover object-top group-hover:scale-105 transition-transform duration-500" sizes="260px" />
-                    ) : (
-                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-primary to-secondary">
-                        <span className="font-headline font-extrabold text-white/95 text-[2.75rem] leading-none tracking-wide select-none">{doctorInitials(d.name_en)}</span>
-                      </div>
-                    )}
+                    <Image src={d.image_url || doctorAvatar(d.name_en, d.name_ar)} alt={d.name_en} fill loading="lazy" className="object-cover object-top group-hover:scale-105 transition-transform duration-500" sizes="260px" />
                     <div className="absolute inset-0 bg-gradient-to-t from-primary/55 via-transparent to-transparent" />
                     {d.specialties[0] && <span className={`absolute bottom-3 ${isRtl ? "right-3" : "left-3"} bg-secondary-fixed text-on-secondary-fixed px-2.5 py-1 rounded-full text-[10px] font-bold`}>{tSpec(d.specialties[0])}</span>}
                   </div>
