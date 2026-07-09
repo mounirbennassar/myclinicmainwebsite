@@ -266,8 +266,8 @@ export default function HealthHomecarePage() {
                 <ul className="mt-7 flex flex-wrap gap-x-5 gap-y-2.5">
                   {[
                     { en: "Virtual + at-home care", ar: "رعاية افتراضية ومنزلية" },
-                    { en: "Jeddah & Riyadh", ar: "جدة والرياض" },
-                    { en: "Encrypted & private", ar: "مشفرة وخاصة" },
+                    { en: "Encrypted & Private", ar: "مشفرة وخاصة" },
+                    { en: "Licensed specialists", ar: "أخصائيون معتمدون" },
                   ].map((t) => (
                     <li key={t.en} className="inline-flex items-center gap-1.5 text-white/85 text-sm font-bold">
                       <span className="material-symbols-outlined text-[18px]" style={{ color: AQUA, fontVariationSettings: "'FILL' 1" }}>check_circle</span>
