@@ -265,8 +265,7 @@ export default function DentalPromisesScroll({ lang }: { lang: "en" | "ar" }) {
         });
 
         tl.fromTo(".dps-canvas-wrap", { scale: 0.9 }, { scale: 1.04, ease: "none", duration: 0.5 }, 0)
-          .to(".dps-canvas-wrap", { scale: 1, ease: "none", duration: 0.5 }, 0.5)
-          .fromTo(".dps-glow", { autoAlpha: 0, scale: 0.7 }, { autoAlpha: 1, scale: 1, ease: "none", duration: 0.6 }, 0.1);
+          .to(".dps-canvas-wrap", { scale: 1, ease: "none", duration: 0.5 }, 0.5);
 
         [".dps-card-1", ".dps-card-2", ".dps-card-3", ".dps-card-4"].forEach((sel, i) => {
           tl.to(sel, { autoAlpha: 1, x: 0, y: 0, rotation: 0, scale: 1, duration: 0.2, ease: "power3.out" }, 0.06 + i * 0.14);
@@ -314,8 +313,7 @@ export default function DentalPromisesScroll({ lang }: { lang: "en" | "ar" }) {
         });
 
         tl.fromTo(".dps-canvas-wrap", { scale: 0.94 }, { scale: 1.02, ease: "none", duration: 0.5 }, 0)
-          .to(".dps-canvas-wrap", { scale: 1, ease: "none", duration: 0.5 }, 0.5)
-          .fromTo(".dps-glow", { autoAlpha: 0 }, { autoAlpha: 1, ease: "none", duration: 0.5 }, 0.1);
+          .to(".dps-canvas-wrap", { scale: 1, ease: "none", duration: 0.5 }, 0.5);
 
         [".dps-card-1", ".dps-card-2", ".dps-card-3", ".dps-card-4"].forEach((sel, i) => {
           tl.to(sel, { autoAlpha: 1, x: 0, scale: 1, duration: 0.2, ease: "power3.out" }, 0.1 + i * 0.13);
@@ -402,15 +400,9 @@ export default function DentalPromisesScroll({ lang }: { lang: "en" | "ar" }) {
               ref={canvasWrapRef}
               className="dps-canvas-wrap relative w-[72%] max-w-[320px] md:w-[42%] md:max-w-[460px] aspect-square will-change-transform"
             >
-              {/* Soft radial glow behind the tooth */}
-              <div
-                className="dps-glow absolute inset-[-12%] rounded-full will-change-transform"
-                style={{
-                  background:
-                    "radial-gradient(circle, rgba(191,231,238,0.55) 0%, rgba(0,103,125,0.10) 45%, rgba(0,103,125,0) 70%)",
-                }}
-                aria-hidden
-              />
+              {/* No decoration behind the canvas: the frames carry a baked-in
+                  white background, so anything painted underneath shows as a
+                  hard white square around the tooth. */}
               <canvas ref={canvasRef} role="img" aria-label={c.canvasAlt} className="relative w-full h-full" />
             </div>
           </div>

@@ -7,7 +7,7 @@ import { useLang } from "@/app/i18n/context";
 import { trackPhoneClick, trackWhatsAppClick } from "@/app/lib/tracking";
 import SiteNav from "@/app/components/SiteNav";
 import { WhatsAppIcon } from "@/app/components/icons";
-import DentalHeroImmersive from "./components/DentalHeroImmersive";
+import DentalHeroSlider from "./components/DentalHeroSlider";
 import DentalPromisesScroll from "./components/DentalPromisesScroll";
 import dynamic from "next/dynamic";
 
@@ -137,18 +137,16 @@ export default function DentalHub() {
     <div dir={isRtl ? "rtl" : "ltr"} className="min-h-screen bg-white">
       <SiteNav />
 
-      {/* ── Hero (centered editorial + dental-arch gallery) ── */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-[#bfe7ee]/[0.22] via-white to-white">
-        <div className="relative max-w-7xl mx-auto px-4 md:px-8 pt-8 md:pt-12 pb-0">
-          <DentalHeroImmersive
-            lang={lang}
-            onBookClick={scrollToBooking}
-            onWhatsAppClick={() => {
-              trackWhatsAppClick();
-              window.open(WHATSAPP_LINK, "_blank");
-            }}
-          />
-        </div>
+      {/* ── Hero (full-bleed modern slider) ─────────────── */}
+      <section className="relative">
+        <DentalHeroSlider
+          lang={lang}
+          onBookClick={scrollToBooking}
+          onWhatsAppClick={() => {
+            trackWhatsAppClick();
+            window.open(WHATSAPP_LINK, "_blank");
+          }}
+        />
       </section>
 
       {/* ── Promises (scroll-pinned canvas tooth + cards) ──── */}
@@ -177,7 +175,7 @@ export default function DentalHub() {
                   whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true, margin: "-100px" }}
                   transition={{ duration: 0.8, ease: easeOut }}
-                  className="relative aspect-[4/5] rounded-t-full rounded-b-[1.75rem] overflow-hidden shadow-xl shadow-[#003867]/10 ring-1 ring-white/80 will-change-transform"
+                  className="relative aspect-[4/5] rounded-2xl overflow-hidden shadow-xl shadow-[#003867]/10 will-change-transform"
                 >
                   <Image src="/dental/39.webp" alt={t.story.imageAlt1} fill sizes="(max-width:1024px) 50vw, 25vw" quality={70} className="object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#003867]/20 to-transparent" />
@@ -188,7 +186,7 @@ export default function DentalHub() {
                   whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true, margin: "-100px" }}
                   transition={{ duration: 0.8, delay: 0.1, ease: easeOut }}
-                  className="relative aspect-[4/5] rounded-t-full rounded-b-[1.75rem] overflow-hidden shadow-xl shadow-[#00677d]/15 mt-12 will-change-transform"
+                  className="relative aspect-[4/5] rounded-2xl overflow-hidden shadow-xl shadow-[#00677d]/15 mt-12 will-change-transform"
                 >
                   <Image src="/dental/40.webp" alt={t.story.imageAlt2} fill sizes="(max-width:1024px) 50vw, 25vw" quality={70} className="object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#003867]/20 to-transparent" />
@@ -392,7 +390,7 @@ export default function DentalHub() {
             className="lg:col-span-6"
           >
             <div className="relative">
-              <div className="relative aspect-[4/5] rounded-t-full rounded-b-[2rem] overflow-hidden shadow-2xl shadow-[#00677d]/20 ring-1 ring-white/80">
+              <div className="relative aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl shadow-[#00677d]/20">
                 <motion.div style={{ y: processImgY }} className="absolute inset-0 will-change-transform">
                   <Image src="/dental/DSC04628_HDR.webp" alt={t.process.imageAlt} fill sizes="(max-width:1024px) 100vw, 50vw" quality={70} className="object-cover scale-110" />
                 </motion.div>
