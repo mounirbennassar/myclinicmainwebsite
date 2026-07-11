@@ -41,6 +41,17 @@ jobs:
           echo "── ensuring database is up (web build reads it) ──"
           docker compose up -d --wait db
 
+          echo "── one-time data syncs (marker-guarded, run before web build) ──"
+          for SYNC_SQL in scripts/vm-doctor-sync-*.sql; do
+            [ -e "$SYNC_SQL" ] || continue
+            MARKER=".applied-$(basename "$SYNC_SQL")"
+            if [ ! -f "$MARKER" ]; then
+              echo "applying $SYNC_SQL"
+              docker compose exec -T db sh -c 'psql -v ON_ERROR_STOP=1 -q -U "$POSTGRES_USER" -d "$POSTGRES_DB"' < "$SYNC_SQL"
+              touch "$MARKER"
+            fi
+          done
+
           echo "── rebuilding containers ──"
           docker compose up -d --build
 

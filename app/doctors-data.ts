@@ -2247,7 +2247,7 @@ export const doctorsData: Doctor[] = [
     "title": "Endodontics Consultant",
     "titleAr": "استشاري علاج عصب وجذور الأسنان",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-abdelrahman-alhilou.webp",
     "education": [
       "Doctorate of Endodontics - USA"
     ],
@@ -2263,7 +2263,7 @@ export const doctorsData: Doctor[] = [
     "title": "General Dentist",
     "titleAr": "طبيب أسنان",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-abdulrahman-tehsin.webp",
     "education": [
       "Bachelor’s Degree of Dental Medicine & Surgery"
     ],
@@ -2279,7 +2279,7 @@ export const doctorsData: Doctor[] = [
     "title": "Sr. Registrar In Operative & Esthetic Dentistry",
     "titleAr": "استشاري تجميل و إصحاح الاسنان",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-abrar-almarghalani.webp",
     "education": [
       "American Fellowship in Esthetic and Restorative Dentistry\r\nMaster's Degree in Dental Materials Science"
     ],
@@ -2295,7 +2295,7 @@ export const doctorsData: Doctor[] = [
     "title": "Prosthodontist",
     "titleAr": "أخصائي تركيبات أسنان",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-ahmed-elsayed.webp",
     "education": [
       "Master of Prosthodontics- Marmara University/Türkiye"
     ],
@@ -2311,7 +2311,7 @@ export const doctorsData: Doctor[] = [
     "title": "General Dentist",
     "titleAr": "طبيب أسنان",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-ahmed-ghannam.webp",
     "education": [
       "Bachelor’s Degree of Dental Medicine & Surgery"
     ],
@@ -2327,7 +2327,7 @@ export const doctorsData: Doctor[] = [
     "title": "Endodontic Specialist",
     "titleAr": "أخصائي علاج جذور الأسنان",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-ahmed-younis.webp",
     "education": [
       "Master’s Degree in Endodontics"
     ],
@@ -2343,7 +2343,7 @@ export const doctorsData: Doctor[] = [
     "title": "General Dentist",
     "titleAr": "طبيب أسنان",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-ahood-aldahri.webp",
     "education": [
       "Bachelor’s Degree of Dental Medicine & Surgery"
     ],
@@ -2359,7 +2359,7 @@ export const doctorsData: Doctor[] = [
     "title": "Orthodontic Specialist",
     "titleAr": "أخصائي تقويم الأسنان",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-alaa-samman.webp",
     "education": [
       "Board Certificate in Orthodontics"
     ],
@@ -2375,7 +2375,7 @@ export const doctorsData: Doctor[] = [
     "title": "Endodontist Sr. Specialist",
     "titleAr": "أخصائي أول علاج الجذور المجهرية وأعصاب الأسنان",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-alaa-babeer.webp",
     "education": [
       "Doctorate of Science in Endodontics - USA"
     ],
@@ -2391,7 +2391,7 @@ export const doctorsData: Doctor[] = [
     "title": "Consultant Dental Public health",
     "titleAr": "استشاري الصحة العامه للفم و الاسنان",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-alaa-kabbarah.webp",
     "education": [
       "Candaian Board in Dental Public Health"
     ],
@@ -2407,7 +2407,7 @@ export const doctorsData: Doctor[] = [
     "title": "Endodontics Consultant",
     "titleAr": "استشاري علاج عصب و جذور الأسنان",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-alamuddin-bakhit.webp",
     "education": [
       "Doctorate in Endodontics – Japan"
     ],
@@ -2423,7 +2423,7 @@ export const doctorsData: Doctor[] = [
     "title": "Oral Maxillo Facial Surgery & implantology Consultant",
     "titleAr": "استشاري جراحة الفم والفكين والوجه وزراعة الأسنان",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-ali-elatrouni.webp",
     "education": [
       "French Board of Oral Maxillo Facial Surgery"
     ],
@@ -2457,7 +2457,7 @@ export const doctorsData: Doctor[] = [
     "title": "Consultant in Restorative and Cosmetic Dentistry",
     "titleAr": "استشاري إصحاح وتجميل الأسنان",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-amr-azhari.webp",
     "education": [
       "Doctorate of Philosophy in Community Oral Health-USA"
     ],
@@ -2473,7 +2473,7 @@ export const doctorsData: Doctor[] = [
     "title": "Maxillofacial Prosthodontics & Oral Oncology Consultant",
     "titleAr": "استشاري تركيبات وتجميل الأسنان والوجه والفكين وأورام الفم",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-anhar-basunbul.webp",
     "education": [
       "American Board of Prosthodontics-Maxillofacial Prosthodontics & Oral Oncology\r\nDoctorate of Prosthodontics Restorative Biomaterials - USA"
     ],
@@ -2489,7 +2489,7 @@ export const doctorsData: Doctor[] = [
     "title": "General Dentist",
     "titleAr": "طبيب أسنان",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-bayan-alsharif.webp",
     "education": [
       "Bachelor’s Degree of Dental Medicine & Surgery"
     ],
@@ -2521,7 +2521,7 @@ export const doctorsData: Doctor[] = [
     "title": "Pediatric Dentistry Consultant \r\nTMJ Disorders and Orofacial Pain Consultant",
     "titleAr": "استشاري طب أسنان الأطفال \r\nاستشاري أمراض مفصل الفك وألم الوجه والفكين",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-emad-albadawi.webp",
     "education": [
       "Doctorate in Pediatric Dentistry – USA\r\nAmerican Board Certified in Pediatric Dentistry"
     ],
@@ -2537,7 +2537,7 @@ export const doctorsData: Doctor[] = [
     "title": "Consultant in Oral Medicine and Aesthetic Dentistry",
     "titleAr": "استشاري طب الفم وتجميل الأسنان",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-elham-elsahafi.webp",
     "education": [
       "Doctorate in Oral Medicine – King's College London, UK"
     ],
@@ -2553,7 +2553,7 @@ export const doctorsData: Doctor[] = [
     "title": "Prosthodontics Specialist",
     "titleAr": "أخصائي تركيبات وتجميل الأسنان",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-eyad-fathi.webp",
     "education": [
       "Bachelor’s Degree in Dental Medicine & Surgery\r\nMaster’s Degree in Prosthodontics"
     ],
@@ -2601,7 +2601,7 @@ export const doctorsData: Doctor[] = [
     "title": "Specialist in Prosthodontics and Cosmetic Dentistry",
     "titleAr": "أخصائي تركيبات وتجميل الأسنان",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-feras-mirdad.webp",
     "education": [
       "Prosthodontics Boston university \r\nRestorative Dentistry UCLA"
     ],
@@ -2617,7 +2617,7 @@ export const doctorsData: Doctor[] = [
     "title": "Pedodontics Sr. Specialist",
     "titleAr": "أخصائي أول - طب أسنان الأطفال",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-fetoun-alhashemy.webp",
     "education": [
       "Saudi Board of Pediatric Dentistry"
     ],
@@ -2633,7 +2633,7 @@ export const doctorsData: Doctor[] = [
     "title": "Dental Hygienist",
     "titleAr": "أخصائي صحة الفم والأسنان",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-futoon-abualfaraj.webp",
     "education": [
       "Bachelor’s Degree of Oral & Dental Hygiene - USA"
     ],
@@ -2649,7 +2649,7 @@ export const doctorsData: Doctor[] = [
     "title": "Oral & Maxillofacial Surgery Sr. Specialist",
     "titleAr": "أخصائي أول - جراحة الفم والوجه والفكين",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-hayel-makhashin.webp",
     "education": [
       "Egyptian Board of Oral & Maxillofacial Surgery"
     ],
@@ -2665,7 +2665,7 @@ export const doctorsData: Doctor[] = [
     "title": "Pediatric Dentistry Consultant",
     "titleAr": "استشاري طب أسنان الأطفال",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-hammam-bahammam.webp",
     "education": [
       "Doctor of Science in Pediatric Dentistry (DScD),\r\nBoston University, USA\r\nAmerican Board of Pediatric Dentistry \r\nCanadian Board of Pediatric Dentistry \r\nFellow of the Royal College of Dentist Canada of Pediatric Dentistry"
     ],
@@ -2697,7 +2697,7 @@ export const doctorsData: Doctor[] = [
     "title": "Conscious Sedation & Special Care Dentistry Consultant",
     "titleAr": "استشاري طب أسنان الرعاية الخاصة والتخدير الواعي",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-hasan-abed.webp",
     "education": [
       "Doctorate of Special Care Dentistry & Conscious Sedation\r\nMaster’s Degree in Special Care Dentistry\r\nBritish Fellowship in Clinical Conscious Sedation"
     ],
@@ -2713,7 +2713,7 @@ export const doctorsData: Doctor[] = [
     "title": "Dental Esthetic & Restorative Specialist",
     "titleAr": "أخصائي تجميل وترميم الأسنان",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-heba-binabid.webp",
     "education": [
       "Certificate in Esthetic & Restorative - USA"
     ],
@@ -2745,7 +2745,7 @@ export const doctorsData: Doctor[] = [
     "title": "Oral & Maxillofacial Surgery and Dental Implant Consultant",
     "titleAr": "استشاري جراحة فم و فكين و وجه و زراعة اسنان",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-hussam-shawli.webp",
     "education": [
       "Saudi Board in Oral and Maxillofacial Surgery"
     ],
@@ -2761,7 +2761,7 @@ export const doctorsData: Doctor[] = [
     "title": "General Dentist",
     "titleAr": "طبيب أسنان",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-ibrahim-abdulmalik.webp",
     "education": [
       "Bachelor’s Degree of Dental Medicine & Surgery"
     ],
@@ -2777,7 +2777,7 @@ export const doctorsData: Doctor[] = [
     "title": "Periodonitic Specialist",
     "titleAr": "أخصائي جراحة وتجميل اللثة",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-jawdat-jamluddin.webp",
     "education": [
       "Diploma in Periodontics - Lebanon"
     ],
@@ -2793,7 +2793,7 @@ export const doctorsData: Doctor[] = [
     "title": "General Dentist",
     "titleAr": "طبيب أسنان",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-kawthar-albeedh.webp",
     "education": [
       "Bachelor’s Degree of Dental Medicine & Surgery"
     ],
@@ -2809,7 +2809,7 @@ export const doctorsData: Doctor[] = [
     "title": "Consultant Prosthodontics & Cosmetic Dentistry",
     "titleAr": "استشاري في تركيبات وتجميل الاسنان",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-lalyan-bahha.webp",
     "education": [
       "Saudi Board in Prosthodontics"
     ],
@@ -2825,7 +2825,7 @@ export const doctorsData: Doctor[] = [
     "title": "General Dentist",
     "titleAr": "طبيب أسنان",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-lama-samanoudi.webp",
     "education": [
       "Bachelor’s Degree of Dental Medicine & Surgery"
     ],
@@ -2841,7 +2841,7 @@ export const doctorsData: Doctor[] = [
     "title": "Senior Registrar in Endodontics",
     "titleAr": "نائب أول علاج الجذور وأعصاب الأسنان",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-lina-alsharif.webp",
     "education": [
       "Saudi Board in Endodontics"
     ],
@@ -2857,7 +2857,7 @@ export const doctorsData: Doctor[] = [
     "title": "Oral & Maxillofacial Surgery Consultant",
     "titleAr": "استشاري جراحة الفم والوجه والفكين",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-lojain-bassyouni.webp",
     "education": [
       "Canadian Board & Fellowship of Oral & Maxillofacial Surgery"
     ],
@@ -2873,7 +2873,7 @@ export const doctorsData: Doctor[] = [
     "title": "Pedodontics Specialist",
     "titleAr": "أخصائي طب أسنان الأطفال",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-majed-basharahil.webp",
     "education": [
       "Master’s Degree in Pediatric Dentistry"
     ],
@@ -2889,7 +2889,7 @@ export const doctorsData: Doctor[] = [
     "title": "Consultant in Periodontics & Implant Dentistry",
     "titleAr": "استشاري جراحة وتجميل اللثة زراعة الأسنان",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-majed-althubaiti.webp",
     "education": [
       "Saudi Board of Periodontics & Implants"
     ],
@@ -2905,7 +2905,7 @@ export const doctorsData: Doctor[] = [
     "title": "Orofacial Pain, TMJ & Sleep Medicine Consultant",
     "titleAr": "استشاري علاج الام الوجه و الفك و اضطرابات النوم وانقطاع التنفس",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-manab-benten.webp",
     "education": [
       "Master's of Oral Sciences from The University at Buffalo\r\nNew York, USA - American Board of Orofacial Pain"
     ],
@@ -2921,7 +2921,7 @@ export const doctorsData: Doctor[] = [
     "title": "Endodontics Specialist",
     "titleAr": "أخصائي علاج الجذور المجهري وأعصاب الأسنان",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-marwan-salah-eldin.webp",
     "education": [
       "Master’s Degree in Oral & Dental Surgery\r\nItalian Fellowship in Microscopic Endodontics & Microsurgery"
     ],
@@ -2937,7 +2937,7 @@ export const doctorsData: Doctor[] = [
     "title": "General Dentist",
     "titleAr": "طبيب أسنان",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-maysaa-alsharqawi.webp",
     "education": [
       "Bachelor’s Degree of Dental Medicine & Surgery"
     ],
@@ -2953,7 +2953,7 @@ export const doctorsData: Doctor[] = [
     "title": "Consultant In Aesthetic & Restorative Dentistry",
     "titleAr": "استشاري تجميل و اصلاح الأسنان",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-mirfat-moqbel.webp",
     "education": [
       "Saudi Board of Restorative Dentistry"
     ],
@@ -2985,7 +2985,7 @@ export const doctorsData: Doctor[] = [
     "title": "General Dentist",
     "titleAr": "طبيب أسنان",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-mohammed-attar.webp",
     "education": [
       "Bachelor’s Degree of Dental Medicine & Surgery"
     ],
@@ -3035,7 +3035,7 @@ export const doctorsData: Doctor[] = [
     "title": "Orthodontics and dentofacial orthopedics",
     "titleAr": "استشاري تقويم الأسنا ن والفكين",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-osama-basri.webp",
     "education": [
       "Diplomate of the American board of orthodontics\r\nFellow of the Royal College of dentists of Canada in orthodontics \r\nSub speciality in Craniofacial and surgical orthodontics- university of Pittsburgh"
     ],
@@ -3083,7 +3083,7 @@ export const doctorsData: Doctor[] = [
     "title": "General Dentist",
     "titleAr": "طبيب أسنان",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-reyouf-mousa.webp",
     "education": [
       "Bachelor’s Degree of Dental Medicine & Surgery"
     ],
@@ -3099,7 +3099,7 @@ export const doctorsData: Doctor[] = [
     "title": "General Dentist",
     "titleAr": "طبيب أسنان",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-saeed-bintalib.webp",
     "education": [
       "Bachelor’s Degree of Dental Medicine & Surgery"
     ],
@@ -3115,7 +3115,7 @@ export const doctorsData: Doctor[] = [
     "title": "General Dentist",
     "titleAr": "طبيب أسنان",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-sami-lodhi.webp",
     "education": [
       "Bachelor’s Degree of Dental Medicine & Surgery"
     ],
@@ -3179,7 +3179,7 @@ export const doctorsData: Doctor[] = [
     "title": "General Dentist",
     "titleAr": "طبيب أسنان",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-yusra-khadwardi.webp",
     "education": [
       "Bachelor’s Degree of Dental Medicine & Surgery"
     ],
@@ -3243,7 +3243,7 @@ export const doctorsData: Doctor[] = [
     "title": "Endodontic Specialist",
     "titleAr": "اخصائي علاج عصب وجذور الأسنان",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-walaa-hassan.webp",
     "education": [
       "Master’s Degree in Endodontics"
     ],
@@ -3259,7 +3259,7 @@ export const doctorsData: Doctor[] = [
     "title": "Consultant in Orthodontics and Dentofacial Orthopedics",
     "titleAr": "استشاري تقويم الأسنان والوجه والفكين",
     "spec": "Dental",
-    "img": "",
+    "img": "/doctors/dr-waleed-taju.webp",
     "education": [
       "Membership of the Royal College of Surgeons of Edinburgh"
     ],
