@@ -1,14 +1,13 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useLang } from "@/app/i18n/context";
 import { trackPhoneClick, trackWhatsAppClick } from "@/app/lib/tracking";
 import SiteNav from "@/app/components/SiteNav";
 import { WhatsAppIcon } from "@/app/components/icons";
-import HeroParallaxBg from "./components/HeroParallaxBg";
-import DentalHeroSplit from "./components/DentalHeroSplit";
+import DentalHeroImmersive from "./components/DentalHeroImmersive";
 import DentalPromisesScroll from "./components/DentalPromisesScroll";
 import dynamic from "next/dynamic";
 
@@ -38,33 +37,90 @@ const stagger = {
   visible: { transition: { staggerChildren: 0.09, delayChildren: 0.05 } },
 };
 
+/* Count-up number that animates once when it scrolls into view. */
+function CountUp({
+  to,
+  decimals = 0,
+  prefix = "",
+  suffix = "",
+}: {
+  to: number;
+  decimals?: number;
+  prefix?: string;
+  suffix?: string;
+}) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [started, setStarted] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setStarted(true);
+          io.disconnect();
+        }
+      },
+      { threshold: 0.4 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!started) return;
+    const el = ref.current;
+    if (!el) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      el.textContent = `${prefix}${to.toFixed(decimals)}${suffix}`;
+      return;
+    }
+    const duration = 1400;
+    const t0 = performance.now();
+    let raf = 0;
+    const tick = (t: number) => {
+      const p = Math.min(1, (t - t0) / duration);
+      const eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = `${prefix}${(to * eased).toFixed(decimals)}${suffix}`;
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [started, to, decimals, prefix, suffix]);
+
+  return (
+    <span ref={ref} dir="ltr" className="tabular-nums">
+      {prefix}0{suffix}
+    </span>
+  );
+}
+
 export default function DentalHub() {
   const { lang } = useLang();
   const isRtl = lang === "ar";
 
-  const heroRef = useRef<HTMLDivElement>(null);
   const storyRef = useRef<HTMLDivElement>(null);
   const processRef = useRef<HTMLDivElement>(null);
   const techRef = useRef<HTMLDivElement>(null);
-
-  const { scrollYProgress: heroProgress } = useScroll({
-    target: heroRef,
-    offset: ["start start", "end start"],
-  });
-  const heroBgY = useTransform(heroProgress, [0, 1], ["0%", "30%"]);
 
   const { scrollYProgress: storyProgress } = useScroll({
     target: storyRef,
     offset: ["start end", "end start"],
   });
-  const storyImg1Y = useTransform(storyProgress, [0, 1], ["10%", "-14%"]);
-  const storyImg2Y = useTransform(storyProgress, [0, 1], ["-10%", "12%"]);
+  const storyImg1Y = useTransform(storyProgress, [0, 1], ["8%", "-10%"]);
+  const storyImg2Y = useTransform(storyProgress, [0, 1], ["-8%", "10%"]);
 
   const { scrollYProgress: processProgress } = useScroll({
     target: processRef,
     offset: ["start end", "end start"],
   });
   const processImgY = useTransform(processProgress, [0, 1], ["12%", "-12%"]);
+
+  const { scrollYProgress: processLineProgress } = useScroll({
+    target: processRef,
+    offset: ["start 75%", "end 60%"],
+  });
 
   const { scrollYProgress: techProgress } = useScroll({
     target: techRef,
@@ -74,27 +130,19 @@ export default function DentalHub() {
 
   const t = isRtl ? AR : EN;
 
+  const scrollToBooking = () =>
+    document.getElementById("dental-booking")?.scrollIntoView({ behavior: "smooth" });
+
   return (
     <div dir={isRtl ? "rtl" : "ltr"} className="min-h-screen bg-white">
       <SiteNav />
 
-      {/* ── Hero (Split-text + soft clinical backdrop) ───── */}
-      <section
-        ref={heroRef}
-        className="relative overflow-hidden bg-white"
-      >
-        <motion.div style={{ y: heroBgY }} className="absolute inset-0 pointer-events-none">
-          <HeroParallaxBg />
-        </motion.div>
-
-        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-transparent to-white pointer-events-none" />
-
-        <div className="relative max-w-7xl mx-auto px-4 md:px-8 pt-12 md:pt-16 pb-16 md:pb-24">
-          <DentalHeroSplit
+      {/* ── Hero (centered editorial + dental-arch gallery) ── */}
+      <section className="relative overflow-hidden bg-gradient-to-b from-[#bfe7ee]/[0.22] via-white to-white">
+        <div className="relative max-w-7xl mx-auto px-4 md:px-8 pt-8 md:pt-12 pb-0">
+          <DentalHeroImmersive
             lang={lang}
-            onBookClick={() =>
-              document.getElementById("dental-booking")?.scrollIntoView({ behavior: "smooth" })
-            }
+            onBookClick={scrollToBooking}
             onWhatsAppClick={() => {
               trackWhatsAppClick();
               window.open(WHATSAPP_LINK, "_blank");
@@ -103,33 +151,62 @@ export default function DentalHub() {
         </div>
       </section>
 
-      {/* ── Promises (scroll-pinned 3D tooth + cards) ────── */}
+      {/* ── Promises (scroll-pinned canvas tooth + cards) ──── */}
       <DentalPromisesScroll lang={lang} />
 
       {/* ── Story / About the dental experience ─────────── */}
       <section ref={storyRef} className="pt-6 pb-16 md:py-28 bg-white overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 md:px-8 grid lg:grid-cols-12 gap-12 items-center">
           <div className="lg:col-span-6 order-2 lg:order-1">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="relative">
+              {/* Dot texture behind the collage */}
+              <div
+                className="absolute -inset-6 opacity-60 pointer-events-none"
+                style={{
+                  backgroundImage: "radial-gradient(rgba(0,103,125,0.14) 1px, transparent 1.4px)",
+                  backgroundSize: "22px 22px",
+                  maskImage: "radial-gradient(ellipse 70% 70% at 50% 50%, black 30%, transparent 75%)",
+                  WebkitMaskImage: "radial-gradient(ellipse 70% 70% at 50% 50%, black 30%, transparent 75%)",
+                }}
+                aria-hidden
+              />
+              <div className="relative grid grid-cols-2 gap-4 md:gap-5">
+                <motion.div
+                  style={{ y: storyImg1Y }}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true, margin: "-100px" }}
+                  transition={{ duration: 0.8, ease: easeOut }}
+                  className="relative aspect-[4/5] rounded-t-full rounded-b-[1.75rem] overflow-hidden shadow-xl shadow-[#003867]/10 ring-1 ring-white/80 will-change-transform"
+                >
+                  <Image src="/dental/39.webp" alt={t.story.imageAlt1} fill sizes="(max-width:1024px) 50vw, 25vw" quality={70} className="object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#003867]/20 to-transparent" />
+                </motion.div>
+                <motion.div
+                  style={{ y: storyImg2Y }}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true, margin: "-100px" }}
+                  transition={{ duration: 0.8, delay: 0.1, ease: easeOut }}
+                  className="relative aspect-[4/5] rounded-t-full rounded-b-[1.75rem] overflow-hidden shadow-xl shadow-[#00677d]/15 mt-12 will-change-transform"
+                >
+                  <Image src="/dental/40.webp" alt={t.story.imageAlt2} fill sizes="(max-width:1024px) 50vw, 25vw" quality={70} className="object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#003867]/20 to-transparent" />
+                </motion.div>
+              </div>
+
+              {/* Floating location chip bridging the two arches */}
               <motion.div
-                style={{ y: storyImg1Y }}
-                initial={{ opacity: 0, scale: 0.95 }}
+                initial={{ opacity: 0, scale: 0.6 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 0.8, ease: easeOut }}
-                className="relative aspect-[4/5] rounded-2xl overflow-hidden shadow-xl shadow-[#003867]/10 will-change-transform"
+                transition={{ duration: 0.55, delay: 0.45, ease: easeOut }}
+                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white/95 backdrop-blur rounded-full px-4 py-2.5 flex items-center gap-2 shadow-xl ring-1 ring-[#00677d]/15"
               >
-                <Image src="/dental/39.webp" alt={t.story.imageAlt1} fill sizes="(max-width:1024px) 50vw, 25vw" quality={70} className="object-cover" />
-              </motion.div>
-              <motion.div
-                style={{ y: storyImg2Y }}
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 0.8, delay: 0.1, ease: easeOut }}
-                className="relative aspect-[4/5] rounded-2xl overflow-hidden shadow-xl shadow-[#00677d]/15 mt-10 will-change-transform"
-              >
-                <Image src="/dental/40.webp" alt={t.story.imageAlt2} fill sizes="(max-width:1024px) 50vw, 25vw" quality={70} className="object-cover" />
+                <span className="material-symbols-outlined text-[#00677d] text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>
+                  location_on
+                </span>
+                <span className="text-xs font-extrabold text-slate-900 whitespace-nowrap">{t.story.locationChip}</span>
               </motion.div>
             </div>
           </div>
@@ -158,9 +235,25 @@ export default function DentalHub() {
                 </div>
               ))}
             </motion.div>
+
+            {/* Animated stats band */}
+            <motion.div
+              variants={fadeUp}
+              className="mt-9 grid grid-cols-2 sm:grid-cols-4 divide-x divide-[#00677d]/10 rtl:divide-x-reverse rounded-2xl border border-[#00677d]/15 bg-gradient-to-br from-white to-[#bfe7ee]/[0.18] shadow-sm overflow-hidden"
+            >
+              {t.story.stats.map((s, i) => (
+                <div key={i} className="px-3 py-4 md:py-5 text-center">
+                  <p className="text-xl md:text-2xl font-extrabold bg-gradient-to-r from-[#003867] to-[#00677d] bg-clip-text text-transparent">
+                    <CountUp to={s.value} decimals={s.decimals ?? 0} prefix={s.prefix ?? ""} suffix={s.suffix ?? ""} />
+                  </p>
+                  <p className="mt-1 text-[10px] md:text-[11px] font-bold text-slate-500 leading-tight">{s.label}</p>
+                </div>
+              ))}
+            </motion.div>
+
             <motion.div variants={fadeUp} className="mt-8">
               <button
-                onClick={() => document.getElementById("dental-booking")?.scrollIntoView({ behavior: "smooth" })}
+                onClick={scrollToBooking}
                 className="group inline-flex items-center gap-2 bg-gradient-to-r from-[#003867] to-[#00677d] hover:from-[#002a4d] hover:to-[#005164] text-white px-7 py-3.5 rounded-full font-bold shadow-lg shadow-[#003867]/30 active:scale-95 transition-all hover:-translate-y-0.5"
               >
                 {t.story.cta}
@@ -173,6 +266,14 @@ export default function DentalHub() {
 
       {/* ── What you'll find under one roof ─────────────── */}
       <section className="py-20 md:py-28 bg-gradient-to-b from-[#00677d]/[0.05] via-white to-white">
+        {/* CSS-driven marquee: zero per-frame JS, pauses on hover */}
+        <style>{`
+          @keyframes dsv-marquee-x { to { transform: translateX(-50%); } }
+          .dsv-track { animation: dsv-marquee-x 70s linear infinite; }
+          .dsv-track-reverse { animation-direction: reverse; }
+          .dsv-shell:hover .dsv-track { animation-play-state: paused; }
+          @media (prefers-reduced-motion: reduce) { .dsv-track { animation: none; } }
+        `}</style>
         <div className="max-w-7xl mx-auto px-4 md:px-8">
           <motion.div
             initial="hidden"
@@ -192,38 +293,44 @@ export default function DentalHub() {
           </motion.div>
 
           <div
-            className="group relative -mx-4 md:-mx-8 overflow-hidden"
+            className="dsv-shell relative -mx-4 md:-mx-8 overflow-hidden"
             style={{
               maskImage: "linear-gradient(to right, transparent 0, black 5%, black 95%, transparent 100%)",
               WebkitMaskImage: "linear-gradient(to right, transparent 0, black 5%, black 95%, transparent 100%)",
             }}
             dir="ltr"
           >
-            <motion.div
-              className="flex gap-5 w-max will-change-transform"
-              animate={{ x: isRtl ? ["-66.6667%", "0%"] : ["0%", "-66.6667%"] }}
-              transition={{
-                duration: 130,
-                ease: "linear",
-                repeat: Infinity,
-              }}
-            >
-              {[...dentalServiceCatalog, ...dentalServiceCatalog, ...dentalServiceCatalog].map((s, i) => (
-                <Link
-                  key={i}
-                  href={`/dental/${s.slug}`}
-                  className="group/card relative shrink-0 w-[78vw] sm:w-[300px] md:w-[320px] bg-white rounded-2xl p-6 md:p-7 border border-[#003867]/10 hover:border-[#00677d]/40 hover:shadow-xl hover:shadow-[#00677d]/10 transition-all duration-300"
-                  dir={isRtl ? "rtl" : "ltr"}
-                >
-                  <span className="absolute inset-x-0 top-0 h-[2px] rounded-t-2xl bg-gradient-to-r from-[#003867]/0 via-[#00677d] to-[#003867]/0" />
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#003867]/10 to-[#00677d]/15 text-[#00677d] flex items-center justify-center">
-                    <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>{s.icon}</span>
-                  </div>
-                  <h3 className="mt-5 text-lg font-extrabold text-slate-900">{isRtl ? s.ar : s.en}</h3>
-                  <p className="mt-2 text-sm text-slate-600 leading-relaxed">{isRtl ? s.blurb.ar : s.blurb.en}</p>
-                </Link>
+            <div className={`dsv-track flex gap-5 w-max will-change-transform ${isRtl ? "dsv-track-reverse" : ""}`}>
+              {[0, 1].map((dup) => (
+                <div key={dup} className="flex gap-5 shrink-0" aria-hidden={dup === 1}>
+                  {dentalServiceCatalog.map((s, i) => (
+                    <Link
+                      key={i}
+                      href={`/dental/${s.slug}`}
+                      tabIndex={dup === 1 ? -1 : undefined}
+                      className="group/card relative shrink-0 w-[78vw] sm:w-[300px] md:w-[320px] bg-white rounded-2xl p-6 md:p-7 border border-[#003867]/10 hover:border-[#00677d]/40 hover:shadow-xl hover:shadow-[#00677d]/10 hover:-translate-y-1 transition-all duration-300 overflow-hidden"
+                      dir={isRtl ? "rtl" : "ltr"}
+                    >
+                      <span className="absolute inset-x-0 top-0 h-[2.5px] bg-gradient-to-r from-[#003867]/0 via-[#00677d] to-[#003867]/0 scale-x-50 opacity-40 group-hover/card:scale-x-100 group-hover/card:opacity-100 transition-all duration-500" />
+                      {/* Oversized index watermark */}
+                      <span className={`absolute -top-3 ${isRtl ? "left-3" : "right-3"} text-[64px] font-extrabold leading-none text-[#003867]/[0.05] select-none pointer-events-none`} aria-hidden>
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <div className="flex items-start justify-between">
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#003867] to-[#00677d] text-white flex items-center justify-center shadow-md shadow-[#00677d]/25 group-hover/card:scale-110 transition-transform duration-300">
+                          <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>{s.icon}</span>
+                        </div>
+                        <span className={`material-symbols-outlined text-[#00677d] opacity-0 ${isRtl ? "translate-x-2 rotate-180" : "-translate-x-2"} group-hover/card:opacity-100 group-hover/card:translate-x-0 transition-all duration-300`}>
+                          arrow_forward
+                        </span>
+                      </div>
+                      <h3 className="mt-5 text-lg font-extrabold text-slate-900">{isRtl ? s.ar : s.en}</h3>
+                      <p className="mt-2 text-sm text-slate-600 leading-relaxed">{isRtl ? s.blurb.ar : s.blurb.en}</p>
+                    </Link>
+                  ))}
+                </div>
               ))}
-            </motion.div>
+            </div>
           </div>
         </div>
       </section>
@@ -247,25 +354,34 @@ export default function DentalHub() {
               {t.process.subtitle}
             </motion.p>
 
-            <motion.div variants={stagger} className="mt-10 space-y-5">
-              {t.process.steps.map((s, i) => (
-                <motion.div
-                  key={i}
-                  variants={fadeUp}
-                  whileHover={{ x: isRtl ? -4 : 4 }}
-                  transition={{ type: "spring", stiffness: 260, damping: 24 }}
-                  className="flex gap-5 bg-gradient-to-br from-white to-[#00677d]/[0.05] rounded-2xl p-6 border border-[#00677d]/15 hover:border-[#00677d]/40 hover:shadow-lg hover:shadow-[#00677d]/10 transition-all"
-                >
-                  <div className="shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-[#003867] to-[#00677d] text-white font-extrabold flex items-center justify-center shadow-md shadow-[#00677d]/30">
-                    {i + 1}
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-900">{s.title}</h3>
-                    <p className="mt-1.5 text-sm text-slate-600 leading-relaxed">{s.body}</p>
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
+            {/* Timeline: a gradient spine that draws itself as you scroll */}
+            <div className="relative mt-10">
+              <div className={`absolute top-2 bottom-2 ${isRtl ? "right-[23px]" : "left-[23px]"} w-[3px] rounded-full bg-[#00677d]/10`} aria-hidden />
+              <motion.div
+                style={{ scaleY: processLineProgress }}
+                className={`absolute top-2 bottom-2 ${isRtl ? "right-[23px]" : "left-[23px]"} w-[3px] rounded-full bg-gradient-to-b from-[#003867] to-[#00677d] origin-top will-change-transform`}
+                aria-hidden
+              />
+              <motion.div variants={stagger} className="space-y-6">
+                {t.process.steps.map((s, i) => (
+                  <motion.div
+                    key={i}
+                    variants={fadeUp}
+                    whileHover={{ x: isRtl ? -4 : 4 }}
+                    transition={{ type: "spring", stiffness: 260, damping: 24 }}
+                    className={`relative flex gap-5 ${isRtl ? "pr-0" : "pl-0"}`}
+                  >
+                    <div className="relative shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-[#003867] to-[#00677d] text-white font-extrabold flex items-center justify-center shadow-md shadow-[#00677d]/30 ring-4 ring-white z-10">
+                      {i + 1}
+                    </div>
+                    <div className="flex-1 bg-gradient-to-br from-white to-[#00677d]/[0.05] rounded-2xl p-6 border border-[#00677d]/15 hover:border-[#00677d]/40 hover:shadow-lg hover:shadow-[#00677d]/10 transition-all">
+                      <h3 className="text-lg font-bold text-slate-900">{s.title}</h3>
+                      <p className="mt-1.5 text-sm text-slate-600 leading-relaxed">{s.body}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </motion.div>
+            </div>
           </motion.div>
 
           <motion.div
@@ -275,11 +391,29 @@ export default function DentalHub() {
             transition={{ duration: 0.9, ease: easeOut }}
             className="lg:col-span-6"
           >
-            <div className="relative aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl shadow-[#00677d]/20">
-              <motion.div style={{ y: processImgY }} className="absolute inset-0 will-change-transform">
-                <Image src="/dental/DSC04628_HDR.webp" alt={t.process.imageAlt} fill sizes="(max-width:1024px) 100vw, 50vw" quality={70} className="object-cover scale-110" />
+            <div className="relative">
+              <div className="relative aspect-[4/5] rounded-t-full rounded-b-[2rem] overflow-hidden shadow-2xl shadow-[#00677d]/20 ring-1 ring-white/80">
+                <motion.div style={{ y: processImgY }} className="absolute inset-0 will-change-transform">
+                  <Image src="/dental/DSC04628_HDR.webp" alt={t.process.imageAlt} fill sizes="(max-width:1024px) 100vw, 50vw" quality={70} className="object-cover scale-110" />
+                </motion.div>
+                <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-[#003867]/45 via-[#00677d]/15 to-transparent" />
+              </div>
+              {/* Floating same-day chip */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.6 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.55, delay: 0.4, ease: easeOut }}
+                className={`absolute bottom-8 ${isRtl ? "right-0 md:-right-5" : "left-0 md:-left-5"} bg-white/95 backdrop-blur rounded-2xl px-4 py-3 flex items-center gap-3 shadow-xl ring-1 ring-[#00677d]/15`}
+              >
+                <span className="w-10 h-10 rounded-full bg-gradient-to-br from-[#003867] to-[#00677d] flex items-center justify-center text-white">
+                  <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>schedule</span>
+                </span>
+                <span className="leading-tight">
+                  <span className="block text-sm font-extrabold text-slate-900">{t.process.chipTitle}</span>
+                  <span className="block text-[11px] text-slate-500 font-medium">{t.process.chipSub}</span>
+                </span>
               </motion.div>
-              <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-[#003867]/45 via-[#00677d]/15 to-transparent" />
             </div>
           </motion.div>
         </div>
@@ -287,10 +421,27 @@ export default function DentalHub() {
 
       {/* ── Technology ───────────────────────────────────── */}
       <section ref={techRef} className="py-20 md:py-28 bg-gradient-to-br from-[#003867] via-[#003867] to-[#00677d] text-white relative overflow-hidden">
-        <motion.div style={{ y: techBlobY }} className="absolute inset-0 pointer-events-none">
+        <motion.div style={{ y: techBlobY }} className="absolute inset-0 pointer-events-none will-change-transform">
           <div className="absolute -top-24 -right-24 w-[28rem] h-[28rem] rounded-full bg-[#00677d]/30 blur-3xl" />
           <div className="absolute -bottom-24 -left-24 w-[28rem] h-[28rem] rounded-full bg-white/5 blur-3xl" />
         </motion.div>
+        {/* Aurora sweep + dot texture */}
+        <motion.div
+          animate={{ x: [0, 60, 0], y: [0, -30, 0] }}
+          transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-1/4 left-1/3 w-[34rem] h-[20rem] rounded-full bg-[#bfe7ee]/[0.07] blur-3xl pointer-events-none will-change-transform"
+          aria-hidden
+        />
+        <div
+          className="absolute inset-0 opacity-[0.35] pointer-events-none"
+          style={{
+            backgroundImage: "radial-gradient(rgba(191,231,238,0.35) 1px, transparent 1.4px)",
+            backgroundSize: "30px 30px",
+            maskImage: "radial-gradient(ellipse 70% 60% at 50% 40%, black 20%, transparent 75%)",
+            WebkitMaskImage: "radial-gradient(ellipse 70% 60% at 50% 40%, black 20%, transparent 75%)",
+          }}
+          aria-hidden
+        />
         <div className="relative max-w-7xl mx-auto px-4 md:px-8">
           <motion.div
             initial="hidden"
@@ -322,13 +473,17 @@ export default function DentalHub() {
                 variants={fadeUp}
                 whileHover={{ y: -6 }}
                 transition={{ type: "spring", stiffness: 280, damping: 22 }}
-                className="bg-white/10 backdrop-blur rounded-2xl p-6 border border-white/15 hover:border-[#bfe7ee]/40 hover:bg-white/15 transition-colors"
+                className="group relative rounded-2xl p-[1.5px] bg-gradient-to-br from-white/30 via-white/10 to-[#bfe7ee]/20 overflow-hidden"
               >
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-white/20 to-[#bfe7ee]/20 flex items-center justify-center text-white">
-                  <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>{item.icon}</span>
+                <div className="relative h-full bg-[#0a3a5f]/70 backdrop-blur rounded-[calc(1rem-1.5px)] p-6 overflow-hidden">
+                  {/* Shine sweep on hover */}
+                  <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none" aria-hidden />
+                  <div className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-white/20 to-[#bfe7ee]/20 ring-1 ring-white/20 flex items-center justify-center text-white group-hover:scale-110 transition-transform duration-300">
+                    <span className="material-symbols-outlined text-[26px]" style={{ fontVariationSettings: "'FILL' 1" }}>{item.icon}</span>
+                  </div>
+                  <h3 className="relative mt-5 text-lg font-extrabold">{item.title}</h3>
+                  <p className="relative mt-2 text-sm text-white/85 leading-relaxed">{item.body}</p>
                 </div>
-                <h3 className="mt-5 text-lg font-extrabold">{item.title}</h3>
-                <p className="mt-2 text-sm text-white/85 leading-relaxed">{item.body}</p>
               </motion.div>
             ))}
           </motion.div>
@@ -343,18 +498,24 @@ export default function DentalHub() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.8, ease: easeOut }}
-            className="rounded-3xl bg-gradient-to-br from-[#003867] via-[#003867] to-[#00677d] text-white p-10 md:p-14 text-center relative overflow-hidden"
+            className="rounded-[2rem] bg-gradient-to-br from-[#003867] via-[#003867] to-[#00677d] text-white p-10 md:p-14 text-center relative overflow-hidden"
           >
             <motion.div
               animate={{ x: [0, 30, 0], y: [0, -20, 0] }}
               transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute -top-20 -right-20 w-72 h-72 rounded-full bg-[#00677d]/40 blur-3xl pointer-events-none"
+              className="absolute -top-20 -right-20 w-72 h-72 rounded-full bg-[#00677d]/40 blur-3xl pointer-events-none will-change-transform"
             />
             <motion.div
               animate={{ x: [0, -25, 0], y: [0, 15, 0] }}
               transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute -bottom-24 -left-24 w-80 h-80 rounded-full bg-white/10 blur-3xl pointer-events-none"
+              className="absolute -bottom-24 -left-24 w-80 h-80 rounded-full bg-white/10 blur-3xl pointer-events-none will-change-transform"
             />
+            {/* Concentric rings echoing the hero */}
+            <svg className="absolute -bottom-24 left-1/2 -translate-x-1/2 w-[560px] text-white pointer-events-none" viewBox="0 0 560 280" fill="none" aria-hidden>
+              {[270, 210, 150].map((r, i) => (
+                <circle key={r} cx="280" cy="280" r={r} stroke="currentColor" strokeOpacity={0.08 - i * 0.015} strokeWidth="1.2" />
+              ))}
+            </svg>
             <div className="relative">
               <h3 className="text-3xl md:text-4xl font-extrabold leading-tight">
                 {t.cta.title}
@@ -365,10 +526,11 @@ export default function DentalHub() {
               </p>
               <div className="mt-8 flex flex-wrap justify-center gap-3">
                 <button
-                  onClick={() => document.getElementById("dental-booking")?.scrollIntoView({ behavior: "smooth" })}
-                  className="bg-white text-[#003867] hover:bg-[#bfe7ee] px-8 py-4 rounded-full font-extrabold shadow-lg active:scale-95 transition-colors"
+                  onClick={scrollToBooking}
+                  className="group relative overflow-hidden bg-white text-[#003867] hover:bg-[#bfe7ee] px-8 py-4 rounded-full font-extrabold shadow-lg active:scale-95 transition-colors"
                 >
-                  {t.cta.primary}
+                  <span className="relative z-10">{t.cta.primary}</span>
+                  <span className="absolute inset-0 bg-gradient-to-r from-transparent via-[#00677d]/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" aria-hidden />
                 </button>
                 <button
                   onClick={() => { trackWhatsAppClick(); window.open(WHATSAPP_LINK, "_blank"); }}
@@ -448,25 +610,9 @@ export default function DentalHub() {
 // ───────────────────────────────────────────────────────
 // Bilingual sales-grade copy lives here so JSX stays clean.
 
+type StoryStat = { value: number; label: string; prefix?: string; suffix?: string; decimals?: number };
+
 const EN = {
-  hero: {
-    eyebrow: "My Clinic Dental",
-    title: "Your family's smile, taken care of.",
-    subtitle:
-      "Gentle, modern care for kids, parents, and grandparents. Our specialists listen, explain everything, and make dental visits calm and easy.",
-    ctaPrimary: "Book your visit",
-    ctaWhatsApp: "WhatsApp us",
-    imageAlt: "A patient in consultation with a My Clinic dental specialist",
-    badgeLabel: "Trusted by families across Saudi Arabia",
-    badgeValue: "70+ dental specialists · 2 cities",
-    ratingLabel: "Patients rate us",
-  },
-  promises: [
-    { icon: "verified_user", title: "Specialist-led care", body: "Always a board-certified dentist. Never a trainee." },
-    { icon: "shield", title: "Clean & safe", body: "Hospital-level sterilization. Your health comes first." },
-    { icon: "schedule", title: "Same-day appointments", body: "Pain or emergency? We fit you in today." },
-    { icon: "support_agent", title: "We handle insurance", body: "No paperwork headaches. We take care of it." },
-  ],
   story: {
     eyebrow: "About Our Clinic",
     title: "Dentistry the way it should be.",
@@ -481,6 +627,13 @@ const EN = {
       "Digital records and reports available when you need them",
       "Branches available: Riyadh — Jeddah",
     ],
+    stats: [
+      { value: 70, prefix: "+", label: "Specialists & consultants" },
+      { value: 2, label: "Cities: Riyadh & Jeddah" },
+      { value: 4.8, decimals: 1, label: "Google rating" },
+      { value: dentalServiceCatalog.length, prefix: "+", label: "Dental services" },
+    ] as StoryStat[],
+    locationChip: "Riyadh & Jeddah",
     imageAlt1: "My Clinic modern dental exam room",
     imageAlt2: "My Clinic welcoming reception lobby",
     cta: "Book your visit",
@@ -490,17 +643,6 @@ const EN = {
     title: "Your dental health, in safe hands.",
     subtitle:
       "We offer a complete suite of dental and pediatric services, led by a hand-picked team of specialists and consultants.",
-    items: [
-      { icon: "dentistry", title: "Cleanings & routine checkups", body: "Keep your smile healthy and strong." },
-      { icon: "auto_awesome", title: "Smile makeovers & whitening", body: "Veneers, whitening, and beautiful results." },
-      { icon: "build", title: "Crowns & implants", body: "Permanent solutions that feel natural." },
-      { icon: "straighten", title: "Braces & clear aligners", body: "Straight teeth, your way, your timeline." },
-      { icon: "child_care", title: "Pediatric dentistry", body: "Gentle, fun care kids actually enjoy." },
-      { icon: "ecg_heart", title: "Gum & root canal treatment", body: "Save your natural teeth comfortably." },
-      { icon: "medical_services", title: "Oral surgery", body: "Specialist surgical care with full comfort." },
-      { icon: "favorite", title: "Senior dental care", body: "Specialized care for older adults." },
-      { icon: "emergency", title: "Emergency cases", body: "Same-day relief when you need it most." },
-    ],
   },
   process: {
     eyebrow: "Your First Visit",
@@ -511,6 +653,8 @@ const EN = {
       { title: "A clear diagnosis", body: "Using digital imaging and modern tools to explain your case simply and clearly." },
       { title: "The right treatment plan", body: "We walk you through the options and the expected cost before we begin." },
     ],
+    chipTitle: "Flexible appointments",
+    chipSub: "Times that suit your schedule",
     imageAlt: "Welcoming My Clinic reception",
   },
   tech: {
@@ -532,24 +676,6 @@ const EN = {
 };
 
 const AR = {
-  hero: {
-    eyebrow: "عيادتي للأسنان",
-    title: "الرعاية الأمثل لصحة أسنانك.",
-    subtitle:
-      "رعاية متكاملة لأسنانك بأحدث التقنيات وعلى يد نخبة من الأطباء.",
-    ctaPrimary: "احجز موعدك",
-    ctaWhatsApp: "تواصل واتساب",
-    imageAlt: "مريض في استشارة مع طبيب أسنان استشاري في عيادتي",
-    badgeLabel: "ثقة العائلات في المملكة",
-    badgeValue: "+70 طبيب واستشاري أسنان",
-    ratingLabel: "تقييم المرضى",
-  },
-  promises: [
-    { icon: "verified_user", title: "+70 طبيب واستشاري أسنان", body: "نخبة من الأطباء والاستشاريين." },
-    { icon: "shield", title: "نظافة على أعلى المستويات", body: "تعقيم بمعايير المستشفيات." },
-    { icon: "schedule", title: "مواعيد مرنة", body: "تناسب جدولك ومتطلباتك." },
-    { icon: "support_agent", title: "إجراءات تأمين مبسطة", body: "نتولى الإجراءات بدلاً عنك." },
-  ],
   story: {
     eyebrow: "عن عيادتنا",
     title: "طب أسنان كما ينبغي أن يكون.",
@@ -564,6 +690,13 @@ const AR = {
       "ملفات وتقارير رقمية متاحة عند الحاجة",
       "الفروع المتاحة: الرياض - جدة",
     ],
+    stats: [
+      { value: 70, prefix: "+", label: "طبيب واستشاري أسنان" },
+      { value: 2, label: "مدينتان: الرياض وجدة" },
+      { value: 4.8, decimals: 1, label: "تقييم Google" },
+      { value: dentalServiceCatalog.length, prefix: "+", label: "خدمة علاجية" },
+    ] as StoryStat[],
+    locationChip: "الرياض وجدة",
     imageAlt1: "غرفة كشف أسنان حديثة في عيادتي",
     imageAlt2: "ردهة استقبال عيادتي",
     cta: "احجز موعدك",
@@ -573,17 +706,6 @@ const AR = {
     title: "صحة أسنانك بأيدٍ أمينة.",
     subtitle:
       "نقدّم في عيادتي مجموعة متكاملة من خدمات طب الأسنان والأطفال، بإشراف نخبة من الأطباء والاستشاريين.",
-    items: [
-      { icon: "dentistry", title: "تنظيف الأسنان والفحوصات الدورية", body: "حافظ على ابتسامتك قوية وصحية." },
-      { icon: "auto_awesome", title: "تجميل الابتسامة والتبييض", body: "عدسات وتبييض ونتائج جميلة." },
-      { icon: "build", title: "التركيبات والزراعة", body: "حلول دائمة تبدو طبيعية تماماً." },
-      { icon: "straighten", title: "التقويم والمصففات الشفافة", body: "أسنان مستقيمة بأحدث الأساليب." },
-      { icon: "child_care", title: "طب أسنان الأطفال", body: "رعاية حنونة يستمتع بها الأطفال." },
-      { icon: "ecg_heart", title: "علاج اللثة والعصب", body: "احفظ أسنانك الطبيعية براحة." },
-      { icon: "medical_services", title: "جراحة الفم والأسنان", body: "إجراءات جراحية بمعايير عالية وراحة تامة." },
-      { icon: "favorite", title: "طب أسنان كبار السن", body: "رعاية متخصصة لمن هم في السن." },
-      { icon: "emergency", title: "حالات الطوارئ", body: "علاج فوري عندما تحتاجه أكثر." },
-    ],
   },
   process: {
     eyebrow: "زيارتك الأولى",
@@ -594,6 +716,8 @@ const AR = {
       { title: "تشخيص واضح", body: "باستخدام الأشعة والتقنيات الرقمية لشرح الحالة بصورة بسيطة وواضحة." },
       { title: "خطة علاج مناسبة", body: "نوضح لك الخيارات العلاجية والتكلفة المتوقعة قبل البدء." },
     ],
+    chipTitle: "مواعيد مرنة",
+    chipSub: "أوقات تناسب جدولك",
     imageAlt: "ردهة استقبال عيادتي",
   },
   tech: {
