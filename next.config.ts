@@ -68,6 +68,14 @@ const nextConfig: NextConfig = {
         destination: "/women-care",
         permanent: true,
       },
+      // The standalone Telemedicine page was retired (2026-07-12); its offering
+      // is covered by /health-homecare ("Tele-consultation and Home care").
+      // Redirect rather than 404 so ads, external links and search keep working.
+      {
+        source: "/telemedicine",
+        destination: "/health-homecare",
+        permanent: true,
+      },
     ];
   },
   async headers() {

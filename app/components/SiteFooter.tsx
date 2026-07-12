@@ -32,7 +32,6 @@ export default function SiteFooter() {
 
   const serviceLinks = [
     { href: "/health-homecare", en: "Home Healthcare", ar: "الرعاية المنزلية" },
-    { href: "/telemedicine", en: "Telemedicine", ar: "الطب عن بعد" },
     { href: "/dental", en: "Dental Care", ar: "طب الأسنان" },
     { href: "/pediatric", en: "Pediatrics", ar: "طب الأطفال" },
   ];

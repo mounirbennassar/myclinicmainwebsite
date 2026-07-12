@@ -18,7 +18,6 @@ export const NAV_LINKS: { href: string; en: string; ar: string; icon: string }[]
   { href: "/find-doctor", en: "Find a Doctor", ar: "ابحث عن طبيب", icon: "stethoscope" },
   { href: "/specialties", en: "Specialties", ar: "التخصصات", icon: "medical_services" },
   { href: "/health-homecare", en: "Tele-consultation and Home care", ar: "الاستشارة عن بعد والرعاية المنزلية", icon: "home_health" },
-  { href: "/telemedicine", en: "Telemedicine", ar: "الطب عن بعد", icon: "video_call" },
 ];
 
 export default function SiteNav() {

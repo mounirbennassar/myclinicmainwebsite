@@ -1,6 +1,6 @@
 // Single source of truth for the clinic's medical specialties.
-// Used by the homepage, /specialties, /find-doctor and /telemedicine so the
-// list, icons and translation keys never drift between pages.
+// Used by the homepage, /specialties and /find-doctor so the list, icons and
+// translation keys never drift between pages.
 
 export const specKeys = [
   "allergyImmunology", "audioVestibular", "cardiology", "dental", "dermatologyCosmetics",
