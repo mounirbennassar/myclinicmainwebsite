@@ -6,7 +6,7 @@
 const FEMALE_FIRST = new Set([
   "abrar", "ahood", "anhar", "bayan", "dana", "elham", "fawziah", "fetoun",
   "futoon", "fotoun", "heba", "kawthar", "lalyan", "lilian", "lama", "lina",
-  "lojain", "maysaa", "mirfat", "rawah", "reyouf", "shahad", "tahani", "usra",
+  "lojain", "maysaa", "mirfat", "reyouf", "shahad", "tahani", "usra",
   "yusra", "waad", "wafaa", "walaa",
   // common Saudi/Arabic female names, for robustness beyond the current roster
   "noura", "nora", "nourah", "salma", "lara", "reda", "huda", "hoda", "hind",
@@ -20,7 +20,7 @@ const FEMALE_FIRST = new Set([
 // Arabic given names that don't end in ة/اء but are female.
 const FEMALE_AR = new Set([
   "عهود", "أبرار", "ابرار", "بيان", "كوثر", "لينا", "يسرا", "لوجين", "شهد",
-  "تهاني", "ريوف", "رواح", "وعد", "ميرفت", "لمى", "نورا", "نورة", "هند", "أمل",
+  "تهاني", "ريوف", "وعد", "ميرفت", "لمى", "نورا", "نورة", "هند", "أمل",
 ]);
 
 // Male names ending in ة/اء — exceptions to the "ends in ة → female" signal
