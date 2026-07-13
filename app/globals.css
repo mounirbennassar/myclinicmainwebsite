@@ -101,9 +101,19 @@
 }
 
 /* RTL / Arabic support */
+/* `clip` — not `hidden` — because overflow-x:hidden forces overflow-y to compute
+   to `auto`, turning <html> into a scroll container. That kills the sticky header
+   and stops body scroll-locks from reaching the viewport. `clip` still contains
+   the horizontal overflow without creating a scrollport. */
 html[dir="rtl"],
 html[dir="rtl"] body {
   overflow-x: hidden;
+}
+@supports (overflow-x: clip) {
+  html[dir="rtl"],
+  html[dir="rtl"] body {
+    overflow-x: clip;
+  }
 }
 html[dir="rtl"] {
   font-family: var(--font-tajawal), var(--font-manrope), sans-serif;

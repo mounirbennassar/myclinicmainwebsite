@@ -161,7 +161,7 @@ export default function HomeClient({ initialDoctors }: { initialDoctors?: Doctor
   const slideSubtitles = [t.slide1Subtitle, t.slide2Subtitle, t.slide3Subtitle];
 
   return (
-    <div className="bg-surface font-body text-on-surface antialiased overflow-x-hidden">
+    <div className="bg-surface font-body text-on-surface antialiased overflow-x-clip">
       {/* Main Navigation */}
       <SiteNav />
 

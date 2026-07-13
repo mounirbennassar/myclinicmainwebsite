@@ -271,7 +271,7 @@ export default function WomenFamilyMedicine({ doctors }: { doctors: Doctor[] }) 
   );
 
   return (
-    <div dir={isRtl ? "rtl" : "ltr"} className="min-h-screen bg-[#F5F9FE] text-[#17263B] flex flex-col overflow-x-hidden">
+    <div dir={isRtl ? "rtl" : "ltr"} className="min-h-screen bg-[#F5F9FE] text-[#17263B] flex flex-col overflow-x-clip">
       <SiteNav />
 
       <main className="flex-1">

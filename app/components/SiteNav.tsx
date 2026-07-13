@@ -30,11 +30,8 @@ export default function SiteNav() {
   // Close the mobile menu whenever the route changes.
   useEffect(() => { setOpen(false); }, [pathname]);
 
-  // Lock body scroll while the mobile sheet is open.
-  useEffect(() => {
-    document.body.style.overflow = open ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
-  }, [open]);
+  // The sheet is anchored to the sticky header, so it stays put as the page moves —
+  // the page is deliberately left scrollable while it's open (client request).
 
   // Subtle elevation once the user scrolls past the top.
   useEffect(() => {
