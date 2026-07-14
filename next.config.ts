@@ -7,6 +7,12 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
   images: {
+    // Doctor photos are served straight off Cloudinary's CDN at the exact width
+    // each layout asks for, instead of making the optimizer re-download a
+    // 409 KB original to emit a 4 KB thumbnail. See app/lib/image-loader.ts —
+    // it falls back to the built-in optimizer for every other image.
+    loader: "custom",
+    loaderFile: "./app/lib/image-loader.ts",
     formats: ["image/avif", "image/webp"],
     // Next 16 defaults images.qualities to [75] and coerces any other value.
     // Declare every quality the app actually requests so nothing is downgraded.
@@ -14,9 +20,11 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 60 * 60 * 24 * 30,
     deviceSizes: [360, 414, 640, 750, 828, 1080, 1200, 1440, 1920, 2048],
     imageSizes: [16, 24, 32, 48, 64, 96, 128, 192, 256, 320, 420],
+    // Still enforced for anything the loader hands back to the built-in
+    // optimizer (Vercel Blob, /api/uploads). Cloudinary + bamc bypass it.
     remotePatterns: [
       {
-        // Doctor profile photos from the clinic's image server.
+        // Doctor profile photos from the clinic's legacy image server.
         protocol: "https",
         hostname: "bamc.myclinic.com.sa",
       },

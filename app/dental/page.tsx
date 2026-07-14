@@ -11,11 +11,13 @@ import DentalHeroSlider from "./components/DentalHeroSlider";
 import DentalPromisesScroll from "./components/DentalPromisesScroll";
 import dynamic from "next/dynamic";
 
-// Below the fold and carries the full ~97KB doctors dataset — client-only so
-// the chunk stays entirely out of the landing page's critical JS; a min-height
-// placeholder holds the space to avoid layout shift while it loads.
+// Below the fold, so still code-split. It used to be `ssr: false` because it
+// bundled the whole ~97KB static doctors dataset; it now reads the dentists from
+// the DB via context, so that chunk is just component code — and rendering it on
+// the server means the dentist names are in the HTML for search engines and the
+// browser can start fetching their photos from the initial response instead of
+// waiting for hydration.
 const DentalDoctorsStrip = dynamic(() => import("./components/DentalDoctorsStrip"), {
-  ssr: false,
   loading: () => <div className="min-h-[520px]" />,
 });
 import DentalTestimonials from "./components/DentalTestimonials";
