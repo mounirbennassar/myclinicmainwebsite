@@ -310,8 +310,8 @@ export default function HealthHomecarePage() {
                 <div className={`hidden lg:block absolute inset-0 rounded-[2.4rem] bg-white/5 ring-1 ring-white/10 ${isRtl ? "-translate-x-5" : "translate-x-5"} translate-y-5`} aria-hidden />
                 <div className="relative aspect-[4/3] lg:aspect-[5/4] rounded-[2rem] overflow-hidden ring-1 ring-white/15 shadow-[0_50px_100px_-40px_rgba(0,0,0,0.7)]">
                   <Image
-                    src="/clinic/home-healthcare.webp"
-                    alt={isRtl ? "فريق عيادتي أثناء تقديم الرعاية المنزلية" : "My Clinic home healthcare team"}
+                    src="/clinic/home-phlebotomy.webp"
+                    alt={isRtl ? "سحب عينات الدم في المنزل من فريق عيادتي" : "My Clinic nurse taking a blood sample at home"}
                     fill
                     preload
                     quality={78}
