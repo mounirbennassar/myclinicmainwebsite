@@ -57,9 +57,9 @@ export default function DoctorsPage() {
   const [uploading, setUploading] = useState(false);
 
   // Mirrors DOCTOR_ROLES in app/lib/auth.ts — the API enforces this too; this is
-  // only so a wrong-role user isn't left staring at an empty page.
-  const canManageDoctors =
-    user?.role === "super_admin" || user?.role === "admin" || user?.role === "doctors_manager";
+  // only so a wrong-role user isn't left staring at an empty page. Note `admin`
+  // is NOT here: the directory belongs to super admins and doctors managers.
+  const canManageDoctors = user?.role === "super_admin" || user?.role === "doctors_manager";
 
   useEffect(() => {
     if (user && !canManageDoctors) router.push("/dashboard");

@@ -154,7 +154,9 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   // role the lead pipeline. Mirrors the API's role groups in app/lib/auth.ts
   // and backend/app/security.py.
   const canSeeLeads = isAdmin || isMarketing || user.role === "agent";
-  const canManageDoctors = isAdmin || isDoctorsManager;
+  // Not `isAdmin` — the doctors directory is owned by super admins and the
+  // dedicated doctors_manager role only. Mirrors DOCTOR_ROLES.
+  const canManageDoctors = user.role === "super_admin" || isDoctorsManager;
 
   const navItems = [
     // Leads pipeline (agents see only their own assignments).

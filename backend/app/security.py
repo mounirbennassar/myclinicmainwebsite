@@ -42,8 +42,10 @@ CONTENT_ROLES = ("super_admin", "admin", "content_manager")
 LEAD_VIEW_ROLES = ("super_admin", "admin", "marketing", "agent")
 # Roles allowed on UTM links + reports surfaces.
 MARKETING_ROLES = ("super_admin", "admin", "marketing")
-# Roles allowed to maintain the doctors directory.
-DOCTOR_ROLES = ("super_admin", "admin", "doctors_manager")
+# Roles allowed to maintain the doctors directory. Deliberately excludes `admin`:
+# the directory is owned by the super admins and whoever is given the dedicated
+# doctors_manager role, not by every admin.
+DOCTOR_ROLES = ("super_admin", "doctors_manager")
 # Roles allowed to administer team / WhatsApp.
 ADMIN_ROLES = ("super_admin", "admin")
 

@@ -29,10 +29,13 @@ export const ADMIN_ROLES: Role[] = ["super_admin", "admin"];
 
 /**
  * Roles allowed to maintain the doctors directory. Mirrors security.py
- * DOCTOR_ROLES — a doctors_manager gets the CMS and nothing else (no leads,
- * no team, no reports).
+ * DOCTOR_ROLES.
+ *
+ * Deliberately excludes `admin` — the directory belongs to the super admins and
+ * to whoever holds the dedicated doctors_manager role. A doctors_manager gets
+ * the CMS and nothing else (no leads, no team, no reports).
  */
-export const DOCTOR_ROLES: Role[] = ["super_admin", "admin", "doctors_manager"];
+export const DOCTOR_ROLES: Role[] = ["super_admin", "doctors_manager"];
 
 export type CurrentUser = {
   id: string;

@@ -24,8 +24,8 @@ const ROLE_BADGE: Record<Role, string> = {
 
 /** What each role can actually reach, shown next to the picker. */
 const ROLE_HINT: Record<Role, string> = {
-  super_admin: "Everything, including deleting leads and team members.",
-  admin: "Everything except deleting team members.",
+  super_admin: "Everything, including doctors and deleting leads or team members.",
+  admin: "Leads, reports, UTM, team and content — but NOT the doctors directory.",
   agent: "Leads assigned to them, in their allowed cities.",
   marketing: "Leads, reports and UTM links — no team or doctors.",
   content_manager: "Blog, news and site pages only — no leads.",
