@@ -32,16 +32,25 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  // Every /api/* request is served by the FastAPI backend (backend/). The
-  // rewrite keeps the API same-origin so the session cookie just rides along.
+  // /api/auth/* and /api/doctors/* are served by Next route handlers (app/api/),
+  // so the doctors CMS works on any host — including Vercel, where there is no
+  // FastAPI process. Everything below is still owned by FastAPI (backend/) and
+  // is proxied to it; the rewrite keeps the API same-origin so the session
+  // cookie just rides along. Both sides read the same Postgres and sign the same
+  // HS256 JWT with JWT_SECRET, so a session minted by either is valid for both.
+  //
+  // These must stay an explicit prefix list rather than a blanket /api/:path*:
+  // an array returned here is applied as `afterFiles`, which is matched BEFORE
+  // dynamic routes — a catch-all would shadow app/api/doctors/[id]/route.ts.
   async rewrites() {
     const backend = process.env.BACKEND_ORIGIN || "http://127.0.0.1:8020";
-    return [
-      {
-        source: "/api/:path*",
-        destination: `${backend}/api/:path*`,
-      },
-    ];
+    const fastapiOwned = ["appointments", "team", "utm", "content", "whatsapp", "uploads"];
+    // Both forms: the bare collection (`/api/team`, which the dashboard calls)
+    // and everything under it (`/api/team/<id>`).
+    return fastapiOwned.flatMap((prefix) => [
+      { source: `/api/${prefix}`, destination: `${backend}/api/${prefix}` },
+      { source: `/api/${prefix}/:path*`, destination: `${backend}/api/${prefix}/:path*` },
+    ]);
   },
   async redirects() {
     return [

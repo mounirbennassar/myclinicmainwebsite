@@ -14,17 +14,25 @@ export default function SpecialtiesPage() {
   const t = translations[lang];
   const isRtl = lang === "ar";
 
-  // Live doctor count per specialty (keyed by the doctor-filter label).
-  // The doctors dataset is ~97KB of source, so it is imported lazily after
-  // mount instead of being bundled into the page — cards render immediately
-  // with their "Service available" fallback and the counts fill in.
+  // Live doctor count per specialty (keyed by the doctor-filter label), fetched
+  // after mount so the cards render immediately with their "Service available"
+  // fallback and the counts fill in.
+  //
+  // A doctor is counted under every specialty they hold, which is exactly how
+  // /find-doctor?spec= filters — the previous version counted a hardcoded
+  // snapshot instead, so the badge and the page it linked to disagreed.
   const [counts, setCounts] = useState<Record<string, number>>({});
   useEffect(() => {
-    import("@/app/doctors-data").then(({ doctorsData }) => {
-      const map: Record<string, number> = {};
-      for (const d of doctorsData) map[d.spec] = (map[d.spec] || 0) + 1;
-      setCounts(map);
-    });
+    fetch("/api/doctors")
+      .then((res) => res.json())
+      .then(({ doctors }: { doctors: { specialties: string[] }[] }) => {
+        const map: Record<string, number> = {};
+        for (const d of doctors ?? []) {
+          for (const spec of d.specialties ?? []) map[spec] = (map[spec] || 0) + 1;
+        }
+        setCounts(map);
+      })
+      .catch(() => { /* leave the cards on their "Service available" fallback */ });
   }, []);
 
   // Pediatrics, Dental and Women & Family Medicine have their own dedicated

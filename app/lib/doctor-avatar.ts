@@ -42,8 +42,17 @@ export function isFemaleDoctor(nameEn: string, nameAr?: string | null): boolean 
   return false;
 }
 
-export function doctorAvatar(nameEn: string, nameAr?: string | null): string {
-  return isFemaleDoctor(nameEn, nameAr)
-    ? "/av-woman-mycliinic.png"
-    : "/av-man-mycliinic.png";
+/**
+ * Illustration to use when a doctor has no photo. `gender` is the doctors.gender
+ * column: when an admin has set it in the CMS it wins outright, because the
+ * name-based guess above is only a heuristic and has had to be corrected by hand
+ * (e.g. Dr. Rawah Eshky). It is null for most rows, which falls back to the guess.
+ */
+export function doctorAvatar(
+  nameEn: string,
+  nameAr?: string | null,
+  gender?: string | null
+): string {
+  const female = gender ? gender === "female" : isFemaleDoctor(nameEn, nameAr);
+  return female ? "/av-woman-mycliinic.png" : "/av-man-mycliinic.png";
 }

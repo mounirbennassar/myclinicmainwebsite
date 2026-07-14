@@ -13,9 +13,13 @@ type Doctor = {
   email: string | null;
   image_url: string | null;
   qualification_en: string | null;
+  qualification_ar: string | null;
   specialty_raw: string | null;
   specialties: string[];
   title: string | null;
+  title_ar: string | null;
+  languages: string | null;
+  gender: string | null;
   branches: string[];
   cities: string[];
   is_active: boolean;
@@ -24,8 +28,9 @@ type Doctor = {
 
 const CITIES = ["Jeddah", "Riyadh"];
 const EMPTY = {
-  name_en: "", name_ar: "", email: "", image_url: "", title: "", specialty_raw: "",
-  qualification_en: "", specialties: [] as string[], cities: [] as string[], branches: "",
+  name_en: "", name_ar: "", email: "", image_url: "", title: "", title_ar: "",
+  specialty_raw: "", qualification_en: "", qualification_ar: "", languages: "", gender: "",
+  specialties: [] as string[], cities: [] as string[], branches: "",
   is_active: true, sort_order: 0,
 };
 
@@ -72,7 +77,9 @@ export default function DoctorsPage() {
     setEditId(d.id);
     setForm({
       name_en: d.name_en, name_ar: d.name_ar || "", email: d.email || "", image_url: d.image_url || "",
-      title: d.title || "", specialty_raw: d.specialty_raw || "", qualification_en: d.qualification_en || "",
+      title: d.title || "", title_ar: d.title_ar || "", specialty_raw: d.specialty_raw || "",
+      qualification_en: d.qualification_en || "", qualification_ar: d.qualification_ar || "",
+      languages: d.languages || "", gender: d.gender || "",
       specialties: d.specialties || [], cities: d.cities || [], branches: (d.branches || []).join(", "),
       is_active: d.is_active, sort_order: d.sort_order || 0,
     });
@@ -100,7 +107,9 @@ export default function DoctorsPage() {
     setSaving(true); setFormError("");
     const payload = {
       name_en: form.name_en, name_ar: form.name_ar, email: form.email, image_url: form.image_url,
-      title: form.title, specialty_raw: form.specialty_raw, qualification_en: form.qualification_en,
+      title: form.title, title_ar: form.title_ar, specialty_raw: form.specialty_raw,
+      qualification_en: form.qualification_en, qualification_ar: form.qualification_ar,
+      languages: form.languages, gender: form.gender,
       specialties: form.specialties, cities: form.cities,
       branches: form.branches.split(",").map((s) => s.trim()).filter(Boolean),
       is_active: form.is_active, sort_order: Number(form.sort_order) || 0,
@@ -127,8 +136,18 @@ export default function DoctorsPage() {
   };
 
   const filtered = doctors.filter((d) => {
-    const s = search.toLowerCase();
-    const matchSearch = !s || d.name_en.toLowerCase().includes(s) || (d.name_ar || "").includes(search) || (d.specialty_raw || "").toLowerCase().includes(s);
+    const s = search.trim().toLowerCase();
+    const haystack = [d.name_en, d.specialty_raw, d.title, d.slug, d.email, d.qualification_en]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+    // Arabic is matched against the raw query — lowercasing does nothing for it,
+    // and the name/title need to stay searchable in both scripts.
+    const matchSearch =
+      !s ||
+      haystack.includes(s) ||
+      (d.name_ar || "").includes(search.trim()) ||
+      (d.title_ar || "").includes(search.trim());
     const matchSpec = !fSpec || d.specialties.includes(fSpec);
     const matchCity = !fCity || d.cities.includes(fCity);
     const matchStatus = !fStatus || (fStatus === "active" ? d.is_active : !d.is_active);
@@ -268,12 +287,24 @@ export default function DoctorsPage() {
                   <input type="text" dir="rtl" value={form.name_ar} onChange={(e) => setForm((f) => ({ ...f, name_ar: e.target.value }))} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-sm" />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">Title / Seniority</label>
+                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">
+                    Display specialty (EN) <span className="text-slate-400 normal-case font-medium">· shown on the site</span>
+                  </label>
+                  <input type="text" value={form.specialty_raw} onChange={(e) => setForm((f) => ({ ...f, specialty_raw: e.target.value }))} placeholder="Endodontics Consultant" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">Display specialty (AR)</label>
+                  <input type="text" dir="rtl" value={form.title_ar} onChange={(e) => setForm((f) => ({ ...f, title_ar: e.target.value }))} placeholder="استشاري علاج عصب وجذور الأسنان" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">
+                    Seniority <span className="text-slate-400 normal-case font-medium">· filters only</span>
+                  </label>
                   <input type="text" value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} placeholder="Consultant" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-sm" />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">Display specialty</label>
-                  <input type="text" value={form.specialty_raw} onChange={(e) => setForm((f) => ({ ...f, specialty_raw: e.target.value }))} placeholder="Pediatric Consultant" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-sm" />
+                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">Email</label>
+                  <input type="email" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} placeholder="doctor@myclinic.com.sa" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-sm" />
                 </div>
               </div>
 
@@ -301,9 +332,34 @@ export default function DoctorsPage() {
                 </div>
               </div>
 
-              <div>
-                <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">Qualifications</label>
-                <textarea value={form.qualification_en} onChange={(e) => setForm((f) => ({ ...f, qualification_en: e.target.value }))} rows={2} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-sm resize-y" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">
+                    Qualifications (EN) <span className="text-slate-400 normal-case font-medium">· one per line</span>
+                  </label>
+                  <textarea value={form.qualification_en} onChange={(e) => setForm((f) => ({ ...f, qualification_en: e.target.value }))} rows={3} placeholder={"Doctorate of Endodontics - USA\nBoard Certified"} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-sm resize-y" />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">Qualifications (AR)</label>
+                  <textarea dir="rtl" value={form.qualification_ar} onChange={(e) => setForm((f) => ({ ...f, qualification_ar: e.target.value }))} rows={3} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-sm resize-y" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">Languages</label>
+                  <input type="text" value={form.languages} onChange={(e) => setForm((f) => ({ ...f, languages: e.target.value }))} placeholder="English, Arabic" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">
+                    Gender <span className="text-slate-400 normal-case font-medium">· only picks the fallback avatar</span>
+                  </label>
+                  <select value={form.gender} onChange={(e) => setForm((f) => ({ ...f, gender: e.target.value }))} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-sm text-slate-600">
+                    <option value="">Guess from name</option>
+                    <option value="female">Female</option>
+                    <option value="male">Male</option>
+                  </select>
+                </div>
               </div>
 
               <div className="flex items-center justify-between gap-4">

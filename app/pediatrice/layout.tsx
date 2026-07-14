@@ -1,8 +1,15 @@
 import type { Metadata } from "next";
 
+import { DoctorsProvider } from "@/app/components/DoctorsProvider";
+import { getDoctorsBySpecialty } from "@/app/lib/doctors";
+
 // Kids / Pediatrics landing page. Shares the root LangProvider + brand fonts
-// from app/layout.tsx; this layout only adds page-specific SEO metadata and a
-// light chrome wrapper.
+// from app/layout.tsx; this layout adds page-specific SEO metadata, a light
+// chrome wrapper, and the pediatricians the strip renders.
+//
+// They used to come from the hardcoded app/doctors-data.ts (11 of them, frozen
+// in March) and so could not be edited in the CMS. Reading them here — a server
+// component — keeps the names in the SSR HTML.
 export const metadata: Metadata = {
   title: "My Clinic Kids | عيادتي للأطفال — رعاية طبية متكاملة للأطفال",
   description:
@@ -17,6 +24,15 @@ export const metadata: Metadata = {
   },
 };
 
-export default function KidsLayout({ children }: { children: React.ReactNode }) {
-  return <div className="font-body antialiased">{children}</div>;
+// Backstop only — doctor mutations call revalidatePath("/", "layout").
+export const revalidate = 3600;
+
+export default async function KidsLayout({ children }: { children: React.ReactNode }) {
+  const pediatricians = await getDoctorsBySpecialty("Pediatrics", null).catch(() => []);
+
+  return (
+    <div className="font-body antialiased">
+      <DoctorsProvider doctors={pediatricians}>{children}</DoctorsProvider>
+    </div>
+  );
 }

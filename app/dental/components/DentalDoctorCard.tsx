@@ -1,30 +1,22 @@
 "use client";
 import Image from "next/image";
-import type { Doctor } from "@/app/doctors-data";
+import type { Doctor } from "@/app/lib/doctors";
 import { useLang } from "@/app/i18n/context";
 import { doctorAvatar } from "@/app/lib/doctor-avatar";
-
-const locationArMap: Record<string, string> = {
-  "Jeddah Al Mohammadiyah": "جدة المحمدية",
-  "Jeddah Al Safa": "جدة الصفا",
-  "Jeddah Al Khalidiyyah": "جدة الخالدية",
-  "Jeddah Al Mohammadiyah + Dental Center": "جدة المحمدية + مركز الأسنان",
-  "Jeddah Al Mohammadiyah + Obhour": "جدة المحمدية + أبحر",
-  "Riyadh Al Sahafa": "الرياض الصحافة",
-};
+import { doctorLocation, doctorName, doctorTitle } from "@/app/lib/doctor-display";
 
 export default function DentalDoctorCard({ doctor }: { doctor: Doctor }) {
   const { lang } = useLang();
   const isRtl = lang === "ar";
-  const name = isRtl && doctor.nameAr ? doctor.nameAr : doctor.name;
-  const title = isRtl && doctor.titleAr ? doctor.titleAr : doctor.title;
-  const location = doctor.location ? (isRtl ? (locationArMap[doctor.location] || doctor.location) : doctor.location) : "";
+  const name = doctorName(doctor, isRtl);
+  const title = doctorTitle(doctor, isRtl);
+  const location = doctorLocation(doctor, isRtl);
 
   return (
     <div className="group bg-white rounded-2xl overflow-hidden border border-[#003867]/10 hover:border-[#003867]/40 hover:shadow-xl hover:shadow-[#003867]/5 transition-all">
       <div className="relative aspect-[3/4] bg-gradient-to-br from-[#003867]/5 to-[#003867]/10 overflow-hidden">
         <Image
-          src={doctor.img || doctorAvatar(doctor.name, doctor.nameAr)}
+          src={doctor.image_url || doctorAvatar(doctor.name_en, doctor.name_ar, doctor.gender)}
           alt={name}
           fill
           sizes="(max-width: 768px) 50vw, 25vw"

@@ -1,16 +1,17 @@
 "use client";
-import { useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
-import { doctorsData, type Doctor } from "@/app/doctors-data";
+import type { Doctor } from "@/app/lib/doctors";
+import { useDoctors } from "@/app/components/DoctorsProvider";
 import { useLang } from "@/app/i18n/context";
-
-const locationArMap: Record<string, string> = {
-  "Jeddah Al Mohammadiyah": "جدة المحمدية",
-  "Jeddah Al Safa": "جدة الصفا",
-  "Jeddah Al Khalidiyyah": "جدة الخالدية",
-  "Riyadh Al Sahafa": "الرياض الصحافة",
-};
+import { doctorAvatar } from "@/app/lib/doctor-avatar";
+import {
+  doctorEducation,
+  doctorLocation,
+  doctorName,
+  doctorTitle,
+} from "@/app/lib/doctor-display";
 
 export default function KidsDoctorsStrip() {
   const { lang } = useLang();
@@ -18,7 +19,8 @@ export default function KidsDoctorsStrip() {
   const carouselRef = useRef<HTMLDivElement>(null);
   const [selected, setSelected] = useState<Doctor | null>(null);
 
-  const peds = useMemo(() => doctorsData.filter((d) => d.spec === "Pediatrics"), []);
+  // Every active pediatrician in the DB, loaded by the pediatrice layout.
+  const peds = useDoctors();
 
   const scroll = (direction: "left" | "right") => {
     const container = carouselRef.current;
@@ -72,18 +74,18 @@ export default function KidsDoctorsStrip() {
             style={{ scrollBehavior: "smooth" }}
           >
             {peds.map((doc, i) => {
-              const name = isRtl && doc.nameAr ? doc.nameAr : doc.name;
-              const title = isRtl && doc.titleAr ? doc.titleAr : doc.title;
+              const name = doctorName(doc, isRtl);
+              const title = doctorTitle(doc, isRtl);
               return (
                 <div
-                  key={doc.name}
+                  key={doc.id}
                   className="w-[260px] sm:w-[280px] lg:w-[300px] snap-start shrink-0 group bg-white rounded-[2rem] p-4 pb-5 ring-1 ring-slate-100 shadow-[0_18px_44px_-22px_rgba(0,77,153,0.3)] hover:-translate-y-2 hover:shadow-[0_28px_56px_-24px_rgba(0,77,153,0.4)] transition-all duration-300"
                 >
                   {/* Arch portrait */}
                   <div className={`relative w-full aspect-[4/4.7] rounded-t-[8.5rem] rounded-b-2xl overflow-hidden mb-5 ${i % 2 === 0 ? "bg-[#EAF5FE]" : "bg-[#FFF6DF]"}`}>
                     <Image
                       alt={name}
-                      src={doc.img}
+                      src={doc.image_url || doctorAvatar(doc.name_en, doc.name_ar, doc.gender)}
                       fill
                       className="object-cover transition-all duration-500 group-hover:scale-105"
                       sizes="300px"
@@ -131,7 +133,7 @@ export default function KidsDoctorsStrip() {
               dir={isRtl ? "rtl" : "ltr"}
             >
               <div className="relative h-72 sm:h-96 overflow-hidden">
-                <Image src={selected.img} alt={selected.name} fill className="object-cover object-top" sizes="(max-width: 640px) 100vw, 512px" />
+                <Image src={selected.image_url || doctorAvatar(selected.name_en, selected.name_ar, selected.gender)} alt={selected.name_en} fill className="object-cover object-top" sizes="(max-width: 640px) 100vw, 512px" />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#004d99] via-[#00677d]/40 to-transparent" />
                 <button
                   onClick={() => setSelected(null)}
@@ -148,13 +150,13 @@ export default function KidsDoctorsStrip() {
               </div>
               <div className="p-7 md:p-8">
                 <h3 className="text-2xl font-extrabold text-slate-900 mb-1">
-                  {isRtl && selected.nameAr ? selected.nameAr : selected.name}
+                  {doctorName(selected, isRtl)}
                 </h3>
                 <p className="text-[#00677d] font-semibold mb-6">
-                  {isRtl && selected.titleAr ? selected.titleAr : selected.title}
+                  {doctorTitle(selected, isRtl)}
                 </p>
                 <div className="space-y-4 mb-7">
-                  {selected.education && selected.education.length > 0 && (
+                  {doctorEducation(selected, isRtl).length > 0 && (
                     <div className="flex items-start gap-3">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#004d99]/10 to-[#00677d]/15 flex items-center justify-center shrink-0 mt-0.5">
                         <span className="material-symbols-outlined text-[#00677d] text-lg">school</span>
@@ -163,13 +165,13 @@ export default function KidsDoctorsStrip() {
                         <p className={`text-[11px] text-slate-500 font-bold mb-1 ${isRtl ? "" : "uppercase tracking-wider"}`}>
                           {isRtl ? "المؤهلات العلمية" : "Education & Qualifications"}
                         </p>
-                        {(isRtl && selected.educationAr ? selected.educationAr : selected.education).map((edu, i) => (
+                        {doctorEducation(selected, isRtl).map((edu, i) => (
                           <p key={i} className="text-sm font-medium text-slate-700 leading-relaxed">{edu}</p>
                         ))}
                       </div>
                     </div>
                   )}
-                  {selected.location && (
+                  {doctorLocation(selected, isRtl) && (
                     <div className="flex items-start gap-3">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-100 to-amber-50 flex items-center justify-center shrink-0 mt-0.5">
                         <span className="material-symbols-outlined text-amber-500 text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>location_on</span>
@@ -177,7 +179,7 @@ export default function KidsDoctorsStrip() {
                       <div>
                         <p className={`text-[11px] text-slate-500 font-bold mb-1 ${isRtl ? "" : "uppercase tracking-wider"}`}>{isRtl ? "الفرع" : "Location"}</p>
                         <p className="text-sm font-medium text-slate-700">
-                          {isRtl ? (locationArMap[selected.location] || selected.location) : selected.location}
+                          {doctorLocation(selected, isRtl)}
                         </p>
                       </div>
                     </div>
