@@ -20,9 +20,11 @@
  * the built-in optimizer.
  */
 
-// The cloud the 47 existing doctor photos already live on; also where
-// app/api/doctors/upload/route.ts sends new ones.
-const CLOUD_NAME = "xy0ze8n9";
+// My Clinic's official media cloud — every doctor photo lives here, and it is
+// where app/api/doctors/upload/route.ts sends new ones. Hardcoded rather than
+// read from the env because this module runs in the browser (a cloud name is a
+// public identifier; it appears in every image URL on the page).
+const CLOUD_NAME = "ubhucgne";
 
 const CLOUDINARY_DELIVERY = /^(https:\/\/res\.cloudinary\.com\/[^/]+)\/image\/upload\/(.+)$/;
 const BAMC_ORIGIN = "https://bamc.myclinic.com.sa/";

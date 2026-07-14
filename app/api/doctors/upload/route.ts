@@ -7,10 +7,10 @@ export const dynamic = "force-dynamic";
 const MAX_BYTES = 8 * 1024 * 1024;
 const FOLDER = "doctors";
 
-// The 47 photos already in the DB live on this cloud, under doctors/<slug>,
-// delivered through f_auto,q_auto. New uploads join them rather than landing on
-// the FastAPI container's local disk, which does not survive a Vercel deploy.
-const CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME || "xy0ze8n9";
+// My Clinic's official media cloud. Every doctor photo lives here under
+// doctors/<slug>, delivered through f_auto,q_auto. Uploads go here rather than
+// to the FastAPI container's local disk, which does not survive a Vercel deploy.
+const CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME || "ubhucgne";
 
 /** Cloudinary signs the alphabetically-sorted params, then appends the secret. */
 function sign(params: Record<string, string>, apiSecret: string): string {

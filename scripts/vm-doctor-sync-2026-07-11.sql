@@ -8,7 +8,7 @@
 -- Applied automatically once by deploy-vm.yml (marker file guards re-runs).
 begin;
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('1be66eac-b9bc-439a-bad9-3a82fde97d8e'::uuid, NULL, NULL, 'dr-abdelrahman-alhilou', 'Dr. Abdelrahman Alhilou', 'د. عبدالرحمن الحلو', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-abdelrahman-alhilou', 'Doctorate of Endodontics - USA', 'Endodontics Consultant', ARRAY['Dental']::text[], 'Consultant', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:46.533Z'::timestamptz, now())
+values ('1be66eac-b9bc-439a-bad9-3a82fde97d8e'::uuid, NULL, NULL, 'dr-abdelrahman-alhilou', 'Dr. Abdelrahman Alhilou', 'د. عبدالرحمن الحلو', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-abdelrahman-alhilou', 'Doctorate of Endodontics - USA', 'Endodontics Consultant', ARRAY['Dental']::text[], 'Consultant', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:46.533Z'::timestamptz, now())
 on conflict (slug) do update set
   name_en = excluded.name_en,
   name_ar = excluded.name_ar,
@@ -386,7 +386,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order,
   updated_at = now();
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('d51782b5-03d8-4455-8113-3ca70971505c'::uuid, NULL, NULL, 'dr-abdulrahman-tehsin', 'Dr. Abdulrahman Tehsin', 'د. عبدالرحمن تحسين', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-abdulrahman-tehsin', 'Bachelor’s Degree of Dental Medicine & Surgery', 'General Dentist', ARRAY['Dental']::text[], 'General Dentist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:46.778Z'::timestamptz, now())
+values ('d51782b5-03d8-4455-8113-3ca70971505c'::uuid, NULL, NULL, 'dr-abdulrahman-tehsin', 'Dr. Abdulrahman Tehsin', 'د. عبدالرحمن تحسين', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-abdulrahman-tehsin', 'Bachelor’s Degree of Dental Medicine & Surgery', 'General Dentist', ARRAY['Dental']::text[], 'General Dentist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:46.778Z'::timestamptz, now())
 on conflict (slug) do update set
   name_en = excluded.name_en,
   name_ar = excluded.name_ar,
@@ -494,7 +494,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order,
   updated_at = now();
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('9dbdc136-2c17-45be-8f60-eeb8a237f7a0'::uuid, NULL, NULL, 'dr-abrar-almarghalani', 'Abrar Almarghalani', 'د. أبرار المرغلاني', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-abrar-almarghalani', 'American Fellowship in Esthetic and Restorative Dentistry
+values ('9dbdc136-2c17-45be-8f60-eeb8a237f7a0'::uuid, NULL, NULL, 'dr-abrar-almarghalani', 'Abrar Almarghalani', 'د. أبرار المرغلاني', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-abrar-almarghalani', 'American Fellowship in Esthetic and Restorative Dentistry
 Master''s Degree in Dental Materials Science', 'Sr. Registrar In Operative & Esthetic Dentistry', ARRAY['Dental']::text[], 'Senior Specialist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:46.926Z'::timestamptz, now())
 on conflict (slug) do update set
   name_en = excluded.name_en,
@@ -801,7 +801,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order,
   updated_at = now();
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('e52fc9fb-7bd7-4137-ba9d-15ef10897d61'::uuid, NULL, NULL, 'dr-ahmed-elsayed', 'Dr. Ahmed Elsayed', 'د. أحمد السيد', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-ahmed-elsayed', 'Master of Prosthodontics- Marmara University/Türkiye', 'Prosthodontist', ARRAY['Dental']::text[], '', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:47.062Z'::timestamptz, now())
+values ('e52fc9fb-7bd7-4137-ba9d-15ef10897d61'::uuid, NULL, NULL, 'dr-ahmed-elsayed', 'Dr. Ahmed Elsayed', 'د. أحمد السيد', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-ahmed-elsayed', 'Master of Prosthodontics- Marmara University/Türkiye', 'Prosthodontist', ARRAY['Dental']::text[], '', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:47.062Z'::timestamptz, now())
 on conflict (slug) do update set
   name_en = excluded.name_en,
   name_ar = excluded.name_ar,
@@ -819,7 +819,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order,
   updated_at = now();
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('19faa080-5a59-4bc1-a134-fb435cb0de4a'::uuid, NULL, NULL, 'dr-ahmed-ghannam', 'Dr. Ahmed Ghannam', 'د.أحمد غنام', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-ahmed-ghannam', 'Bachelor’s Degree of Dental Medicine & Surgery', 'General Dentist', ARRAY['Dental']::text[], 'General Dentist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:47.232Z'::timestamptz, now())
+values ('19faa080-5a59-4bc1-a134-fb435cb0de4a'::uuid, NULL, NULL, 'dr-ahmed-ghannam', 'Dr. Ahmed Ghannam', 'د.أحمد غنام', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-ahmed-ghannam', 'Bachelor’s Degree of Dental Medicine & Surgery', 'General Dentist', ARRAY['Dental']::text[], 'General Dentist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:47.232Z'::timestamptz, now())
 on conflict (slug) do update set
   name_en = excluded.name_en,
   name_ar = excluded.name_ar,
@@ -891,7 +891,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order,
   updated_at = now();
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('283b8a97-7055-4e2f-93c1-f8d6ffa2abe5'::uuid, NULL, NULL, 'dr-ahmed-younis', 'Dr. Ahmed Younis', 'د. أحمد يونس', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-ahmed-younis', 'Master’s Degree in Endodontics', 'Endodontic Specialist', ARRAY['Dental']::text[], 'Specialist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:47.383Z'::timestamptz, now())
+values ('283b8a97-7055-4e2f-93c1-f8d6ffa2abe5'::uuid, NULL, NULL, 'dr-ahmed-younis', 'Dr. Ahmed Younis', 'د. أحمد يونس', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-ahmed-younis', 'Master’s Degree in Endodontics', 'Endodontic Specialist', ARRAY['Dental']::text[], 'Specialist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:47.383Z'::timestamptz, now())
 on conflict (slug) do update set
   name_en = excluded.name_en,
   name_ar = excluded.name_ar,
@@ -927,7 +927,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order,
   updated_at = now();
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('a22e50b2-5d37-4528-ba49-0cbab3db6f3c'::uuid, NULL, NULL, 'dr-ahood-aldahri', 'Dr. Ahood Aldahri', 'د. عهود الدهري', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-ahood-aldahri', 'Bachelor’s Degree of Dental Medicine & Surgery', 'General Dentist', ARRAY['Dental']::text[], 'General Dentist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:47.529Z'::timestamptz, now())
+values ('a22e50b2-5d37-4528-ba49-0cbab3db6f3c'::uuid, NULL, NULL, 'dr-ahood-aldahri', 'Dr. Ahood Aldahri', 'د. عهود الدهري', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-ahood-aldahri', 'Bachelor’s Degree of Dental Medicine & Surgery', 'General Dentist', ARRAY['Dental']::text[], 'General Dentist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:47.529Z'::timestamptz, now())
 on conflict (slug) do update set
   name_en = excluded.name_en,
   name_ar = excluded.name_ar,
@@ -981,7 +981,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order,
   updated_at = now();
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('8bd1e1eb-8dcc-4663-8174-7b777c6dfe62'::uuid, NULL, NULL, 'dr-alaa-babeer', 'Dr. Alaa Babeer', 'د. علاء بابعير', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-alaa-babeer', 'Doctorate of Science in Endodontics - USA', 'Endodontist Sr. Specialist', ARRAY['Dental']::text[], 'Senior Specialist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:47.885Z'::timestamptz, now())
+values ('8bd1e1eb-8dcc-4663-8174-7b777c6dfe62'::uuid, NULL, NULL, 'dr-alaa-babeer', 'Dr. Alaa Babeer', 'د. علاء بابعير', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-alaa-babeer', 'Doctorate of Science in Endodontics - USA', 'Endodontist Sr. Specialist', ARRAY['Dental']::text[], 'Senior Specialist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:47.885Z'::timestamptz, now())
 on conflict (slug) do update set
   name_en = excluded.name_en,
   name_ar = excluded.name_ar,
@@ -999,7 +999,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order,
   updated_at = now();
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('83d0a8c5-7e56-4bba-9949-6be8b3975d7e'::uuid, NULL, NULL, 'dr-alaa-kabbarah', 'Alaa Kabbarah', 'علاء كباره', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-alaa-kabbarah', 'Candaian Board in Dental Public Health', 'Consultant Dental Public health', ARRAY['Dental']::text[], 'Consultant', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:48.005Z'::timestamptz, now())
+values ('83d0a8c5-7e56-4bba-9949-6be8b3975d7e'::uuid, NULL, NULL, 'dr-alaa-kabbarah', 'Alaa Kabbarah', 'علاء كباره', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-alaa-kabbarah', 'Candaian Board in Dental Public Health', 'Consultant Dental Public health', ARRAY['Dental']::text[], 'Consultant', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:48.005Z'::timestamptz, now())
 on conflict (slug) do update set
   name_en = excluded.name_en,
   name_ar = excluded.name_ar,
@@ -1017,7 +1017,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order,
   updated_at = now();
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('d739c1b4-f5b7-4fde-b85e-a52dd8a653b3'::uuid, NULL, NULL, 'dr-alaa-samman', 'Dr. Alaa Samman', 'د. علاء السمان', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-alaa-samman', 'Board Certificate in Orthodontics', 'Orthodontic Specialist', ARRAY['Dental']::text[], 'Specialist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:47.766Z'::timestamptz, now())
+values ('d739c1b4-f5b7-4fde-b85e-a52dd8a653b3'::uuid, NULL, NULL, 'dr-alaa-samman', 'Dr. Alaa Samman', 'د. علاء السمان', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-alaa-samman', 'Board Certificate in Orthodontics', 'Orthodontic Specialist', ARRAY['Dental']::text[], 'Specialist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:47.766Z'::timestamptz, now())
 on conflict (slug) do update set
   name_en = excluded.name_en,
   name_ar = excluded.name_ar,
@@ -1035,7 +1035,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order,
   updated_at = now();
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('c83d4634-3359-43b2-986b-06dbe32e69cb'::uuid, NULL, NULL, 'dr-alamuddin-bakhit', 'Dr. Alamuddin Bakhit', 'د. علم الدين بخيت', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-alamuddin-bakhit', 'Doctorate in Endodontics – Japan', 'Endodontics Consultant', ARRAY['Dental']::text[], 'Consultant', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:48.128Z'::timestamptz, now())
+values ('c83d4634-3359-43b2-986b-06dbe32e69cb'::uuid, NULL, NULL, 'dr-alamuddin-bakhit', 'Dr. Alamuddin Bakhit', 'د. علم الدين بخيت', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-alamuddin-bakhit', 'Doctorate in Endodontics – Japan', 'Endodontics Consultant', ARRAY['Dental']::text[], 'Consultant', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:48.128Z'::timestamptz, now())
 on conflict (slug) do update set
   name_en = excluded.name_en,
   name_ar = excluded.name_ar,
@@ -1107,7 +1107,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order,
   updated_at = now();
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('e3af2a9e-d111-426a-bc51-e0484487a122'::uuid, NULL, NULL, 'dr-ali-elatrouni', 'Dr. Ali Elatrouni', 'د. علي العطروني', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-ali-elatrouni', 'French Board of Oral Maxillo Facial Surgery', 'Oral Maxillo Facial Surgery & implantology Consultant', ARRAY['Dental']::text[], 'Consultant', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:48.246Z'::timestamptz, now())
+values ('e3af2a9e-d111-426a-bc51-e0484487a122'::uuid, NULL, NULL, 'dr-ali-elatrouni', 'Dr. Ali Elatrouni', 'د. علي العطروني', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-ali-elatrouni', 'French Board of Oral Maxillo Facial Surgery', 'Oral Maxillo Facial Surgery & implantology Consultant', ARRAY['Dental']::text[], 'Consultant', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:48.246Z'::timestamptz, now())
 on conflict (slug) do update set
   name_en = excluded.name_en,
   name_ar = excluded.name_ar,
@@ -1216,7 +1216,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order,
   updated_at = now();
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('bfd3df95-7b2d-4bd8-b463-29ebbbf5daa8'::uuid, NULL, NULL, 'dr-amr-azhari', 'Dr. Amr Azhari', 'د. عمرو أزهري', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-amr-azhari', 'Doctorate of Philosophy in Community Oral Health-USA', 'Consultant in Restorative and Cosmetic Dentistry', ARRAY['Dental']::text[], 'Consultant', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:48.499Z'::timestamptz, now())
+values ('bfd3df95-7b2d-4bd8-b463-29ebbbf5daa8'::uuid, NULL, NULL, 'dr-amr-azhari', 'Dr. Amr Azhari', 'د. عمرو أزهري', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-amr-azhari', 'Doctorate of Philosophy in Community Oral Health-USA', 'Consultant in Restorative and Cosmetic Dentistry', ARRAY['Dental']::text[], 'Consultant', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:48.499Z'::timestamptz, now())
 on conflict (slug) do update set
   name_en = excluded.name_en,
   name_ar = excluded.name_ar,
@@ -1288,7 +1288,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order,
   updated_at = now();
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('0014d8a8-68fb-489d-b84d-1fe25e921c5b'::uuid, NULL, NULL, 'dr-anhar-basunbul', 'Dr. Anhar Basunbul', 'د. أنهار باسنبل', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-anhar-basunbul', 'American Board of Prosthodontics-Maxillofacial Prosthodontics & Oral Oncology
+values ('0014d8a8-68fb-489d-b84d-1fe25e921c5b'::uuid, NULL, NULL, 'dr-anhar-basunbul', 'Dr. Anhar Basunbul', 'د. أنهار باسنبل', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-anhar-basunbul', 'American Board of Prosthodontics-Maxillofacial Prosthodontics & Oral Oncology
 Doctorate of Prosthodontics Restorative Biomaterials - USA', 'Maxillofacial Prosthodontics & Oral Oncology Consultant', ARRAY['Dental']::text[], 'Consultant', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:48.620Z'::timestamptz, now())
 on conflict (slug) do update set
   name_en = excluded.name_en,
@@ -1595,7 +1595,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order,
   updated_at = now();
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('e63426ea-f62b-4b84-ba91-edc0ca57b0c0'::uuid, NULL, NULL, 'dr-bayan-alsharif', 'Dr. Bayan Alsharif', 'د. بيان الشريف', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-bayan-alsharif', 'Bachelor’s Degree of Dental Medicine & Surgery', 'General Dentist', ARRAY['Dental']::text[], 'General Dentist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:48.798Z'::timestamptz, now())
+values ('e63426ea-f62b-4b84-ba91-edc0ca57b0c0'::uuid, NULL, NULL, 'dr-bayan-alsharif', 'Dr. Bayan Alsharif', 'د. بيان الشريف', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-bayan-alsharif', 'Bachelor’s Degree of Dental Medicine & Surgery', 'General Dentist', ARRAY['Dental']::text[], 'General Dentist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:48.798Z'::timestamptz, now())
 on conflict (slug) do update set
   name_en = excluded.name_en,
   name_ar = excluded.name_ar,
@@ -1703,7 +1703,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order,
   updated_at = now();
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('ed25c8bb-1238-4902-8a28-00bae1056a6c'::uuid, NULL, NULL, 'dr-elham-elsahafi', 'Dr. Elham Elsahafi', 'د. إالهام الصحفي', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-elham-elsahafi', 'Doctorate in Oral Medicine – King''s College London, UK', 'Consultant in Oral Medicine and Aesthetic Dentistry', ARRAY['Dental']::text[], 'Consultant', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:49.531Z'::timestamptz, now())
+values ('ed25c8bb-1238-4902-8a28-00bae1056a6c'::uuid, NULL, NULL, 'dr-elham-elsahafi', 'Dr. Elham Elsahafi', 'د. إالهام الصحفي', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-elham-elsahafi', 'Doctorate in Oral Medicine – King''s College London, UK', 'Consultant in Oral Medicine and Aesthetic Dentistry', ARRAY['Dental']::text[], 'Consultant', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:49.531Z'::timestamptz, now())
 on conflict (slug) do update set
   name_en = excluded.name_en,
   name_ar = excluded.name_ar,
@@ -1721,7 +1721,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order,
   updated_at = now();
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('5878c07a-8fbc-44c0-bda8-ddfcd65d5da3'::uuid, NULL, NULL, 'dr-emad-albadawi', 'Dr. Emad Albadawi', 'د. عماد البدوي', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-emad-albadawi', 'Doctorate in Pediatric Dentistry – USA
+values ('5878c07a-8fbc-44c0-bda8-ddfcd65d5da3'::uuid, NULL, NULL, 'dr-emad-albadawi', 'Dr. Emad Albadawi', 'د. عماد البدوي', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-emad-albadawi', 'Doctorate in Pediatric Dentistry – USA
 American Board Certified in Pediatric Dentistry', 'Pediatric Dentistry Consultant 
 TMJ Disorders and Orofacial Pain Consultant', ARRAY['Dental']::text[], 'Consultant', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:49.044Z'::timestamptz, now())
 on conflict (slug) do update set
@@ -1867,7 +1867,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order,
   updated_at = now();
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('d32bbb29-39fc-4520-b566-e0353dd76908'::uuid, NULL, NULL, 'dr-eyad-fathi', 'Dr. Eyad Fathi', 'د. إياد فتحي', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-eyad-fathi', 'Bachelor’s Degree in Dental Medicine & Surgery
+values ('d32bbb29-39fc-4520-b566-e0353dd76908'::uuid, NULL, NULL, 'dr-eyad-fathi', 'Dr. Eyad Fathi', 'د. إياد فتحي', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-eyad-fathi', 'Bachelor’s Degree in Dental Medicine & Surgery
 Master’s Degree in Prosthodontics', 'Prosthodontics Specialist', ARRAY['Dental']::text[], 'Specialist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:49.648Z'::timestamptz, now())
 on conflict (slug) do update set
   name_en = excluded.name_en,
@@ -2138,7 +2138,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order,
   updated_at = now();
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('770963cb-d8f3-4ca6-a187-6ea9bf816780'::uuid, NULL, NULL, 'dr-feras-mirdad', 'Dr. Feras Mirdad', 'د. فراس مرداد', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-feras-mirdad', 'Prosthodontics Boston university 
+values ('770963cb-d8f3-4ca6-a187-6ea9bf816780'::uuid, NULL, NULL, 'dr-feras-mirdad', 'Dr. Feras Mirdad', 'د. فراس مرداد', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-feras-mirdad', 'Prosthodontics Boston university 
 Restorative Dentistry UCLA', 'Specialist in Prosthodontics and Cosmetic Dentistry', ARRAY['Dental']::text[], 'Specialist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:50.043Z'::timestamptz, now())
 on conflict (slug) do update set
   name_en = excluded.name_en,
@@ -2157,7 +2157,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order,
   updated_at = now();
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('bfad954a-2284-4f00-9e07-2924ccefc844'::uuid, NULL, NULL, 'dr-fetoun-alhashemy', 'Dr. Fetoun Alhashemy', 'د. فتون الهاشمي', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-fetoun-alhashemy', 'Saudi Board of Pediatric Dentistry', 'Pedodontics Sr. Specialist', ARRAY['Dental']::text[], 'Senior Specialist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:50.160Z'::timestamptz, now())
+values ('bfad954a-2284-4f00-9e07-2924ccefc844'::uuid, NULL, NULL, 'dr-fetoun-alhashemy', 'Dr. Fetoun Alhashemy', 'د. فتون الهاشمي', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-fetoun-alhashemy', 'Saudi Board of Pediatric Dentistry', 'Pedodontics Sr. Specialist', ARRAY['Dental']::text[], 'Senior Specialist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:50.160Z'::timestamptz, now())
 on conflict (slug) do update set
   name_en = excluded.name_en,
   name_ar = excluded.name_ar,
@@ -2175,7 +2175,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order,
   updated_at = now();
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('1c94649b-4c1c-432c-9a9f-637334104880'::uuid, NULL, NULL, 'dr-futoon-abualfaraj', 'Dr. Futoon Abualfaraj', 'د. فتون أبو الفرج', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-futoon-abualfaraj', 'Bachelor’s Degree of Oral & Dental Hygiene - USA', 'Dental Hygienist', ARRAY['Dental']::text[], 'Dental Hygienist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:50.350Z'::timestamptz, now())
+values ('1c94649b-4c1c-432c-9a9f-637334104880'::uuid, NULL, NULL, 'dr-futoon-abualfaraj', 'Dr. Futoon Abualfaraj', 'د. فتون أبو الفرج', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-futoon-abualfaraj', 'Bachelor’s Degree of Oral & Dental Hygiene - USA', 'Dental Hygienist', ARRAY['Dental']::text[], 'Dental Hygienist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:50.350Z'::timestamptz, now())
 on conflict (slug) do update set
   name_en = excluded.name_en,
   name_ar = excluded.name_ar,
@@ -2283,7 +2283,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order,
   updated_at = now();
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('d9635a36-3df1-441d-93dc-b93637e505cb'::uuid, NULL, NULL, 'dr-hammam-bahammam', 'Dr. Hammam Bahammam', 'د. همام باهمام', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-hammam-bahammam', 'Doctor of Science in Pediatric Dentistry (DScD),
+values ('d9635a36-3df1-441d-93dc-b93637e505cb'::uuid, NULL, NULL, 'dr-hammam-bahammam', 'Dr. Hammam Bahammam', 'د. همام باهمام', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-hammam-bahammam', 'Doctor of Science in Pediatric Dentistry (DScD),
 Boston University, USA
 American Board of Pediatric Dentistry 
 Canadian Board of Pediatric Dentistry 
@@ -2450,7 +2450,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order,
   updated_at = now();
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('a69d6454-a6f0-40e5-94f3-e0b24857d58b'::uuid, NULL, NULL, 'dr-hasan-abed', 'Dr. Hasan Abed', 'د. حسن عابد', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-hasan-abed', 'Doctorate of Special Care Dentistry & Conscious Sedation
+values ('a69d6454-a6f0-40e5-94f3-e0b24857d58b'::uuid, NULL, NULL, 'dr-hasan-abed', 'Dr. Hasan Abed', 'د. حسن عابد', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-hasan-abed', 'Doctorate of Special Care Dentistry & Conscious Sedation
 Master’s Degree in Special Care Dentistry
 British Fellowship in Clinical Conscious Sedation', 'Conscious Sedation & Special Care Dentistry Consultant', ARRAY['Dental']::text[], 'Consultant', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:50.860Z'::timestamptz, now())
 on conflict (slug) do update set
@@ -2542,7 +2542,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order,
   updated_at = now();
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('60165822-d3ae-4a94-98bc-fd5e6ad5ab05'::uuid, NULL, NULL, 'dr-hayel-makhashin', 'Dr. Hayel Makhashin', 'د. هايل مخاشن', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-hayel-makhashin', 'Egyptian Board of Oral & Maxillofacial Surgery', 'Oral & Maxillofacial Surgery Sr. Specialist', ARRAY['Dental']::text[], 'Senior Specialist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:50.467Z'::timestamptz, now())
+values ('60165822-d3ae-4a94-98bc-fd5e6ad5ab05'::uuid, NULL, NULL, 'dr-hayel-makhashin', 'Dr. Hayel Makhashin', 'د. هايل مخاشن', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-hayel-makhashin', 'Egyptian Board of Oral & Maxillofacial Surgery', 'Oral & Maxillofacial Surgery Sr. Specialist', ARRAY['Dental']::text[], 'Senior Specialist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:50.467Z'::timestamptz, now())
 on conflict (slug) do update set
   name_en = excluded.name_en,
   name_ar = excluded.name_ar,
@@ -2578,7 +2578,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order,
   updated_at = now();
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('f1cb5ad1-603b-43bb-8439-06d2f78dcb2c'::uuid, NULL, NULL, 'dr-heba-binabid', 'Dr. Heba Binabid', 'د. هبه بن عابد', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-heba-binabid', 'Certificate in Esthetic & Restorative - USA', 'Dental Esthetic & Restorative Specialist', ARRAY['Dental']::text[], 'Specialist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:50.979Z'::timestamptz, now())
+values ('f1cb5ad1-603b-43bb-8439-06d2f78dcb2c'::uuid, NULL, NULL, 'dr-heba-binabid', 'Dr. Heba Binabid', 'د. هبه بن عابد', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-heba-binabid', 'Certificate in Esthetic & Restorative - USA', 'Dental Esthetic & Restorative Specialist', ARRAY['Dental']::text[], 'Specialist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:50.979Z'::timestamptz, now())
 on conflict (slug) do update set
   name_en = excluded.name_en,
   name_ar = excluded.name_ar,
@@ -2722,7 +2722,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order,
   updated_at = now();
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('d39b7a49-a6cf-4cc0-9c04-7e5927e20c8e'::uuid, NULL, NULL, 'dr-hussam-shawli', 'Dr. Hussam Shawli', 'د. حسام شاولي', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-hussam-shawli', 'Saudi Board in Oral and Maxillofacial Surgery', 'Oral & Maxillofacial Surgery and Dental Implant Consultant', ARRAY['Dental']::text[], 'Consultant', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:51.226Z'::timestamptz, now())
+values ('d39b7a49-a6cf-4cc0-9c04-7e5927e20c8e'::uuid, NULL, NULL, 'dr-hussam-shawli', 'Dr. Hussam Shawli', 'د. حسام شاولي', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-hussam-shawli', 'Saudi Board in Oral and Maxillofacial Surgery', 'Oral & Maxillofacial Surgery and Dental Implant Consultant', ARRAY['Dental']::text[], 'Consultant', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:51.226Z'::timestamptz, now())
 on conflict (slug) do update set
   name_en = excluded.name_en,
   name_ar = excluded.name_ar,
@@ -2758,7 +2758,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order,
   updated_at = now();
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('d6d2fd34-b72c-4b9f-81fb-d42a0d565b93'::uuid, NULL, NULL, 'dr-ibrahim-abdulmalik', 'Dr. Ibrahim Abdulmalik', 'د. إبراهيم عبدالمالك', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-ibrahim-abdulmalik', 'Bachelor’s Degree of Dental Medicine & Surgery', 'General Dentist', ARRAY['Dental']::text[], 'General Dentist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:51.385Z'::timestamptz, now())
+values ('d6d2fd34-b72c-4b9f-81fb-d42a0d565b93'::uuid, NULL, NULL, 'dr-ibrahim-abdulmalik', 'Dr. Ibrahim Abdulmalik', 'د. إبراهيم عبدالمالك', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-ibrahim-abdulmalik', 'Bachelor’s Degree of Dental Medicine & Surgery', 'General Dentist', ARRAY['Dental']::text[], 'General Dentist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:51.385Z'::timestamptz, now())
 on conflict (slug) do update set
   name_en = excluded.name_en,
   name_ar = excluded.name_ar,
@@ -2884,7 +2884,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order,
   updated_at = now();
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('db92fee7-f704-48b8-8973-4b01d8ce4283'::uuid, NULL, NULL, 'dr-jawdat-jamluddin', 'Dr. Jawdat Jamluddin', 'د. جودت جمال الدين', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-jawdat-jamluddin', 'Diploma in Periodontics - Lebanon', 'Periodonitic Specialist', ARRAY['Dental']::text[], 'Specialist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:51.507Z'::timestamptz, now())
+values ('db92fee7-f704-48b8-8973-4b01d8ce4283'::uuid, NULL, NULL, 'dr-jawdat-jamluddin', 'Dr. Jawdat Jamluddin', 'د. جودت جمال الدين', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-jawdat-jamluddin', 'Diploma in Periodontics - Lebanon', 'Periodonitic Specialist', ARRAY['Dental']::text[], 'Specialist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:51.507Z'::timestamptz, now())
 on conflict (slug) do update set
   name_en = excluded.name_en,
   name_ar = excluded.name_ar,
@@ -2920,7 +2920,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order,
   updated_at = now();
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('78e3a296-4497-415b-9113-e46cd1023f22'::uuid, NULL, NULL, 'dr-kawthar-albeedh', 'Dr. Kawthar Albeedh', 'د. كوثر البيض', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-kawthar-albeedh', 'Bachelor’s Degree of Dental Medicine & Surgery', 'General Dentist', ARRAY['Dental']::text[], 'General Dentist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:51.625Z'::timestamptz, now())
+values ('78e3a296-4497-415b-9113-e46cd1023f22'::uuid, NULL, NULL, 'dr-kawthar-albeedh', 'Dr. Kawthar Albeedh', 'د. كوثر البيض', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-kawthar-albeedh', 'Bachelor’s Degree of Dental Medicine & Surgery', 'General Dentist', ARRAY['Dental']::text[], 'General Dentist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:51.625Z'::timestamptz, now())
 on conflict (slug) do update set
   name_en = excluded.name_en,
   name_ar = excluded.name_ar,
@@ -3172,7 +3172,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order,
   updated_at = now();
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('50ccdb26-1316-464a-a178-48809c167ae6'::uuid, NULL, NULL, 'dr-lalyan-bahha', 'Dr. Lalyan Bahha', 'د. لليان بحه', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-lalyan-bahha', 'Saudi Board in Prosthodontics', 'Consultant Prosthodontics & Cosmetic Dentistry', ARRAY['Dental']::text[], 'Consultant', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:51.742Z'::timestamptz, now())
+values ('50ccdb26-1316-464a-a178-48809c167ae6'::uuid, NULL, NULL, 'dr-lalyan-bahha', 'Dr. Lalyan Bahha', 'د. لليان بحه', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-lalyan-bahha', 'Saudi Board in Prosthodontics', 'Consultant Prosthodontics & Cosmetic Dentistry', ARRAY['Dental']::text[], 'Consultant', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:51.742Z'::timestamptz, now())
 on conflict (slug) do update set
   name_en = excluded.name_en,
   name_ar = excluded.name_ar,
@@ -3208,7 +3208,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order,
   updated_at = now();
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('ba87148a-430a-4277-b1ae-90addec572c0'::uuid, NULL, NULL, 'dr-lama-samanoudi', 'Dr. Lama Samanoudi', 'د. لمى سمنودي', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-lama-samanoudi', 'Bachelor’s Degree of Dental Medicine & Surgery', 'General Dentist', ARRAY['Dental']::text[], 'General Dentist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:51.907Z'::timestamptz, now())
+values ('ba87148a-430a-4277-b1ae-90addec572c0'::uuid, NULL, NULL, 'dr-lama-samanoudi', 'Dr. Lama Samanoudi', 'د. لمى سمنودي', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-lama-samanoudi', 'Bachelor’s Degree of Dental Medicine & Surgery', 'General Dentist', ARRAY['Dental']::text[], 'General Dentist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:51.907Z'::timestamptz, now())
 on conflict (slug) do update set
   name_en = excluded.name_en,
   name_ar = excluded.name_ar,
@@ -3226,7 +3226,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order,
   updated_at = now();
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('c7af8f96-c1df-41e2-b5cc-b409aca3c003'::uuid, NULL, NULL, 'dr-lina-alsharif', 'Dr. Lina AlSharif', 'د. لينا الشريف', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-lina-alsharif', 'Saudi Board in Endodontics', 'Senior Registrar in Endodontics', ARRAY['Dental']::text[], 'Senior Specialist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:52.025Z'::timestamptz, now())
+values ('c7af8f96-c1df-41e2-b5cc-b409aca3c003'::uuid, NULL, NULL, 'dr-lina-alsharif', 'Dr. Lina AlSharif', 'د. لينا الشريف', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-lina-alsharif', 'Saudi Board in Endodontics', 'Senior Registrar in Endodontics', ARRAY['Dental']::text[], 'Senior Specialist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:52.025Z'::timestamptz, now())
 on conflict (slug) do update set
   name_en = excluded.name_en,
   name_ar = excluded.name_ar,
@@ -3262,7 +3262,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order,
   updated_at = now();
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('ee13ddf0-717e-4640-8e99-2c1d58bbdc93'::uuid, NULL, NULL, 'dr-lojain-bassyouni', 'Dr. Lojain Bassyouni', 'د. لوجين بسيوني', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-lojain-bassyouni', 'Canadian Board & Fellowship of Oral & Maxillofacial Surgery', 'Oral & Maxillofacial Surgery Consultant', ARRAY['Dental']::text[], 'Consultant', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:52.175Z'::timestamptz, now())
+values ('ee13ddf0-717e-4640-8e99-2c1d58bbdc93'::uuid, NULL, NULL, 'dr-lojain-bassyouni', 'Dr. Lojain Bassyouni', 'د. لوجين بسيوني', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-lojain-bassyouni', 'Canadian Board & Fellowship of Oral & Maxillofacial Surgery', 'Oral & Maxillofacial Surgery Consultant', ARRAY['Dental']::text[], 'Consultant', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:52.175Z'::timestamptz, now())
 on conflict (slug) do update set
   name_en = excluded.name_en,
   name_ar = excluded.name_ar,
@@ -3442,7 +3442,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order,
   updated_at = now();
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('4d65c5ee-f4b3-4d4e-8423-87ab87e9e2c1'::uuid, NULL, NULL, 'dr-majed-althubaiti', 'Dr. Majed Althubaiti', 'د. ماجد الثبيتي', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-majed-althubaiti', 'Saudi Board of Periodontics & Implants', 'Consultant in Periodontics & Implant Dentistry', ARRAY['Dental']::text[], 'Consultant', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:52.446Z'::timestamptz, now())
+values ('4d65c5ee-f4b3-4d4e-8423-87ab87e9e2c1'::uuid, NULL, NULL, 'dr-majed-althubaiti', 'Dr. Majed Althubaiti', 'د. ماجد الثبيتي', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-majed-althubaiti', 'Saudi Board of Periodontics & Implants', 'Consultant in Periodontics & Implant Dentistry', ARRAY['Dental']::text[], 'Consultant', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:52.446Z'::timestamptz, now())
 on conflict (slug) do update set
   name_en = excluded.name_en,
   name_ar = excluded.name_ar,
@@ -3478,7 +3478,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order,
   updated_at = now();
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('6e2524db-cb47-4b34-a8ef-c38ac3016cdb'::uuid, NULL, NULL, 'dr-majed-basharahil', 'Dr. Majed Basharahil', 'د. ماجد باشراحيل', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-majed-basharahil', 'Master’s Degree in Pediatric Dentistry', 'Pedodontics Specialist', ARRAY['Dental']::text[], 'Specialist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:52.323Z'::timestamptz, now())
+values ('6e2524db-cb47-4b34-a8ef-c38ac3016cdb'::uuid, NULL, NULL, 'dr-majed-basharahil', 'Dr. Majed Basharahil', 'د. ماجد باشراحيل', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-majed-basharahil', 'Master’s Degree in Pediatric Dentistry', 'Pedodontics Specialist', ARRAY['Dental']::text[], 'Specialist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:52.323Z'::timestamptz, now())
 on conflict (slug) do update set
   name_en = excluded.name_en,
   name_ar = excluded.name_ar,
@@ -3550,7 +3550,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order,
   updated_at = now();
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('ec192d09-ae7a-40ce-beef-ccf5584b55fa'::uuid, NULL, NULL, 'dr-manab-benten', 'Dr. Manab Benten', 'د. مناب بنتن', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-manab-benten', 'Master''s of Oral Sciences from The University at Buffalo
+values ('ec192d09-ae7a-40ce-beef-ccf5584b55fa'::uuid, NULL, NULL, 'dr-manab-benten', 'Dr. Manab Benten', 'د. مناب بنتن', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-manab-benten', 'Master''s of Oral Sciences from The University at Buffalo
 New York, USA - American Board of Orofacial Pain', 'Orofacial Pain, TMJ & Sleep Medicine Consultant', ARRAY['Dental']::text[], 'Consultant', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:52.564Z'::timestamptz, now())
 on conflict (slug) do update set
   name_en = excluded.name_en,
@@ -3659,7 +3659,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order,
   updated_at = now();
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('030ce984-285b-4e6e-bf18-02bdf35c4187'::uuid, NULL, NULL, 'dr-marwan-salah-eldin', 'Dr. Marwan Salah Eldin', 'د. مروان صلاح الدين', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-marwan-salah-eldin', 'Master’s Degree in Oral & Dental Surgery
+values ('030ce984-285b-4e6e-bf18-02bdf35c4187'::uuid, NULL, NULL, 'dr-marwan-salah-eldin', 'Dr. Marwan Salah Eldin', 'د. مروان صلاح الدين', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-marwan-salah-eldin', 'Master’s Degree in Oral & Dental Surgery
 Italian Fellowship in Microscopic Endodontics & Microsurgery', 'Endodontics Specialist', ARRAY['Dental']::text[], 'Specialist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:52.681Z'::timestamptz, now())
 on conflict (slug) do update set
   name_en = excluded.name_en,
@@ -3732,7 +3732,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order,
   updated_at = now();
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('5e98b64b-8d9e-408c-9f00-e6f69237f36f'::uuid, NULL, NULL, 'dr-maysaa-alsharqawi', 'Dr. Maysaa Alsharqawi', 'د. ميساء الشرقاوي', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-maysaa-alsharqawi', 'Bachelor’s Degree of Dental Medicine & Surgery', 'General Dentist', ARRAY['Dental']::text[], 'General Dentist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:52.801Z'::timestamptz, now())
+values ('5e98b64b-8d9e-408c-9f00-e6f69237f36f'::uuid, NULL, NULL, 'dr-maysaa-alsharqawi', 'Dr. Maysaa Alsharqawi', 'د. ميساء الشرقاوي', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-maysaa-alsharqawi', 'Bachelor’s Degree of Dental Medicine & Surgery', 'General Dentist', ARRAY['Dental']::text[], 'General Dentist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:52.801Z'::timestamptz, now())
 on conflict (slug) do update set
   name_en = excluded.name_en,
   name_ar = excluded.name_ar,
@@ -3822,7 +3822,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order,
   updated_at = now();
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('b8eaa735-b526-450e-912e-4ceb158a0282'::uuid, 3207, 5637333576, 'dr-mirfat-moqbel', 'Dr. Mirfat Moqbel', 'د. ميرفت مقبل', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-mirfat-moqbel', 'Saudi Board of Restorative Dentistry', 'Consultant In Aesthetic & Restorative Dentistry', ARRAY['Dental']::text[], 'Consultant', ARRAY['Al Mohammadiyah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-06-26T00:55:19.901Z'::timestamptz, now())
+values ('b8eaa735-b526-450e-912e-4ceb158a0282'::uuid, 3207, 5637333576, 'dr-mirfat-moqbel', 'Dr. Mirfat Moqbel', 'د. ميرفت مقبل', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-mirfat-moqbel', 'Saudi Board of Restorative Dentistry', 'Consultant In Aesthetic & Restorative Dentistry', ARRAY['Dental']::text[], 'Consultant', ARRAY['Al Mohammadiyah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-06-26T00:55:19.901Z'::timestamptz, now())
 on conflict (slug) do update set
   name_en = excluded.name_en,
   name_ar = excluded.name_ar,
@@ -4164,7 +4164,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order,
   updated_at = now();
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('68d21864-3921-40c6-a523-b60b98e946d3'::uuid, NULL, NULL, 'dr-mohammed-attar', 'Dr. Mohammed Attar', 'د. محمد عطار', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-mohammed-attar', 'Bachelor’s Degree of Dental Medicine & Surgery', 'General Dentist', ARRAY['Dental']::text[], 'General Dentist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:53.205Z'::timestamptz, now())
+values ('68d21864-3921-40c6-a523-b60b98e946d3'::uuid, NULL, NULL, 'dr-mohammed-attar', 'Dr. Mohammed Attar', 'د. محمد عطار', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-mohammed-attar', 'Bachelor’s Degree of Dental Medicine & Surgery', 'General Dentist', ARRAY['Dental']::text[], 'General Dentist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:53.205Z'::timestamptz, now())
 on conflict (slug) do update set
   name_en = excluded.name_en,
   name_ar = excluded.name_ar,
@@ -4849,7 +4849,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order,
   updated_at = now();
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('847b8457-35ef-43be-8be2-1f0433825f97'::uuid, NULL, NULL, 'dr-osama-basri', 'Dr. Osama Basri', 'د. أسامة بصري', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-osama-basri', 'Diplomate of the American board of orthodontics
+values ('847b8457-35ef-43be-8be2-1f0433825f97'::uuid, NULL, NULL, 'dr-osama-basri', 'Dr. Osama Basri', 'د. أسامة بصري', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-osama-basri', 'Diplomate of the American board of orthodontics
 Fellow of the Royal College of dentists of Canada in orthodontics 
 Sub speciality in Craniofacial and surgical orthodontics- university of Pittsburgh', 'Orthodontics and dentofacial orthopedics', ARRAY['Dental']::text[], '', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:53.613Z'::timestamptz, now())
 on conflict (slug) do update set
@@ -5410,7 +5410,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order,
   updated_at = now();
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('d63bf8bc-89dc-4904-914b-f9a82c5ca6d6'::uuid, NULL, NULL, 'dr-reyouf-mousa', 'Dr. Reyouf Mousa', 'د. ريوف موسى', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-reyouf-mousa', 'Bachelor’s Degree of Dental Medicine & Surgery', 'General Dentist', ARRAY['Dental']::text[], 'General Dentist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:54.005Z'::timestamptz, now())
+values ('d63bf8bc-89dc-4904-914b-f9a82c5ca6d6'::uuid, NULL, NULL, 'dr-reyouf-mousa', 'Dr. Reyouf Mousa', 'د. ريوف موسى', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-reyouf-mousa', 'Bachelor’s Degree of Dental Medicine & Surgery', 'General Dentist', ARRAY['Dental']::text[], 'General Dentist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:54.005Z'::timestamptz, now())
 on conflict (slug) do update set
   name_en = excluded.name_en,
   name_ar = excluded.name_ar,
@@ -5536,7 +5536,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order,
   updated_at = now();
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('4e6da98a-44b9-4641-ac3b-3130e9b08b91'::uuid, NULL, NULL, 'dr-saeed-bintalib', 'Dr. Saeed BinTalib', 'د. سعيد بن طالب', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-saeed-bintalib', 'Bachelor’s Degree of Dental Medicine & Surgery', 'General Dentist', ARRAY['Dental']::text[], 'General Dentist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:54.122Z'::timestamptz, now())
+values ('4e6da98a-44b9-4641-ac3b-3130e9b08b91'::uuid, NULL, NULL, 'dr-saeed-bintalib', 'Dr. Saeed BinTalib', 'د. سعيد بن طالب', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-saeed-bintalib', 'Bachelor’s Degree of Dental Medicine & Surgery', 'General Dentist', ARRAY['Dental']::text[], 'General Dentist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:54.122Z'::timestamptz, now())
 on conflict (slug) do update set
   name_en = excluded.name_en,
   name_ar = excluded.name_ar,
@@ -5734,7 +5734,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order,
   updated_at = now();
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('f8ab8c02-351c-4ba7-905c-2074e9e29d78'::uuid, NULL, NULL, 'dr-sami-lodhi', 'Dr. Sami Lodhi', 'د. سامي لودي', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-sami-lodhi', 'Bachelor’s Degree of Dental Medicine & Surgery', 'General Dentist', ARRAY['Dental']::text[], 'General Dentist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:54.239Z'::timestamptz, now())
+values ('f8ab8c02-351c-4ba7-905c-2074e9e29d78'::uuid, NULL, NULL, 'dr-sami-lodhi', 'Dr. Sami Lodhi', 'د. سامي لودي', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-sami-lodhi', 'Bachelor’s Degree of Dental Medicine & Surgery', 'General Dentist', ARRAY['Dental']::text[], 'General Dentist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:54.239Z'::timestamptz, now())
 on conflict (slug) do update set
   name_en = excluded.name_en,
   name_ar = excluded.name_ar,
@@ -6546,7 +6546,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order,
   updated_at = now();
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('b391f604-284b-450d-a65f-37db1f0da4a1'::uuid, NULL, NULL, 'dr-walaa-hassan', 'Dr. Walaa Hassan', 'د. ولاء حسان', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-walaa-hassan', 'Master’s Degree in Endodontics', 'Endodontic Specialist', ARRAY['Dental']::text[], 'Specialist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:55.304Z'::timestamptz, now())
+values ('b391f604-284b-450d-a65f-37db1f0da4a1'::uuid, NULL, NULL, 'dr-walaa-hassan', 'Dr. Walaa Hassan', 'د. ولاء حسان', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-walaa-hassan', 'Master’s Degree in Endodontics', 'Endodontic Specialist', ARRAY['Dental']::text[], 'Specialist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:55.304Z'::timestamptz, now())
 on conflict (slug) do update set
   name_en = excluded.name_en,
   name_ar = excluded.name_ar,
@@ -6672,7 +6672,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order,
   updated_at = now();
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('aba4faa0-e3a0-47d4-8c16-912aa3cbd428'::uuid, NULL, NULL, 'dr-waleed-taju', 'Dr. Waleed Taju', 'د. وليد تاجو', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-waleed-taju', 'Membership of the Royal College of Surgeons of Edinburgh', 'Consultant in Orthodontics and Dentofacial Orthopedics', ARRAY['Dental']::text[], 'Consultant', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:55.421Z'::timestamptz, now())
+values ('aba4faa0-e3a0-47d4-8c16-912aa3cbd428'::uuid, NULL, NULL, 'dr-waleed-taju', 'Dr. Waleed Taju', 'د. وليد تاجو', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-waleed-taju', 'Membership of the Royal College of Surgeons of Edinburgh', 'Consultant in Orthodontics and Dentofacial Orthopedics', ARRAY['Dental']::text[], 'Consultant', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:55.421Z'::timestamptz, now())
 on conflict (slug) do update set
   name_en = excluded.name_en,
   name_ar = excluded.name_ar,
@@ -6798,7 +6798,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order,
   updated_at = now();
 insert into doctors (id, source_user_id, source_rec_id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw, specialties, title, branches, cities, is_active, sort_order, created_at, updated_at)
-values ('c3d59031-0152-46a6-bfbf-fbb476591595'::uuid, NULL, NULL, 'dr-yusra-khadwardi', 'Dr. Yusra Khadwardi', 'د. يسرا خداوردي', 'https://res.cloudinary.com/xy0ze8n9/image/upload/f_auto,q_auto/doctors/dr-yusra-khadwardi', 'Bachelor’s Degree of Dental Medicine & Surgery', 'General Dentist', ARRAY['Dental']::text[], 'General Dentist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:54.792Z'::timestamptz, now())
+values ('c3d59031-0152-46a6-bfbf-fbb476591595'::uuid, NULL, NULL, 'dr-yusra-khadwardi', 'Dr. Yusra Khadwardi', 'د. يسرا خداوردي', 'https://res.cloudinary.com/ubhucgne/image/upload/f_auto,q_auto/doctors/dr-yusra-khadwardi', 'Bachelor’s Degree of Dental Medicine & Surgery', 'General Dentist', ARRAY['Dental']::text[], 'General Dentist', ARRAY['Jeddah']::text[], ARRAY['Jeddah']::text[], true, 0, '2026-07-08T12:27:54.792Z'::timestamptz, now())
 on conflict (slug) do update set
   name_en = excluded.name_en,
   name_ar = excluded.name_ar,
