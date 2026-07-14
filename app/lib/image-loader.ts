@@ -52,6 +52,14 @@ export default function imageLoader({
   width: number;
   quality?: number;
 }): string {
+  // Next's optimizer REJECTS SVG unless dangerouslyAllowSVG is enabled, so an
+  // <Image src="*.svg"> resolves to a /_next/image URL that 404s and renders as
+  // a broken image — which is exactly what was happening to the footer and
+  // dashboard logos. There is nothing to optimize in a vector file anyway:
+  // serve it as-is. (Enabling dangerouslyAllowSVG instead would let the
+  // optimizer run untrusted SVG from any allowlisted remote host.)
+  if (src.endsWith(".svg")) return src;
+
   // Already on Cloudinary: rebuild the transformation with the width we need.
   const delivery = src.match(CLOUDINARY_DELIVERY);
   if (delivery) {
