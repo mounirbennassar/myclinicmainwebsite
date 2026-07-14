@@ -1,4 +1,6 @@
+import { randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
+import bcrypt from "bcryptjs";
 import { SignJWT, jwtVerify } from "jose";
 import { queryOne } from "./db";
 
@@ -113,6 +115,50 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     is_active: true,
     can_export: canExport(row.role, row.can_export),
   };
+}
+
+/** Every role the DB's team_members_role_check will accept. Mirrors security.py ROLES. */
+export const ROLES: Role[] = [
+  "super_admin",
+  "admin",
+  "agent",
+  "marketing",
+  "content_manager",
+  "doctors_manager",
+];
+
+// Mirrors security.py ROLE_LABELS. Duplicated in app/dashboard/layout.tsx, which
+// is a client component and cannot import this module (it pulls in pg).
+export const ROLE_LABELS: Record<Role, string> = {
+  super_admin: "Super Admin",
+  admin: "Admin",
+  agent: "Agent",
+  marketing: "Marketing",
+  content_manager: "Content Manager",
+  doctors_manager: "Doctors Manager",
+};
+
+/** Roles allowed to see the lead pipeline. Mirrors security.py LEAD_VIEW_ROLES. */
+export const LEAD_VIEW_ROLES: Role[] = ["super_admin", "admin", "marketing", "agent"];
+
+/** "Safwan Hassan (Admin)" — stamped onto leads on create / status change. */
+export function actorLabel(user: CurrentUser): string {
+  return `${user.name || "Unknown"} (${ROLE_LABELS[user.role] ?? user.role})`;
+}
+
+// No look-alike characters (0/O, 1/l/I) — these get read aloud and retyped.
+const PASSWORD_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+
+/** A random initial password for a new team member. Mirrors security.py generate_password. */
+export function generatePassword(length = 12): string {
+  return Array.from(randomBytes(length))
+    .map((b) => PASSWORD_ALPHABET[b % PASSWORD_ALPHABET.length])
+    .join("");
+}
+
+/** bcrypt(10) — the same cost FastAPI uses, so hashes are interchangeable. */
+export function hashPassword(password: string): Promise<string> {
+  return bcrypt.hash(password, 10);
 }
 
 /** Thrown by requireRoles; route handlers turn it into a JSON error response. */

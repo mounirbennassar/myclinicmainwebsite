@@ -40,19 +40,25 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  // /api/auth/* and /api/doctors/* are served by Next route handlers (app/api/),
-  // so the doctors CMS works on any host — including Vercel, where there is no
-  // FastAPI process. Everything below is still owned by FastAPI (backend/) and
-  // is proxied to it; the rewrite keeps the API same-origin so the session
-  // cookie just rides along. Both sides read the same Postgres and sign the same
-  // HS256 JWT with JWT_SECRET, so a session minted by either is valid for both.
+  // /api/auth/*, /api/doctors/*, /api/team/* and /api/appointments are served by
+  // Next route handlers (app/api/), so login, the doctors CMS, team management
+  // and — critically — the public booking form work on any host, including
+  // Vercel, where there is no FastAPI process. (Booking used to be proxied here
+  // too, which meant every enquiry submitted on the Vercel-hosted site 404'd and
+  // was lost.) The prefixes below are still owned by FastAPI (backend/) and are
+  // proxied to it; the rewrite keeps the API same-origin so the session cookie
+  // just rides along. Both sides read the same Postgres and sign the same HS256
+  // JWT with JWT_SECRET, so a session minted by either is valid for both.
+  //
+  // NOTE: what remains here still 404s on Vercel — the UTM dashboard, the
+  // blog/news CMS and WhatsApp.
   //
   // These must stay an explicit prefix list rather than a blanket /api/:path*:
   // an array returned here is applied as `afterFiles`, which is matched BEFORE
   // dynamic routes — a catch-all would shadow app/api/doctors/[id]/route.ts.
   async rewrites() {
     const backend = process.env.BACKEND_ORIGIN || "http://127.0.0.1:8020";
-    const fastapiOwned = ["appointments", "team", "utm", "content", "whatsapp", "uploads"];
+    const fastapiOwned = ["utm", "content", "whatsapp", "uploads"];
     // Both forms: the bare collection (`/api/team`, which the dashboard calls)
     // and everything under it (`/api/team/<id>`).
     return fastapiOwned.flatMap((prefix) => [
