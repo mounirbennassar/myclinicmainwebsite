@@ -56,9 +56,14 @@ export default function DoctorsPage() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
 
+  // Mirrors DOCTOR_ROLES in app/lib/auth.ts — the API enforces this too; this is
+  // only so a wrong-role user isn't left staring at an empty page.
+  const canManageDoctors =
+    user?.role === "super_admin" || user?.role === "admin" || user?.role === "doctors_manager";
+
   useEffect(() => {
-    if (user && user.role !== "super_admin" && user.role !== "admin") router.push("/dashboard");
-  }, [user, router]);
+    if (user && !canManageDoctors) router.push("/dashboard");
+  }, [user, canManageDoctors, router]);
 
   const fetchDoctors = async () => {
     setLoading(true);
@@ -156,7 +161,7 @@ export default function DoctorsPage() {
   const totalPages = Math.ceil(filtered.length / perPage);
   const paginated = filtered.slice((page - 1) * perPage, page * perPage);
 
-  if (user?.role !== "super_admin" && user?.role !== "admin") return null;
+  if (!canManageDoctors) return null;
 
   return (
     <main className="max-w-7xl mx-auto px-4 md:px-8 py-6 md:py-8">

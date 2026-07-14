@@ -9,6 +9,7 @@ const ROLE_OPTIONS = [
   { value: "super_admin", label: "Super Admin" },
   { value: "marketing", label: "Marketing" },
   { value: "content_manager", label: "Content Manager" },
+  { value: "doctors_manager", label: "Doctors Manager" },
 ] as const;
 type Role = (typeof ROLE_OPTIONS)[number]["value"];
 
@@ -18,12 +19,24 @@ const ROLE_BADGE: Record<Role, string> = {
   agent: "bg-teal-100 text-teal-700",
   marketing: "bg-amber-100 text-amber-700",
   content_manager: "bg-rose-100 text-rose-700",
+  doctors_manager: "bg-emerald-100 text-emerald-700",
+};
+
+/** What each role can actually reach, shown next to the picker. */
+const ROLE_HINT: Record<Role, string> = {
+  super_admin: "Everything, including deleting leads and team members.",
+  admin: "Everything except deleting team members.",
+  agent: "Leads assigned to them, in their allowed cities.",
+  marketing: "Leads, reports and UTM links — no team or doctors.",
+  content_manager: "Blog, news and site pages only — no leads.",
+  doctors_manager: "The doctors directory only — no leads, team or reports.",
 };
 
 const roleLabel = (r: Role) => ROLE_OPTIONS.find((o) => o.value === r)?.label ?? r;
 
-// Roles whose lead visibility is scoped by allowed_cities. Content managers
-// never see leads, super admins always see everything — neither needs cities.
+// Roles whose lead visibility is scoped by allowed_cities. Content managers and
+// doctors managers never see leads, super admins always see everything — none of
+// them need cities.
 const CITY_SCOPED_ROLES: Role[] = ["agent", "admin", "marketing"];
 
 type TeamMember = {
@@ -352,6 +365,7 @@ export default function TeamPage() {
                     <option key={r.value} value={r.value}>{r.label}</option>
                   ))}
                 </select>
+                <p className="text-xs text-slate-400 mt-1.5">{ROLE_HINT[formRole]}</p>
               </div>
               {CITY_SCOPED_ROLES.includes(formRole) && (
                 <div>
@@ -403,6 +417,7 @@ export default function TeamPage() {
                     <option key={r.value} value={r.value}>{r.label}</option>
                   ))}
                 </select>
+                <p className="text-xs text-slate-400 mt-1.5">{ROLE_HINT[formRole]}</p>
               </div>
               {CITY_SCOPED_ROLES.includes(formRole) && (
                 <div>

@@ -12,7 +12,7 @@ from fastapi.responses import JSONResponse
 
 from .. import db
 from ..config import settings
-from ..security import ADMIN_ROLES, CurrentUser, require_roles
+from ..security import DOCTOR_ROLES, CurrentUser, require_roles
 
 router = APIRouter(prefix="/api/doctors", tags=["doctors"])
 
@@ -87,7 +87,7 @@ async def list_doctors(specialty: str | None = None, limit: int | None = None):
 
 # ── Admin surfaces ──────────────────────────────────────────────────────────
 @router.get("/manage")
-async def manage_list(_: CurrentUser = Depends(require_roles(*ADMIN_ROLES))):
+async def manage_list(_: CurrentUser = Depends(require_roles(*DOCTOR_ROLES))):
     doctors = await db.query(
         f"select {CARD_COLS}, email from doctors order by sort_order desc, name_en asc"
     )
@@ -95,7 +95,7 @@ async def manage_list(_: CurrentUser = Depends(require_roles(*ADMIN_ROLES))):
 
 
 @router.post("")
-async def create_doctor(request: Request, _: CurrentUser = Depends(require_roles(*ADMIN_ROLES))):
+async def create_doctor(request: Request, _: CurrentUser = Depends(require_roles(*DOCTOR_ROLES))):
     b = await request.json()
     name_en = _str(b.get("name_en"))
     if not name_en:
@@ -118,7 +118,7 @@ async def create_doctor(request: Request, _: CurrentUser = Depends(require_roles
 
 
 @router.patch("/{doctor_id}")
-async def update_doctor(doctor_id: str, request: Request, _: CurrentUser = Depends(require_roles(*ADMIN_ROLES))):
+async def update_doctor(doctor_id: str, request: Request, _: CurrentUser = Depends(require_roles(*DOCTOR_ROLES))):
     b = await request.json()
     sets: list[str] = []
     vals: list[Any] = []
@@ -158,7 +158,7 @@ async def update_doctor(doctor_id: str, request: Request, _: CurrentUser = Depen
 
 
 @router.delete("/{doctor_id}")
-async def delete_doctor(doctor_id: str, _: CurrentUser = Depends(require_roles(*ADMIN_ROLES))):
+async def delete_doctor(doctor_id: str, _: CurrentUser = Depends(require_roles(*DOCTOR_ROLES))):
     await db.execute("delete from doctors where id = $1::uuid", doctor_id)
     _cache.clear()
     return {"success": True}
@@ -166,7 +166,7 @@ async def delete_doctor(doctor_id: str, _: CurrentUser = Depends(require_roles(*
 
 # ── Photo upload ────────────────────────────────────────────────────────────
 @router.post("/upload")
-async def upload_photo(file: UploadFile, _: CurrentUser = Depends(require_roles(*ADMIN_ROLES))):
+async def upload_photo(file: UploadFile, _: CurrentUser = Depends(require_roles(*DOCTOR_ROLES))):
     if not (file.content_type or "").startswith("image/"):
         raise HTTPException(status_code=400, detail="Only image files are allowed")
     contents = await file.read()

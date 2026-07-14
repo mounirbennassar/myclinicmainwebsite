@@ -14,7 +14,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 
 from .. import db
-from ..security import CurrentUser, get_current_user
+from ..security import LEAD_VIEW_ROLES, CurrentUser, get_current_user, require_roles
 
 router = APIRouter(prefix="/api/appointments", tags=["leads"])
 
@@ -112,9 +112,10 @@ async def create_lead(request: Request):
 
 
 @router.get("")
-async def list_leads(user: CurrentUser = Depends(get_current_user)):
-    if user.role == "content_manager":
-        raise HTTPException(status_code=403, detail="Forbidden")
+async def list_leads(user: CurrentUser = Depends(require_roles(*LEAD_VIEW_ROLES))):
+    # Guarded by an allowlist, not by excluding content_manager by name: a
+    # denylist silently grants every future role (doctors_manager, …) access to
+    # patient enquiries.
 
     agent_id = user.id if user.role == "agent" else None
     if user.role != "super_admin" and not user.allowed_cities:
@@ -143,9 +144,9 @@ class LeadPatch(BaseModel):
 
 
 @router.patch("")
-async def update_lead(body: LeadPatch, request: Request, user: CurrentUser = Depends(get_current_user)):
-    if user.role == "content_manager":
-        raise HTTPException(status_code=403, detail="Forbidden")
+async def update_lead(
+    body: LeadPatch, request: Request, user: CurrentUser = Depends(require_roles(*LEAD_VIEW_ROLES))
+):
     if not body.id:
         raise HTTPException(status_code=400, detail="Missing id")
 

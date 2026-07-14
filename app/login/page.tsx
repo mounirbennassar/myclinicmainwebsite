@@ -25,8 +25,13 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (res.ok) {
-        // Content managers land on the CMS — they have no lead access.
-        router.push(data.user?.role === "content_manager" ? "/dashboard/content" : "/dashboard");
+        // Roles with no lead access land on the surface they do own; /dashboard
+        // is the leads pipeline.
+        const home: Record<string, string> = {
+          content_manager: "/dashboard/content",
+          doctors_manager: "/dashboard/doctors",
+        };
+        router.push(home[data.user?.role] ?? "/dashboard");
       } else {
         setError(data.error || "Login failed");
       }

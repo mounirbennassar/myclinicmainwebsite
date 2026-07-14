@@ -1,5 +1,5 @@
 import { revalidatePath } from "next/cache";
-import { ADMIN_ROLES, HttpError, errorResponse, requireRoles } from "@/app/lib/auth";
+import { DOCTOR_ROLES, HttpError, errorResponse, requireRoles } from "@/app/lib/auth";
 import { DOCTOR_ARRAY_COLS, DOCTOR_TEXT_COLS, arr, str, uniqueDoctorSlug } from "@/app/lib/doctors";
 import { query, queryOne } from "@/app/lib/db";
 
@@ -38,7 +38,7 @@ export async function GET(request: Request) {
 /** Create a doctor (admin). The slug is derived from the name, never supplied. */
 export async function POST(request: Request) {
   try {
-    await requireRoles(...ADMIN_ROLES);
+    await requireRoles(...DOCTOR_ROLES);
     const body = await request.json().catch(() => ({}));
 
     const nameEn = str(body.name_en);

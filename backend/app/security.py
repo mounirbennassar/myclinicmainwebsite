@@ -23,7 +23,7 @@ from . import db
 COOKIE_NAME = "session"
 JWT_EXPIRY_SECONDS = 7 * 24 * 60 * 60
 
-ROLES = ("super_admin", "admin", "agent", "marketing", "content_manager")
+ROLES = ("super_admin", "admin", "agent", "marketing", "content_manager", "doctors_manager")
 
 ROLE_LABELS = {
     "super_admin": "Super Admin",
@@ -31,15 +31,20 @@ ROLE_LABELS = {
     "agent": "Agent",
     "marketing": "Marketing",
     "content_manager": "Content Manager",
+    "doctors_manager": "Doctors Manager",
 }
 
 # Roles allowed to manage site content (pages / blog / news).
 CONTENT_ROLES = ("super_admin", "admin", "content_manager")
 # Roles allowed to see the lead pipeline (agents see only their assignments).
+# Deliberately excludes content_manager and doctors_manager: they have no
+# business reading patient enquiries.
 LEAD_VIEW_ROLES = ("super_admin", "admin", "marketing", "agent")
 # Roles allowed on UTM links + reports surfaces.
 MARKETING_ROLES = ("super_admin", "admin", "marketing")
-# Roles allowed to administer team / doctors / WhatsApp.
+# Roles allowed to maintain the doctors directory.
+DOCTOR_ROLES = ("super_admin", "admin", "doctors_manager")
+# Roles allowed to administer team / WhatsApp.
 ADMIN_ROLES = ("super_admin", "admin")
 
 

@@ -14,10 +14,23 @@ import { queryOne } from "./db";
 export const COOKIE_NAME = "session";
 export const JWT_EXPIRY_SECONDS = 7 * 24 * 60 * 60;
 
-export type Role = "super_admin" | "admin" | "agent" | "marketing" | "content_manager";
+export type Role =
+  | "super_admin"
+  | "admin"
+  | "agent"
+  | "marketing"
+  | "content_manager"
+  | "doctors_manager";
 
-/** Roles allowed to administer team / doctors. Mirrors security.py ADMIN_ROLES. */
+/** Roles allowed to administer team / WhatsApp. Mirrors security.py ADMIN_ROLES. */
 export const ADMIN_ROLES: Role[] = ["super_admin", "admin"];
+
+/**
+ * Roles allowed to maintain the doctors directory. Mirrors security.py
+ * DOCTOR_ROLES — a doctors_manager gets the CMS and nothing else (no leads,
+ * no team, no reports).
+ */
+export const DOCTOR_ROLES: Role[] = ["super_admin", "admin", "doctors_manager"];
 
 export type CurrentUser = {
   id: string;

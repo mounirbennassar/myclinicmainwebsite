@@ -3,7 +3,13 @@ import { useState, useEffect, createContext, useContext, Suspense } from "react"
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import Image from "next/image";
 
-export type Role = "super_admin" | "admin" | "agent" | "marketing" | "content_manager";
+export type Role =
+  | "super_admin"
+  | "admin"
+  | "agent"
+  | "marketing"
+  | "content_manager"
+  | "doctors_manager";
 
 type User = {
   id: string;
@@ -20,6 +26,7 @@ export const ROLE_LABELS: Record<Role, string> = {
   agent: "Agent",
   marketing: "Marketing",
   content_manager: "Content Manager",
+  doctors_manager: "Doctors Manager",
 };
 
 const UserContext = createContext<User | null>(null);
@@ -111,11 +118,12 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
       .finally(() => setLoading(false));
   }, [router]);
 
-  // Content managers have no lead access — their home is the content CMS.
+  // Roles with no lead access land on the one surface they do own, rather than
+  // on an empty leads pipeline.
   useEffect(() => {
-    if (user?.role === "content_manager" && pathname === "/dashboard") {
-      router.replace("/dashboard/content");
-    }
+    if (pathname !== "/dashboard") return;
+    if (user?.role === "content_manager") router.replace("/dashboard/content");
+    else if (user?.role === "doctors_manager") router.replace("/dashboard/doctors");
   }, [user, pathname, router]);
 
   const logout = async () => {
@@ -141,9 +149,16 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const isAdmin = user.role === "super_admin" || user.role === "admin";
   const isMarketing = user.role === "marketing";
   const isContent = user.role === "content_manager";
+  const isDoctorsManager = user.role === "doctors_manager";
+  // Allowlists, not "everyone except X" — a denylist silently hands each new
+  // role the lead pipeline. Mirrors the API's role groups in app/lib/auth.ts
+  // and backend/app/security.py.
+  const canSeeLeads = isAdmin || isMarketing || user.role === "agent";
+  const canManageDoctors = isAdmin || isDoctorsManager;
+
   const navItems = [
-    // Leads pipeline: everyone except content managers (agents see only theirs).
-    ...(!isContent
+    // Leads pipeline (agents see only their own assignments).
+    ...(canSeeLeads
       ? [{ label: "Leads", href: `/dashboard${vQuery}`, active: pathname === "/dashboard" }]
       : []),
     ...(isAdmin || isMarketing
@@ -152,11 +167,11 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
           { label: "UTM Links", href: `/dashboard/utm${vQuery}`, active: pathname === "/dashboard/utm" },
         ]
       : []),
+    ...(canManageDoctors
+      ? [{ label: "Doctors", href: `/dashboard/doctors${vQuery}`, active: pathname === "/dashboard/doctors" }]
+      : []),
     ...(isAdmin
-      ? [
-          { label: "Doctors", href: `/dashboard/doctors${vQuery}`, active: pathname === "/dashboard/doctors" },
-          { label: "Team", href: `/dashboard/team${vQuery}`, active: pathname === "/dashboard/team" },
-        ]
+      ? [{ label: "Team", href: `/dashboard/team${vQuery}`, active: pathname === "/dashboard/team" }]
       : []),
     ...(isAdmin || isContent
       ? [{ label: "Content", href: "/dashboard/content", active: pathname === "/dashboard/content" }]

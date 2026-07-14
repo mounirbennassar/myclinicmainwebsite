@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { ADMIN_ROLES, HttpError, errorResponse, requireRoles } from "@/app/lib/auth";
+import { DOCTOR_ROLES, HttpError, errorResponse, requireRoles } from "@/app/lib/auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -23,7 +23,7 @@ function sign(params: Record<string, string>, apiSecret: string): string {
 
 export async function POST(request: Request) {
   try {
-    await requireRoles(...ADMIN_ROLES);
+    await requireRoles(...DOCTOR_ROLES);
 
     const apiKey = process.env.CLOUDINARY_API_KEY;
     const apiSecret = process.env.CLOUDINARY_API_SECRET;

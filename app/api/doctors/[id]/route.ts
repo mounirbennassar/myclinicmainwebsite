@@ -1,4 +1,4 @@
-import { ADMIN_ROLES, HttpError, errorResponse, requireRoles } from "@/app/lib/auth";
+import { DOCTOR_ROLES, HttpError, errorResponse, requireRoles } from "@/app/lib/auth";
 import { DOCTOR_ARRAY_COLS, DOCTOR_TEXT_COLS, arr, str } from "@/app/lib/doctors";
 import { query, queryOne } from "@/app/lib/db";
 import { revalidateDoctorPages } from "../route";
@@ -15,7 +15,7 @@ type Params = { params: Promise<{ id: string }> };
  */
 export async function PATCH(request: Request, { params }: Params) {
   try {
-    await requireRoles(...ADMIN_ROLES);
+    await requireRoles(...DOCTOR_ROLES);
     const { id } = await params;
     const body: Record<string, unknown> = await request.json().catch(() => ({}));
 
@@ -54,7 +54,7 @@ export async function PATCH(request: Request, { params }: Params) {
 
 export async function DELETE(_request: Request, { params }: Params) {
   try {
-    await requireRoles(...ADMIN_ROLES);
+    await requireRoles(...DOCTOR_ROLES);
     const { id } = await params;
     await query("delete from doctors where id = $1::uuid", [id]);
     revalidateDoctorPages();
