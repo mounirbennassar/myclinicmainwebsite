@@ -10,8 +10,8 @@ import { DoctorsProvider } from "@/app/components/DoctorsProvider";
 import { getDoctorsBySpecialty } from "@/app/lib/doctors";
 
 // Backstop only — doctor mutations call revalidatePath("/", "layout"), so CMS
-// edits show up on the next request rather than an hour later.
-export const revalidate = 3600;
+// edits show up on the next request rather than when this timer lapses.
+export const revalidate = 300;
 
 export default async function DentalLayout({ children }: { children: React.ReactNode }) {
   // null = no limit: the strip lists every dentist, not the default 16.

@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 };
 
 // Backstop only — doctor mutations call revalidatePath("/", "layout").
-export const revalidate = 3600;
+export const revalidate = 300;
 
 export default async function KidsLayout({ children }: { children: React.ReactNode }) {
   const pediatricians = await getDoctorsBySpecialty("Pediatrics", null).catch(() => []);

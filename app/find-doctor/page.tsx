@@ -4,9 +4,9 @@ import SiteFooter from "@/app/components/SiteFooter";
 import { getAllActiveDoctors } from "@/app/lib/doctors";
 import DoctorDirectory from "./DoctorDirectory";
 
-// Re-generate the directory hourly (doctors change rarely; dashboard edits can
-// trigger on-demand revalidation later).
-export const revalidate = 3600;
+// Dashboard edits purge this via revalidatePath(); the timer is just the
+// backstop for when that doesn't land. See app/page.tsx.
+export const revalidate = 300;
 
 export default async function FindADoctorPage() {
   const doctors = await getAllActiveDoctors();

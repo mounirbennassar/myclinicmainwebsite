@@ -2,9 +2,10 @@ import { getDoctorsBySpecialty } from "@/app/lib/doctors";
 import type { Doctor } from "@/app/lib/doctors";
 import WomenFamilyMedicine from "./WomenFamilyMedicine";
 
-// Women's-health + family doctors are fetched on the server (cached hourly) and
-// baked into the page, so the carousel never depends on a client-side API call.
-export const revalidate = 3600;
+// Women's-health + family doctors are fetched on the server and baked into the
+// page, so the carousel never depends on a client-side API call. Backstop only —
+// doctor mutations purge this via revalidatePath("/", "layout").
+export const revalidate = 300;
 
 export default async function FemaleFamilyMedicinePage() {
   // Pull both relevant specialties and merge, OB-Gyn first (women's-health focus),

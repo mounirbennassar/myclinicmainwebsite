@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useUser } from "../layout";
 import { useRouter } from "next/navigation";
 import { doctorFilters } from "@/app/lib/specialties";
+import { DOCTOR_ROLES, hasRole } from "@/app/lib/roles";
 
 type Doctor = {
   id: string;
@@ -27,6 +28,43 @@ type Doctor = {
 };
 
 const CITIES = ["Jeddah", "Riyadh"];
+
+// Vercel's serverless functions reject any request body over 4.5 MB before the
+// route handler ever runs — so an untouched 5–8 MB phone photo fails as an
+// opaque "network error", not a clean 400. Downscale in the browser first: a
+// headshot on a card never needs more than ~1600px, and Cloudinary re-optimises
+// on delivery anyway, so this both fixes the limit and speeds the upload.
+// Falls back to the original File whenever the browser can't decode it (e.g.
+// SVG), leaving the server's size guard as the backstop.
+async function downscaleImage(file: File, maxEdge = 1600, quality = 0.85): Promise<Blob> {
+  if (!file.type.startsWith("image/") || typeof createImageBitmap !== "function") return file;
+  let bitmap: ImageBitmap;
+  try {
+    bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
+  } catch {
+    return file; // undecodable (SVG, HEIC on some browsers) — let the server decide
+  }
+  try {
+    const scale = Math.min(1, maxEdge / Math.max(bitmap.width, bitmap.height));
+    const w = Math.max(1, Math.round(bitmap.width * scale));
+    const h = Math.max(1, Math.round(bitmap.height * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return file;
+    // Flatten any transparency onto white so a PNG headshot doesn't turn black
+    // once it's re-encoded as JPEG.
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, w, h);
+    ctx.drawImage(bitmap, 0, 0, w, h);
+    const blob = await new Promise<Blob | null>((res) => canvas.toBlob(res, "image/jpeg", quality));
+    return blob ?? file;
+  } finally {
+    bitmap.close();
+  }
+}
+
 const EMPTY = {
   name_en: "", name_ar: "", email: "", image_url: "", title: "", title_ar: "",
   specialty_raw: "", qualification_en: "", qualification_ar: "", languages: "", gender: "",
@@ -56,10 +94,10 @@ export default function DoctorsPage() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
 
-  // Mirrors DOCTOR_ROLES in app/lib/auth.ts — the API enforces this too; this is
-  // only so a wrong-role user isn't left staring at an empty page. Note `admin`
-  // is NOT here: the directory belongs to super admins and doctors managers.
-  const canManageDoctors = user?.role === "super_admin" || user?.role === "doctors_manager";
+  // Mirrors DOCTOR_ROLES — the API enforces this too; this is only so a
+  // wrong-role user isn't left staring at an empty page. Note `admin` is NOT in
+  // that group: the directory belongs to super admins and doctors managers.
+  const canManageDoctors = hasRole(user?.roles, ...DOCTOR_ROLES);
 
   useEffect(() => {
     if (user && !canManageDoctors) router.push("/dashboard");
@@ -97,7 +135,18 @@ export default function DoctorsPage() {
   const handleUpload = async (file: File) => {
     setUploading(true); setFormError("");
     try {
-      const fd = new FormData(); fd.append("file", file);
+      const shrunk = await downscaleImage(file);
+      // After downscaling a headshot this is essentially never hit; it only
+      // guards the fallback path (an image the browser couldn't decode) so an
+      // oversize file fails with a clear message instead of Vercel's opaque
+      // body-limit rejection.
+      if (shrunk.size > 4 * 1024 * 1024) {
+        setFormError("This image is too large. Please use a photo under 4 MB.");
+        setUploading(false);
+        return;
+      }
+      const fd = new FormData();
+      fd.append("file", shrunk, "photo.jpg");
       const res = await fetch("/api/doctors/upload", { method: "POST", body: fd });
       const data = await res.json();
       if (res.ok) setForm((f) => ({ ...f, image_url: data.url }));

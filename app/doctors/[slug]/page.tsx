@@ -5,7 +5,9 @@ import SiteFooter from "@/app/components/SiteFooter";
 import { getDoctorBySlug, getAllDoctorSlugs } from "@/app/lib/doctors";
 import DoctorProfile from "./DoctorProfile";
 
-export const revalidate = 3600;
+// Prerendered at build for every active slug. An edit purges this page by its
+// literal path (revalidateDoctorPages), so the timer is only the backstop.
+export const revalidate = 300;
 export const dynamicParams = true; // render doctors added after build on-demand
 
 export async function generateStaticParams() {

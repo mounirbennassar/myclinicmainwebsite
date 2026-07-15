@@ -22,10 +22,17 @@ function mixDoctors(list: Doctor[]): Doctor[] {
   return a;
 }
 
-// Doctors are fetched on the server (cached hourly) and baked into the page,
-// so the home carousel never depends on a client-side API call — same pattern
-// as /pediatric and /women-care.
-export const revalidate = 3600;
+// Doctors are fetched on the server and baked into the page, so the home
+// carousel never depends on a client-side API call — same pattern as /pediatric
+// and /women-care.
+//
+// A dashboard edit calls revalidatePath() and shows up on the very next request;
+// this timer is only the backstop for when that purge doesn't land (a failed
+// write, a cache miss on another edge). It matches blog/news rather than the old
+// hour, because "I changed a doctor and the site still shows the old one" is the
+// bug this exists to prevent, and an hour is long enough for an editor to give
+// up and report it as broken.
+export const revalidate = 300;
 
 export default async function Home() {
   let doctors: Doctor[] = [];

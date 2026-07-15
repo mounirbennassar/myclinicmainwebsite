@@ -4,7 +4,12 @@ import { DOCTOR_ROLES, HttpError, errorResponse, requireRoles } from "@/app/lib/
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const MAX_BYTES = 8 * 1024 * 1024;
+// Kept under Vercel's 4.5 MB serverless request-body limit — a larger body is
+// rejected by the platform before this handler runs, surfacing as an opaque
+// "network error". The dashboard downscales images client-side (see
+// downscaleImage in app/dashboard/doctors/page.tsx), so in practice uploads
+// arrive well under this; it's the backstop for anything that skips that path.
+const MAX_BYTES = 4 * 1024 * 1024;
 const FOLDER = "doctors";
 
 // My Clinic's official media cloud. Every doctor photo lives here under
@@ -34,7 +39,7 @@ export async function POST(request: Request) {
     const file = (await request.formData()).get("file");
     if (!(file instanceof File)) throw new HttpError(400, "No file was uploaded");
     if (!file.type.startsWith("image/")) throw new HttpError(400, "Only image files are allowed");
-    if (file.size > MAX_BYTES) throw new HttpError(400, "Image must be under 8 MB");
+    if (file.size > MAX_BYTES) throw new HttpError(400, "Image must be under 4 MB");
 
     const timestamp = String(Math.floor(Date.now() / 1000));
     const signed = { folder: FOLDER, timestamp };
