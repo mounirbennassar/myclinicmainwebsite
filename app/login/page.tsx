@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { homeRoute } from "../lib/roles";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -25,13 +26,9 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (res.ok) {
-        // Roles with no lead access land on the surface they do own; /dashboard
-        // is the leads pipeline.
-        const home: Record<string, string> = {
-          content_manager: "/dashboard/content",
-          doctors_manager: "/dashboard/doctors",
-        };
-        router.push(home[data.user?.role] ?? "/dashboard");
+        // A member with no lead access lands on the surface they do own, rather
+        // than on a leads pipeline that would be empty for them.
+        router.push(homeRoute(data.user?.roles ?? []));
       } else {
         setError(data.error || "Login failed");
       }

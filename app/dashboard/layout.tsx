@@ -2,31 +2,26 @@
 import { useState, useEffect, createContext, useContext, Suspense } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import Image from "next/image";
-
-export type Role =
-  | "super_admin"
-  | "admin"
-  | "agent"
-  | "marketing"
-  | "content_manager"
-  | "doctors_manager";
+import {
+  ADMIN_ROLES,
+  CONTENT_ROLES,
+  DOCTOR_ROLES,
+  LEAD_VIEW_ROLES,
+  MARKETING_ROLES,
+  ROLE_LABELS,
+  type Role,
+  hasRole,
+  homeRoute,
+} from "../lib/roles";
 
 type User = {
   id: string;
   email: string;
   name: string;
-  role: Role;
+  /** Every role held. No singular `role`: a member can be an agent AND a content_manager. */
+  roles: Role[];
   allowed_cities: string[];
   can_export: boolean;
-};
-
-export const ROLE_LABELS: Record<Role, string> = {
-  super_admin: "Super Admin",
-  admin: "Admin",
-  agent: "Agent",
-  marketing: "Marketing",
-  content_manager: "Content Manager",
-  doctors_manager: "Doctors Manager",
 };
 
 const UserContext = createContext<User | null>(null);
@@ -118,12 +113,12 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
       .finally(() => setLoading(false));
   }, [router]);
 
-  // Roles with no lead access land on the one surface they do own, rather than
-  // on an empty leads pipeline.
+  // A member with no lead access lands on the one surface they do own, rather
+  // than on a leads pipeline that would be empty for them.
   useEffect(() => {
-    if (pathname !== "/dashboard") return;
-    if (user?.role === "content_manager") router.replace("/dashboard/content");
-    else if (user?.role === "doctors_manager") router.replace("/dashboard/doctors");
+    if (pathname !== "/dashboard" || !user) return;
+    const home = homeRoute(user.roles);
+    if (home !== "/dashboard") router.replace(home);
   }, [user, pathname, router]);
 
   const logout = async () => {
@@ -146,24 +141,25 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   // instead of silently resetting to All. (UTM/Team ignore it; it just rides
   // along so returning to a vertical-aware page restores the selection.)
   const vQuery = vertical !== "all" ? `?vertical=${vertical}` : "";
-  const isAdmin = user.role === "super_admin" || user.role === "admin";
-  const isMarketing = user.role === "marketing";
-  const isContent = user.role === "content_manager";
-  const isDoctorsManager = user.role === "doctors_manager";
-  // Allowlists, not "everyone except X" — a denylist silently hands each new
-  // role the lead pipeline. Mirrors the API's role groups in app/lib/auth.ts
-  // and backend/app/security.py.
-  const canSeeLeads = isAdmin || isMarketing || user.role === "agent";
-  // Not `isAdmin` — the doctors directory is owned by super admins and the
-  // dedicated doctors_manager role only. Mirrors DOCTOR_ROLES.
-  const canManageDoctors = user.role === "super_admin" || isDoctorsManager;
+  // Each tab is gated on an allowlist of roles, never "everyone except X" — a
+  // denylist silently hands every future role the lead pipeline. These mirror
+  // the API's role groups, which live in app/lib/roles.ts and are enforced
+  // again server-side in backend/app/security.py.
+  //
+  // A member holding several roles gets the UNION of their tabs: tick Agent and
+  // Content Manager and they get both Leads and Content.
+  const canSeeLeads = hasRole(user.roles, ...LEAD_VIEW_ROLES);
+  const canSeeReports = hasRole(user.roles, ...MARKETING_ROLES);
+  const canManageTeam = hasRole(user.roles, ...ADMIN_ROLES);
+  const canManageDoctors = hasRole(user.roles, ...DOCTOR_ROLES);
+  const canManageContent = hasRole(user.roles, ...CONTENT_ROLES);
 
   const navItems = [
     // Leads pipeline (agents see only their own assignments).
     ...(canSeeLeads
       ? [{ label: "Leads", href: `/dashboard${vQuery}`, active: pathname === "/dashboard" }]
       : []),
-    ...(isAdmin || isMarketing
+    ...(canSeeReports
       ? [
           { label: "Reports", href: `/dashboard/reports${vQuery}`, active: pathname === "/dashboard/reports" },
           { label: "UTM Links", href: `/dashboard/utm${vQuery}`, active: pathname === "/dashboard/utm" },
@@ -172,10 +168,10 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
     ...(canManageDoctors
       ? [{ label: "Doctors", href: `/dashboard/doctors${vQuery}`, active: pathname === "/dashboard/doctors" }]
       : []),
-    ...(isAdmin
+    ...(canManageTeam
       ? [{ label: "Team", href: `/dashboard/team${vQuery}`, active: pathname === "/dashboard/team" }]
       : []),
-    ...(isAdmin || isContent
+    ...(canManageContent
       ? [{ label: "Content", href: "/dashboard/content", active: pathname === "/dashboard/content" }]
       : []),
   ];
@@ -205,12 +201,14 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
               </nav>
             </div>
             <div className="flex items-center gap-3">
-              {(isAdmin || isMarketing) && (pathname === "/dashboard" || pathname === "/dashboard/reports") && (
+              {canSeeReports && (pathname === "/dashboard" || pathname === "/dashboard/reports") && (
                 <VerticalToggle />
               )}
               <div className="hidden md:flex flex-col items-end">
                 <span className="text-sm font-semibold text-slate-700">{user.name}</span>
-                <span className="text-[10px] text-slate-400">{ROLE_LABELS[user.role] ?? user.role}</span>
+                <span className="text-[10px] text-slate-400">
+                  {user.roles.map((r) => ROLE_LABELS[r] ?? r).join(" · ")}
+                </span>
               </div>
               <div className="w-8 h-8 rounded-full bg-[#004d99] flex items-center justify-center text-white text-xs font-bold">
                 {user.name.charAt(0).toUpperCase()}

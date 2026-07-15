@@ -1,11 +1,14 @@
 import {
   ADMIN_ROLES,
   HttpError,
-  ROLES,
-  type Role,
   errorResponse,
   generatePassword,
+  hasRole,
   hashPassword,
+  isRole,
+  normalizeRoles,
+  parseRolesInput,
+  primaryRole,
   requireRoles,
 } from "@/app/lib/auth";
 import { query, queryOne } from "@/app/lib/db";
@@ -13,7 +16,7 @@ import { query, queryOne } from "@/app/lib/db";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const MEMBER_COLS = "id, email, name, role, allowed_cities, is_active, can_export, created_at";
+const MEMBER_COLS = "id, email, name, role, roles, allowed_cities, is_active, can_export, created_at";
 
 /**
  * List the team. A super_admin sees everyone; an admin is isolated to members
@@ -24,7 +27,7 @@ export async function GET() {
   try {
     const user = await requireRoles(...ADMIN_ROLES);
 
-    if (user.role === "super_admin") {
+    if (hasRole(user.roles, "super_admin")) {
       return Response.json({
         data: await query(`select ${MEMBER_COLS} from team_members order by created_at desc`),
       });
@@ -53,17 +56,24 @@ export async function POST(request: Request) {
     const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
     const allowedCities: string[] = Array.isArray(body.allowed_cities) ? body.allowed_cities : [];
     const canExport = Boolean(body.can_export);
-    const requested = String(body.memberRole ?? "agent");
+    const requested = parseRolesInput(body) ?? [];
 
     if (!email || !name) throw new HttpError(400, "Email and name are required");
     if (!email.endsWith("@myclinic.com.sa")) {
       throw new HttpError(400, "Only @myclinic.com.sa emails are allowed");
     }
 
+    // Reject an unknown role rather than quietly downgrading the member to
+    // `agent` — a typo in one checkbox used to cost them every other role.
+    if (!requested.length) throw new HttpError(400, "Pick at least one role");
+    if (!requested.every(isRole)) throw new HttpError(400, "Invalid role");
+    const roles = normalizeRoles(requested);
+
     // An admin must not be able to mint a super_admin, nor grant themselves
-    // reach into a city they don't already have.
-    if (user.role !== "super_admin") {
-      if (requested === "super_admin") throw new HttpError(403, "Forbidden");
+    // reach into a city they don't already have. `.includes`, not `===`: the
+    // request is a set now, and ["agent","super_admin"] equals neither.
+    if (!hasRole(user.roles, "super_admin")) {
+      if (roles.includes("super_admin")) throw new HttpError(403, "Forbidden");
       if (allowedCities.some((c) => !user.allowed_cities.includes(c))) {
         throw new HttpError(403, "Cannot assign cities outside your scope");
       }
@@ -74,13 +84,12 @@ export async function POST(request: Request) {
     }
 
     const password = generatePassword();
-    const role: Role = (ROLES as string[]).includes(requested) ? (requested as Role) : "agent";
 
     const created = await queryOne(
-      `insert into team_members (email, name, password_hash, role, allowed_cities, can_export, is_active)
-       values ($1, $2, $3, $4, $5::text[], $6, true)
+      `insert into team_members (email, name, password_hash, role, roles, allowed_cities, can_export, is_active)
+       values ($1, $2, $3, $4, $5::text[], $6::text[], $7, true)
        returning ${MEMBER_COLS}`,
-      [email, name, await hashPassword(password), role, allowedCities, canExport]
+      [email, name, await hashPassword(password), primaryRole(roles), roles, allowedCities, canExport]
     );
 
     return Response.json({ user: created, generated_password: password });

@@ -2,6 +2,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useUser } from "../layout";
 import { useRouter } from "next/navigation";
+import { MARKETING_ROLES, hasRole } from "../../lib/roles";
 
 type UtmLink = {
   id: string;
@@ -60,7 +61,7 @@ export default function UtmPage() {
   const [formSubmitting, setFormSubmitting] = useState(false);
 
   useEffect(() => {
-    if (user && user.role !== "super_admin" && user.role !== "admin" && user.role !== "marketing") {
+    if (user && !hasRole(user.roles, ...MARKETING_ROLES)) {
       router.push("/dashboard");
     }
   }, [user, router]);

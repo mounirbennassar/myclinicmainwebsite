@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useUser } from "../layout";
 import { useRouter } from "next/navigation";
+import { ADMIN_ROLES, hasRole } from "../../lib/roles";
 
 type Template = {
   id: number;
@@ -131,7 +132,7 @@ export default function WhatsAppTestPage() {
   const [lookupLoading, setLookupLoading] = useState(false);
 
   useEffect(() => {
-    if (user && user.role !== "super_admin" && user.role !== "admin") {
+    if (user && !hasRole(user.roles, ...ADMIN_ROLES)) {
       router.push("/dashboard");
     }
   }, [user, router]);

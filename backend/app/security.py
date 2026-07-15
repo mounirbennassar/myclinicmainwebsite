@@ -23,7 +23,14 @@ from . import db
 COOKIE_NAME = "session"
 JWT_EXPIRY_SECONDS = 7 * 24 * 60 * 60
 
-ROLES = ("super_admin", "admin", "agent", "marketing", "content_manager", "doctors_manager")
+# A member holds a SET of roles, not one: "agent + content_manager" is a real
+# person. Every access check is therefore an intersection (see has_role), never
+# `user.role == "x"`, which is false for anyone holding two roles.
+#
+# Highest authority first — the order is load-bearing: primary_role() reads it
+# as a precedence list and normalize_roles() sorts by it. Mirrors ROLES in
+# app/lib/roles.ts; change one side and you must change the other.
+ROLES = ("super_admin", "admin", "marketing", "agent", "content_manager", "doctors_manager")
 
 ROLE_LABELS = {
     "super_admin": "Super Admin",
@@ -36,10 +43,14 @@ ROLE_LABELS = {
 
 # Roles allowed to manage site content (pages / blog / news).
 CONTENT_ROLES = ("super_admin", "admin", "content_manager")
-# Roles allowed to see the lead pipeline (agents see only their assignments).
+# Roles allowed to open the lead pipeline (agents see only their assignments).
 # Deliberately excludes content_manager and doctors_manager: they have no
 # business reading patient enquiries.
 LEAD_VIEW_ROLES = ("super_admin", "admin", "marketing", "agent")
+# Of those, the ones that see EVERY lead in their cities rather than only their
+# own assignments. Roles add up and never subtract, so an agent who is also an
+# admin sees the whole city pipeline.
+LEAD_ALL_ROLES = ("super_admin", "admin", "marketing")
 # Roles allowed on UTM links + reports surfaces.
 MARKETING_ROLES = ("super_admin", "admin", "marketing")
 # Roles allowed to maintain the doctors directory. Deliberately excludes `admin`:
@@ -50,19 +61,43 @@ DOCTOR_ROLES = ("super_admin", "doctors_manager")
 ADMIN_ROLES = ("super_admin", "admin")
 
 
+def normalize_roles(values: Any) -> list[str]:
+    """Known roles only, deduped, in ROLES order. Unknown values are dropped."""
+    wanted = set(values or ())
+    return [r for r in ROLES if r in wanted]
+
+
+def primary_role(roles: list[str]) -> str:
+    """The one role that stands in for the member where only one fits (a lead's actor label)."""
+    return next((r for r in ROLES if r in roles), "agent")
+
+
+def roles_of(row: Any) -> list[str]:
+    """`roles` is the source of truth; fall back to the legacy scalar for rows written before migration 005."""
+    roles = normalize_roles(row.get("roles"))
+    return roles or normalize_roles([row["role"]] if row.get("role") else [])
+
+
 @dataclass
 class CurrentUser:
     id: str
     email: str
     name: str
-    role: str
+    # No singular `role`: a member can be an agent AND a content_manager, and
+    # any code comparing one scalar would silently deny one of the two.
+    roles: list[str] = field(default_factory=list)
     allowed_cities: list[str] = field(default_factory=list)
     is_active: bool = True
     can_export: bool = False
 
+    def has_role(self, *want: str) -> bool:
+        """Does this member hold at least one of `want`?"""
+        return any(r in want for r in self.roles)
+
     @property
     def role_label(self) -> str:
-        return ROLE_LABELS.get(self.role, self.role)
+        role = primary_role(self.roles)
+        return ROLE_LABELS.get(role, role)
 
 
 def hash_password(password: str) -> str:
@@ -83,12 +118,16 @@ def generate_password(length: int = 12) -> str:
 
 def sign_token(user: dict[str, Any]) -> str:
     now = int(time.time())
-    can_export = True if user["role"] in ("super_admin", "admin") else bool(user.get("can_export"))
+    roles = roles_of(user)
+    can_export = True if any(r in ADMIN_ROLES for r in roles) else bool(user.get("can_export"))
     payload = {
         "sub": str(user["id"]),
         "email": user["email"],
         "name": user["name"],
-        "role": user["role"],
+        "roles": roles,
+        # Still emitted so a token minted here stays readable by anything not yet
+        # redeployed (and by the DB-outage fallback in get_current_user).
+        "role": primary_role(roles),
         "allowed_cities": user.get("allowed_cities") or [],
         "can_export": can_export,
         "iat": now,
@@ -133,7 +172,7 @@ async def _fetch_fresh_user(user_id: str) -> dict[str, Any] | None:
     if hit and hit[0] > time.monotonic():
         return hit[1]
     row = await db.query_one(
-        "select id, email, name, role, allowed_cities, is_active, can_export"
+        "select id, email, name, role, roles, allowed_cities, is_active, can_export"
         " from team_members where id = $1::uuid",
         user_id,
     )
@@ -173,30 +212,36 @@ async def get_current_user(request: Request) -> CurrentUser:
     if fresh is not None:
         if not fresh.get("is_active"):
             raise HTTPException(status_code=401, detail="Unauthorized")
-        role = fresh["role"]
+        roles = roles_of(fresh)
         return CurrentUser(
             id=user_id,
             email=fresh["email"],
             name=fresh["name"],
-            role=role,
+            roles=roles,
             allowed_cities=fresh.get("allowed_cities") or [],
             is_active=True,
-            can_export=True if role in ("super_admin", "admin") else bool(fresh.get("can_export")),
+            can_export=True if any(r in ADMIN_ROLES for r in roles) else bool(fresh.get("can_export")),
         )
 
+    # Degraded path: the DB is unreachable, so trust the claims. `roles` is
+    # absent from any token minted before this shipped — fall back to the
+    # singular claim so a live session doesn't get logged out mid-outage.
+    claimed = payload.get("roles") or ([payload["role"]] if payload.get("role") else [])
     return CurrentUser(
         id=user_id,
         email=str(payload.get("email") or ""),
         name=str(payload.get("name") or ""),
-        role=str(payload.get("role") or "agent"),
+        roles=normalize_roles(claimed) or ["agent"],
         allowed_cities=list(payload.get("allowed_cities") or []),
         can_export=bool(payload.get("can_export")),
     )
 
 
 def require_roles(*roles: str):
+    """Assert the caller holds at least one of `roles` — an intersection, not an equality."""
+
     async def dep(user: CurrentUser = Depends(get_current_user)) -> CurrentUser:
-        if user.role not in roles:
+        if not user.has_role(*roles):
             raise HTTPException(status_code=403, detail="Forbidden")
         return user
 

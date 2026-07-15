@@ -9,6 +9,7 @@ from ..security import (
     clear_session_cookie,
     compare_password,
     get_current_user,
+    roles_of,
     set_session_cookie,
     sign_token,
 )
@@ -42,7 +43,13 @@ async def login(body: LoginBody):
     res = JSONResponse(
         {
             "success": True,
-            "user": {"id": user["id"], "name": user["name"], "email": user["email"], "role": user["role"]},
+            # The login page picks a landing route from these — see homeRoute().
+            "user": {
+                "id": user["id"],
+                "name": user["name"],
+                "email": user["email"],
+                "roles": roles_of(user),
+            },
         }
     )
     set_session_cookie(res, token)
@@ -63,7 +70,7 @@ async def me(user: CurrentUser = Depends(get_current_user)):
             "id": user.id,
             "email": user.email,
             "name": user.name,
-            "role": user.role,
+            "roles": user.roles,
             "allowed_cities": user.allowed_cities,
             "is_active": user.is_active,
             "can_export": user.can_export,

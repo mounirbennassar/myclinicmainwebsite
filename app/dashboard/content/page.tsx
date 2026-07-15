@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "../layout";
+import { CONTENT_ROLES, hasRole } from "../../lib/roles";
 
 type PostType = "blog" | "news";
 type PostStatus = "draft" | "published" | "archived";
@@ -62,7 +63,7 @@ export default function ContentPage() {
   const [editorOpen, setEditorOpen] = useState(false);
   const [editing, setEditing] = useState<Post | SitePage | null>(null);
 
-  const allowed = user?.role === "super_admin" || user?.role === "admin" || user?.role === "content_manager";
+  const allowed = hasRole(user?.roles, ...CONTENT_ROLES);
 
   useEffect(() => {
     if (user && !allowed) router.push("/dashboard");

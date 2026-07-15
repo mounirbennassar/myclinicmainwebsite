@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useUser, useVertical, VERTICAL_LABELS, VERTICAL_BADGE } from "./layout";
 import { dentalServiceCatalog } from "../dental/content/services";
+import { ADMIN_ROLES, LEAD_ALL_ROLES, hasRole } from "../lib/roles";
 
 type Appointment = {
   id: string;
@@ -26,7 +27,7 @@ type Appointment = {
 type Agent = {
   id: string;
   name: string;
-  role: string;
+  roles: string[];
   is_active: boolean;
 };
 
@@ -117,9 +118,9 @@ export default function Dashboard() {
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
 
-  const canExport = user?.role === "super_admin" || user?.role === "admin" || user?.can_export;
-  const canAssign = user?.role === "super_admin" || user?.role === "admin";
-  const canDelete = user?.role === "super_admin";
+  const canExport = hasRole(user?.roles, ...ADMIN_ROLES) || user?.can_export;
+  const canAssign = hasRole(user?.roles, ...ADMIN_ROLES);
+  const canDelete = hasRole(user?.roles, "super_admin");
 
   // `scoped` = the active segment the user is looking at: the vertical (and the
   // dental page, when one is chosen) plus the structural city/agent filters. The
@@ -236,16 +237,19 @@ export default function Dashboard() {
     setLoading(false);
   }, []);
 
+  // Only the people who can reassign a lead need the list to assign it to.
+  // Keyed on the derived boolean, not on user.roles — an array dependency is a
+  // fresh reference on every render and would refetch the team forever.
   const fetchAgents = useCallback(async () => {
-    if (user?.role !== "super_admin" && user?.role !== "admin") return;
+    if (!canAssign) return;
     try {
       const res = await fetch("/api/team");
       const json = await res.json();
       if (res.ok) {
-        setAgents((json.data || []).filter((m: Agent) => m.role === "agent" && m.is_active));
+        setAgents((json.data || []).filter((m: Agent) => hasRole(m.roles, "agent") && m.is_active));
       }
     } catch { /* silent */ }
-  }, [user?.role]);
+  }, [canAssign]);
 
   useEffect(() => {
     fetchAppointments();
@@ -395,7 +399,7 @@ export default function Dashboard() {
               </span>
             )}
           </div>
-          {user?.role === "agent" && (
+          {hasRole(user?.roles, "agent") && !hasRole(user?.roles, ...LEAD_ALL_ROLES) && (
             <p className="text-xs text-slate-400 mt-0.5">Showing your assigned leads</p>
           )}
         </div>

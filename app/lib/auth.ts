@@ -3,9 +3,11 @@ import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
 import { SignJWT, jwtVerify } from "jose";
 import { queryOne } from "./db";
+import { type Role, ROLE_LABELS, ADMIN_ROLES, hasRole, normalizeRoles, primaryRole } from "./roles";
 
 /**
- * Session auth for the Next-served API routes (app/api/auth, app/api/doctors).
+ * Session auth for the Next-served API routes (app/api/auth, app/api/team,
+ * app/api/appointments, app/api/doctors).
  *
  * The token format is deliberately identical to backend/app/security.py — jose
  * HS256, cookie "session", 7-day expiry, same claim set — so a session minted
@@ -16,32 +18,21 @@ import { queryOne } from "./db";
 export const COOKIE_NAME = "session";
 export const JWT_EXPIRY_SECONDS = 7 * 24 * 60 * 60;
 
-export type Role =
-  | "super_admin"
-  | "admin"
-  | "agent"
-  | "marketing"
-  | "content_manager"
-  | "doctors_manager";
-
-/** Roles allowed to administer team / WhatsApp. Mirrors security.py ADMIN_ROLES. */
-export const ADMIN_ROLES: Role[] = ["super_admin", "admin"];
-
-/**
- * Roles allowed to maintain the doctors directory. Mirrors security.py
- * DOCTOR_ROLES.
- *
- * Deliberately excludes `admin` — the directory belongs to the super admins and
- * to whoever holds the dedicated doctors_manager role. A doctors_manager gets
- * the CMS and nothing else (no leads, no team, no reports).
- */
-export const DOCTOR_ROLES: Role[] = ["super_admin", "doctors_manager"];
+// The role vocabulary lives in ./roles, which has no server-only imports so the
+// client components can share it. Re-exported here so route handlers can keep
+// pulling everything auth-shaped from one module.
+export * from "./roles";
 
 export type CurrentUser = {
   id: string;
   email: string;
   name: string;
-  role: Role;
+  /**
+   * Every role this member holds. There is deliberately no singular `role`
+   * here: a member can be an agent AND a content_manager, and any code that
+   * compares one scalar would silently deny one of the two.
+   */
+  roles: Role[];
   allowed_cities: string[];
   is_active: boolean;
   can_export: boolean;
@@ -51,7 +42,9 @@ type TeamMemberRow = {
   id: string;
   email: string;
   name: string;
-  role: Role;
+  /** Derived primary role. Kept for the JWT fallback; never an access decision. */
+  role: Role | null;
+  roles: Role[] | null;
   allowed_cities: string[] | null;
   is_active: boolean;
   can_export: boolean | null;
@@ -63,19 +56,29 @@ function secret(): Uint8Array {
   return new TextEncoder().encode(s);
 }
 
+/** `roles` is the source of truth; fall back to the legacy scalar for any row written before migration 005. */
+function rolesOf(row: { role?: string | null; roles?: string[] | null }): Role[] {
+  const roles = normalizeRoles(row.roles ?? []);
+  return roles.length ? roles : normalizeRoles(row.role ? [row.role] : []);
+}
+
 /** Admins can always export, regardless of the per-user flag. Mirrors sign_token(). */
-function canExport(role: string, flag: unknown): boolean {
-  return role === "super_admin" || role === "admin" ? true : Boolean(flag);
+function canExport(roles: Role[], flag: unknown): boolean {
+  return hasRole(roles, ...ADMIN_ROLES) || Boolean(flag);
 }
 
 export async function signToken(user: TeamMemberRow): Promise<string> {
   const now = Math.floor(Date.now() / 1000);
+  const roles = rolesOf(user);
   return new SignJWT({
     email: user.email,
     name: user.name,
-    role: user.role,
+    roles,
+    // Still emitted so a session minted by the new code is readable by anything
+    // that has not been redeployed yet (and by FastAPI's DB-outage fallback).
+    role: primaryRole(roles),
     allowed_cities: user.allowed_cities ?? [],
-    can_export: canExport(user.role, user.can_export),
+    can_export: canExport(roles, user.can_export),
   })
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(String(user.id))
@@ -103,50 +106,28 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
   }
 
   const row = await queryOne<TeamMemberRow>(
-    "select id, email, name, role, allowed_cities, is_active, can_export from team_members where id = $1::uuid",
+    "select id, email, name, role, roles, allowed_cities, is_active, can_export from team_members where id = $1::uuid",
     [sub]
   );
   // A deleted or deactivated account must not keep riding a still-valid token.
   if (!row || !row.is_active) return null;
 
+  const roles = rolesOf(row);
   return {
     id: String(row.id),
     email: row.email,
     name: row.name,
-    role: row.role,
+    roles,
     allowed_cities: row.allowed_cities ?? [],
     is_active: true,
-    can_export: canExport(row.role, row.can_export),
+    can_export: canExport(roles, row.can_export),
   };
 }
 
-/** Every role the DB's team_members_role_check will accept. Mirrors security.py ROLES. */
-export const ROLES: Role[] = [
-  "super_admin",
-  "admin",
-  "agent",
-  "marketing",
-  "content_manager",
-  "doctors_manager",
-];
-
-// Mirrors security.py ROLE_LABELS. Duplicated in app/dashboard/layout.tsx, which
-// is a client component and cannot import this module (it pulls in pg).
-export const ROLE_LABELS: Record<Role, string> = {
-  super_admin: "Super Admin",
-  admin: "Admin",
-  agent: "Agent",
-  marketing: "Marketing",
-  content_manager: "Content Manager",
-  doctors_manager: "Doctors Manager",
-};
-
-/** Roles allowed to see the lead pipeline. Mirrors security.py LEAD_VIEW_ROLES. */
-export const LEAD_VIEW_ROLES: Role[] = ["super_admin", "admin", "marketing", "agent"];
-
-/** "Safwan Hassan (Admin)" — stamped onto leads on create / status change. */
+/** "Safwan Hassan (Admin)" — stamped onto leads on create / status change. One slot, so the highest-authority role speaks for them. */
 export function actorLabel(user: CurrentUser): string {
-  return `${user.name || "Unknown"} (${ROLE_LABELS[user.role] ?? user.role})`;
+  const role = primaryRole(user.roles);
+  return `${user.name || "Unknown"} (${ROLE_LABELS[role] ?? role})`;
 }
 
 // No look-alike characters (0/O, 1/l/I) — these get read aloud and retyped.
@@ -171,11 +152,11 @@ export class HttpError extends Error {
   }
 }
 
-/** Resolve the caller and assert their role, or throw 401/403. */
+/** Resolve the caller and assert they hold at least one of `roles`, or throw 401/403. */
 export async function requireRoles(...roles: Role[]): Promise<CurrentUser> {
   const user = await getCurrentUser();
   if (!user) throw new HttpError(401, "Unauthorized");
-  if (!roles.includes(user.role)) throw new HttpError(403, "Forbidden");
+  if (!hasRole(user.roles, ...roles)) throw new HttpError(403, "Forbidden");
   return user;
 }
 

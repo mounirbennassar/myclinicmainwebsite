@@ -2,16 +2,15 @@
 import { useState, useEffect } from "react";
 import { useUser } from "../layout";
 import { useRouter } from "next/navigation";
-
-const ROLE_OPTIONS = [
-  { value: "agent", label: "Agent" },
-  { value: "admin", label: "Admin" },
-  { value: "super_admin", label: "Super Admin" },
-  { value: "marketing", label: "Marketing" },
-  { value: "content_manager", label: "Content Manager" },
-  { value: "doctors_manager", label: "Doctors Manager" },
-] as const;
-type Role = (typeof ROLE_OPTIONS)[number]["value"];
+import {
+  ADMIN_ROLES,
+  CITY_SCOPED_ROLES,
+  ROLES,
+  ROLE_HINTS,
+  ROLE_LABELS,
+  type Role,
+  hasRole,
+} from "../../lib/roles";
 
 const ROLE_BADGE: Record<Role, string> = {
   super_admin: "bg-purple-100 text-purple-700",
@@ -22,28 +21,11 @@ const ROLE_BADGE: Record<Role, string> = {
   doctors_manager: "bg-emerald-100 text-emerald-700",
 };
 
-/** What each role can actually reach, shown next to the picker. */
-const ROLE_HINT: Record<Role, string> = {
-  super_admin: "Everything, including doctors and deleting leads or team members.",
-  admin: "Leads, reports, UTM, team and content — but NOT the doctors directory.",
-  agent: "Leads assigned to them, in their allowed cities.",
-  marketing: "Leads, reports and UTM links — no team or doctors.",
-  content_manager: "Blog, news and site pages only — no leads.",
-  doctors_manager: "The doctors directory only — no leads, team or reports.",
-};
-
-const roleLabel = (r: Role) => ROLE_OPTIONS.find((o) => o.value === r)?.label ?? r;
-
-// Roles whose lead visibility is scoped by allowed_cities. Content managers and
-// doctors managers never see leads, super admins always see everything — none of
-// them need cities.
-const CITY_SCOPED_ROLES: Role[] = ["agent", "admin", "marketing"];
-
 type TeamMember = {
   id: string;
   email: string;
   name: string;
-  role: Role;
+  roles: Role[];
   allowed_cities: string[];
   is_active: boolean;
   can_export: boolean;
@@ -51,6 +33,54 @@ type TeamMember = {
 };
 
 const CITIES = ["Jeddah", "Riyadh"];
+
+/**
+ * Roles are checkboxes, not a dropdown: one person is often two jobs — an agent
+ * who also manages the doctors directory, a marketer who also writes the blog.
+ * Their access is the union of everything ticked.
+ */
+function RolePicker({ value, onToggle }: { value: Role[]; onToggle: (role: Role) => void }) {
+  return (
+    <div>
+      <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">
+        Roles
+      </label>
+      <div className="rounded-lg border border-slate-200 divide-y divide-slate-100 overflow-hidden">
+        {ROLES.map((role) => {
+          const checked = value.includes(role);
+          return (
+            <label
+              key={role}
+              className={`flex items-start gap-2.5 px-3 py-2 cursor-pointer transition-colors ${
+                checked ? "bg-[#004d99]/5" : "bg-white hover:bg-slate-50"
+              }`}
+            >
+              <input
+                type="checkbox"
+                checked={checked}
+                onChange={() => onToggle(role)}
+                className="mt-0.5 w-4 h-4 shrink-0 rounded border-slate-300 accent-[#004d99]"
+              />
+              <span className="min-w-0">
+                <span className="block text-sm font-semibold text-slate-700 leading-tight">
+                  {ROLE_LABELS[role]}
+                </span>
+                <span className="block text-[11px] text-slate-400 leading-snug mt-0.5">
+                  {ROLE_HINTS[role]}
+                </span>
+              </span>
+            </label>
+          );
+        })}
+      </div>
+      <p className="text-xs text-slate-400 mt-1.5">
+        {value.length === 0
+          ? "Pick at least one role."
+          : "Access is the sum of every role ticked."}
+      </p>
+    </div>
+  );
+}
 
 export default function TeamPage() {
   const user = useUser();
@@ -70,13 +100,16 @@ export default function TeamPage() {
   const [formName, setFormName] = useState("");
   const [formEmail, setFormEmail] = useState("");
   const [formCities, setFormCities] = useState<string[]>([]);
-  const [formRole, setFormRole] = useState<Role>("agent");
+  const [formRoles, setFormRoles] = useState<Role[]>(["agent"]);
   const [formCanExport, setFormCanExport] = useState(false);
   const [formError, setFormError] = useState("");
   const [formLoading, setFormLoading] = useState(false);
 
+  // Only the cities of a member who can actually see leads are meaningful.
+  const formNeedsCities = hasRole(formRoles, ...CITY_SCOPED_ROLES);
+
   useEffect(() => {
-    if (user && user.role !== "super_admin" && user.role !== "admin") {
+    if (user && !hasRole(user.roles, ...ADMIN_ROLES)) {
       router.push("/dashboard");
     }
   }, [user, router]);
@@ -97,13 +130,20 @@ export default function TeamPage() {
     setFormName("");
     setFormEmail("");
     setFormCities([]);
-    setFormRole("agent");
+    setFormRoles(["agent"]);
     setFormCanExport(false);
     setFormError("");
   };
 
+  const toggleRole = (role: Role) => {
+    setFormRoles((prev) =>
+      prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]
+    );
+  };
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formRoles.length) return setFormError("Pick at least one role");
     setFormError("");
     setFormLoading(true);
 
@@ -113,7 +153,7 @@ export default function TeamPage() {
       const res = await fetch("/api/team", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, name: formName, allowed_cities: formCities, memberRole: formRole, can_export: formCanExport }),
+        body: JSON.stringify({ email, name: formName, allowed_cities: formCities, memberRoles: formRoles, can_export: formCanExport }),
       });
       const data = await res.json();
 
@@ -134,6 +174,7 @@ export default function TeamPage() {
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editMember) return;
+    if (!formRoles.length) return setFormError("Pick at least one role");
     setFormError("");
     setFormLoading(true);
 
@@ -141,7 +182,7 @@ export default function TeamPage() {
       const res = await fetch(`/api/team/${editMember.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: formName, allowed_cities: formCities, memberRole: formRole, can_export: formCanExport }),
+        body: JSON.stringify({ name: formName, allowed_cities: formCities, memberRoles: formRoles, can_export: formCanExport }),
       });
       const data = await res.json();
 
@@ -183,7 +224,7 @@ export default function TeamPage() {
     setEditMember(member);
     setFormName(member.name);
     setFormCities(member.allowed_cities || []);
-    setFormRole(member.role);
+    setFormRoles(member.roles || []);
     setFormCanExport(member.can_export ?? false);
     setFormError("");
   };
@@ -195,7 +236,8 @@ export default function TeamPage() {
   const filtered = members.filter((m) => {
     const matchSearch = !search || m.name.toLowerCase().includes(search.toLowerCase()) || m.email.toLowerCase().includes(search.toLowerCase());
     const matchActive = !filterActive || (filterActive === "active" ? m.is_active : !m.is_active);
-    const matchRole = !filterRole || m.role === filterRole;
+    // "Agent" now means everyone who holds Agent, not everyone who is only that.
+    const matchRole = !filterRole || hasRole(m.roles, filterRole);
     return matchSearch && matchActive && matchRole;
   });
 
@@ -205,7 +247,7 @@ export default function TeamPage() {
   // Reset to page 1 when filters change
   useEffect(() => { setPage(1); }, [search, filterActive, filterRole]);
 
-  if (user?.role !== "super_admin" && user?.role !== "admin") return null;
+  if (!hasRole(user?.roles, ...ADMIN_ROLES)) return null;
 
   return (
     <main className="max-w-7xl mx-auto px-4 md:px-8 py-6 md:py-8">
@@ -229,8 +271,8 @@ export default function TeamPage() {
           </div>
           <select value={filterRole} onChange={(e) => setFilterRole(e.target.value as typeof filterRole)} className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm text-slate-600">
             <option value="">All Roles</option>
-            {ROLE_OPTIONS.map((r) => (
-              <option key={r.value} value={r.value}>{r.label}</option>
+            {ROLES.map((r) => (
+              <option key={r} value={r}>{ROLE_LABELS[r]}</option>
             ))}
           </select>
           <select value={filterActive} onChange={(e) => setFilterActive(e.target.value as typeof filterActive)} className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm text-slate-600">
@@ -262,9 +304,13 @@ export default function TeamPage() {
                     {m.name.charAt(0).toUpperCase()}
                   </div>
                   <div className="min-w-0">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <p className="font-semibold text-slate-800 text-sm truncate">{m.name}</p>
-                      <span className={`${ROLE_BADGE[m.role] || "bg-slate-100 text-slate-600"} text-[10px] font-bold px-1.5 py-0.5 rounded`}>{roleLabel(m.role)}</span>
+                      {m.roles?.map((role) => (
+                        <span key={role} className={`${ROLE_BADGE[role] || "bg-slate-100 text-slate-600"} text-[10px] font-bold px-1.5 py-0.5 rounded`}>
+                          {ROLE_LABELS[role] ?? role}
+                        </span>
+                      ))}
                       {m.can_export && (
                         <span className="bg-emerald-50 text-emerald-600 text-[10px] font-bold px-1.5 py-0.5 rounded">Export</span>
                       )}
@@ -276,10 +322,10 @@ export default function TeamPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 md:gap-3 flex-wrap">
-                  {CITY_SCOPED_ROLES.includes(m.role) && m.allowed_cities?.map((city) => (
+                  {hasRole(m.roles, ...CITY_SCOPED_ROLES) && m.allowed_cities?.map((city) => (
                     <span key={city} className="bg-slate-100 text-slate-600 text-[10px] font-semibold px-2 py-0.5 rounded-full">{city}</span>
                   ))}
-                  {CITY_SCOPED_ROLES.includes(m.role) && (!m.allowed_cities || m.allowed_cities.length === 0) && (
+                  {hasRole(m.roles, ...CITY_SCOPED_ROLES) && (!m.allowed_cities || m.allowed_cities.length === 0) && (
                     <span className="text-[10px] text-slate-300">No cities</span>
                   )}
                   <div className="flex items-center gap-1 ml-auto md:ml-4">
@@ -341,7 +387,7 @@ export default function TeamPage() {
       {/* Create Modal */}
       {showCreate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={() => setShowCreate(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="px-6 pt-5 pb-4 border-b border-slate-100">
               <h3 className="text-lg font-bold text-slate-900">Add Team Member</h3>
             </div>
@@ -358,16 +404,8 @@ export default function TeamPage() {
                   <span className="bg-slate-100 border border-l-0 border-slate-200 rounded-r-lg px-3 py-2.5 text-sm text-slate-500">@myclinic.com.sa</span>
                 </div>
               </div>
-              <div>
-                <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">Role</label>
-                <select value={formRole} onChange={(e) => setFormRole(e.target.value as typeof formRole)} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-sm">
-                  {ROLE_OPTIONS.map((r) => (
-                    <option key={r.value} value={r.value}>{r.label}</option>
-                  ))}
-                </select>
-                <p className="text-xs text-slate-400 mt-1.5">{ROLE_HINT[formRole]}</p>
-              </div>
-              {CITY_SCOPED_ROLES.includes(formRole) && (
+              <RolePicker value={formRoles} onToggle={toggleRole} />
+              {formNeedsCities && (
                 <div>
                   <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">Allowed Cities</label>
                   <div className="flex gap-2">
@@ -387,7 +425,7 @@ export default function TeamPage() {
               </div>
               <div className="flex gap-2 pt-2">
                 <button type="button" onClick={() => setShowCreate(false)} className="flex-1 bg-slate-100 text-slate-600 py-2.5 rounded-lg font-semibold text-sm hover:bg-slate-200 transition-all">Cancel</button>
-                <button type="submit" disabled={formLoading} className="flex-1 bg-[#004d99] text-white py-2.5 rounded-lg font-semibold text-sm hover:bg-[#003d7a] transition-all disabled:opacity-50">
+                <button type="submit" disabled={formLoading || !formRoles.length} className="flex-1 bg-[#004d99] text-white py-2.5 rounded-lg font-semibold text-sm hover:bg-[#003d7a] transition-all disabled:opacity-50">
                   {formLoading ? "Creating..." : "Create Member"}
                 </button>
               </div>
@@ -399,7 +437,7 @@ export default function TeamPage() {
       {/* Edit Modal */}
       {editMember && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={() => { setEditMember(null); resetForm(); }}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="px-6 pt-5 pb-4 border-b border-slate-100">
               <h3 className="text-lg font-bold text-slate-900">Edit Member</h3>
               <p className="text-xs text-slate-400 mt-0.5">{editMember.email}</p>
@@ -410,16 +448,8 @@ export default function TeamPage() {
                 <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">Name</label>
                 <input type="text" value={formName} onChange={(e) => setFormName(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-sm" required />
               </div>
-              <div>
-                <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">Role</label>
-                <select value={formRole} onChange={(e) => setFormRole(e.target.value as typeof formRole)} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-sm">
-                  {ROLE_OPTIONS.map((r) => (
-                    <option key={r.value} value={r.value}>{r.label}</option>
-                  ))}
-                </select>
-                <p className="text-xs text-slate-400 mt-1.5">{ROLE_HINT[formRole]}</p>
-              </div>
-              {CITY_SCOPED_ROLES.includes(formRole) && (
+              <RolePicker value={formRoles} onToggle={toggleRole} />
+              {formNeedsCities && (
                 <div>
                   <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">Allowed Cities</label>
                   <div className="flex gap-2">
@@ -439,7 +469,7 @@ export default function TeamPage() {
               </div>
               <div className="flex gap-2 pt-2">
                 <button type="button" onClick={() => { setEditMember(null); resetForm(); }} className="flex-1 bg-slate-100 text-slate-600 py-2.5 rounded-lg font-semibold text-sm hover:bg-slate-200 transition-all">Cancel</button>
-                <button type="submit" disabled={formLoading} className="flex-1 bg-[#004d99] text-white py-2.5 rounded-lg font-semibold text-sm hover:bg-[#003d7a] transition-all disabled:opacity-50">
+                <button type="submit" disabled={formLoading || !formRoles.length} className="flex-1 bg-[#004d99] text-white py-2.5 rounded-lg font-semibold text-sm hover:bg-[#003d7a] transition-all disabled:opacity-50">
                   {formLoading ? "Saving..." : "Save Changes"}
                 </button>
               </div>

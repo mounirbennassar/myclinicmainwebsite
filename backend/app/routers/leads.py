@@ -14,7 +14,14 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 
 from .. import db
-from ..security import LEAD_VIEW_ROLES, CurrentUser, get_current_user, require_roles
+from ..security import (
+    ADMIN_ROLES,
+    LEAD_ALL_ROLES,
+    LEAD_VIEW_ROLES,
+    CurrentUser,
+    get_current_user,
+    require_roles,
+)
 
 router = APIRouter(prefix="/api/appointments", tags=["leads"])
 
@@ -117,13 +124,16 @@ async def list_leads(user: CurrentUser = Depends(require_roles(*LEAD_VIEW_ROLES)
     # denylist silently grants every future role (doctors_manager, …) access to
     # patient enquiries.
 
-    agent_id = user.id if user.role == "agent" else None
-    if user.role != "super_admin" and not user.allowed_cities:
+    # Own-leads-only is what `agent` means, and it survives being paired with a
+    # non-lead role like content_manager. Pairing it with admin lifts it —
+    # that's the whole point of granting both.
+    agent_id = user.id if user.has_role("agent") and not user.has_role(*LEAD_ALL_ROLES) else None
+    if not user.has_role("super_admin") and not user.allowed_cities:
         return {"data": []}
 
     conds: list[str] = []
     params: list[Any] = []
-    if user.role != "super_admin":
+    if not user.has_role("super_admin"):
         params.append(user.allowed_cities)
         conds.append(f"city = ANY(${len(params)}::text[])")
     if agent_id:
@@ -150,11 +160,12 @@ async def update_lead(
     if not body.id:
         raise HTTPException(status_code=400, detail="Missing id")
 
-    if user.role != "super_admin":
+    if not user.has_role("super_admin"):
         appt = await db.query_one("select assigned_to, city from appointments where id = $1::uuid", body.id)
         if appt is None:
             raise HTTPException(status_code=403, detail="Forbidden")
-        if user.role == "agent" and appt["assigned_to"] != user.id:
+        own_leads_only = user.has_role("agent") and not user.has_role(*LEAD_ALL_ROLES)
+        if own_leads_only and appt["assigned_to"] != user.id:
             raise HTTPException(status_code=403, detail="Forbidden")
         if appt["city"] not in user.allowed_cities:
             raise HTTPException(status_code=403, detail="Forbidden")
@@ -166,7 +177,7 @@ async def update_lead(
         updates["status_changed_at"] = "now()"
 
     raw = await request.json()
-    if "assigned_to" in raw and user.role in ("super_admin", "admin"):
+    if "assigned_to" in raw and user.has_role(*ADMIN_ROLES):
         updates["assigned_to"] = body.assigned_to or None
         updates["assigned_to_name"] = body.assigned_to_name or None
 
@@ -202,7 +213,7 @@ async def update_lead(
 
 @router.delete("")
 async def delete_leads(request: Request, user: CurrentUser = Depends(get_current_user)):
-    if user.role != "super_admin":
+    if not user.has_role("super_admin"):
         raise HTTPException(status_code=403, detail="Only super admins can delete leads")
 
     body = await request.json()

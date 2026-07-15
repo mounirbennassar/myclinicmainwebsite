@@ -1,10 +1,14 @@
 import {
   ADMIN_ROLES,
   HttpError,
-  ROLES,
   errorResponse,
   generatePassword,
+  hasRole,
   hashPassword,
+  isRole,
+  normalizeRoles,
+  parseRolesInput,
+  primaryRole,
   requireRoles,
 } from "@/app/lib/auth";
 import { query, queryOne } from "@/app/lib/db";
@@ -21,14 +25,25 @@ export async function PATCH(request: Request, { params }: Params) {
     const { id } = await params;
     const body: Record<string, unknown> = await request.json().catch(() => ({}));
 
+    // Absent means "don't touch the roles" (the activate / reset-password calls
+    // send neither), which is why this is nullable rather than an empty array.
+    const requested = parseRolesInput(body);
+    if (requested !== null) {
+      if (!requested.length) throw new HttpError(400, "Pick at least one role");
+      if (!requested.every(isRole)) throw new HttpError(400, "Invalid role");
+    }
+    const roles = requested === null ? null : normalizeRoles(requested);
+
     // A plain admin may only touch members inside their own cities, and never a
     // super_admin — otherwise they could edit or lock out an owner account.
-    if (user.role !== "super_admin") {
-      const target = await queryOne<{ allowed_cities: string[] | null; role: string }>(
-        "select allowed_cities, role from team_members where id = $1::uuid",
+    if (!hasRole(user.roles, "super_admin")) {
+      const target = await queryOne<{ allowed_cities: string[] | null; role: string | null; roles: string[] | null }>(
+        "select allowed_cities, role, roles from team_members where id = $1::uuid",
         [id]
       );
-      if (!target || target.role === "super_admin") throw new HttpError(403, "Forbidden");
+      // Holding super_admin among several roles still makes them untouchable.
+      const targetRoles = target?.roles?.length ? target.roles : target?.role ? [target.role] : [];
+      if (!target || targetRoles.includes("super_admin")) throw new HttpError(403, "Forbidden");
       const targetCities = target.allowed_cities ?? [];
       if (!targetCities.some((c) => user.allowed_cities.includes(c))) {
         throw new HttpError(403, "Forbidden");
@@ -39,7 +54,7 @@ export async function PATCH(request: Request, { params }: Params) {
       ) {
         throw new HttpError(403, "Cannot assign cities outside your scope");
       }
-      if (body.memberRole === "super_admin") throw new HttpError(403, "Forbidden");
+      if (roles?.includes("super_admin")) throw new HttpError(403, "Forbidden");
     }
 
     const sets: string[] = ["updated_at = now()"];
@@ -53,11 +68,10 @@ export async function PATCH(request: Request, { params }: Params) {
     if ("allowed_cities" in body) set("allowed_cities", body.allowed_cities, "::text[]");
     if ("is_active" in body) set("is_active", Boolean(body.is_active));
     if ("can_export" in body) set("can_export", Boolean(body.can_export));
-    if ("memberRole" in body) {
-      if (!(ROLES as string[]).includes(String(body.memberRole))) {
-        throw new HttpError(400, "Invalid role");
-      }
-      set("role", body.memberRole);
+    if (roles) {
+      set("roles", roles, "::text[]");
+      // `role` is derived from `roles` — keep the two from drifting apart.
+      set("role", primaryRole(roles));
     }
 
     let generated: string | null = null;

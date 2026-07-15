@@ -1,5 +1,12 @@
 import bcrypt from "bcryptjs";
-import { COOKIE_NAME, JWT_EXPIRY_SECONDS, HttpError, errorResponse, signToken } from "@/app/lib/auth";
+import {
+  COOKIE_NAME,
+  JWT_EXPIRY_SECONDS,
+  HttpError,
+  errorResponse,
+  normalizeRoles,
+  signToken,
+} from "@/app/lib/auth";
 import { queryOne } from "@/app/lib/db";
 
 export const runtime = "nodejs";
@@ -38,9 +45,11 @@ export async function POST(request: Request) {
     }
 
     const token = await signToken(user);
+    // The login page picks a landing route from these — see homeRoute().
+    const roles = normalizeRoles(user.roles ?? (user.role ? [user.role] : []));
     const response = Response.json({
       success: true,
-      user: { id: user.id, name: user.name, email: user.email, role: user.role },
+      user: { id: user.id, name: user.name, email: user.email, roles },
     });
 
     // Only mark the cookie Secure when the request actually arrived over HTTPS

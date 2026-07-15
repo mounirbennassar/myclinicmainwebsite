@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useUser, useVertical, VERTICAL_LABELS, VERTICAL_BADGE } from "../layout";
 import { useRouter } from "next/navigation";
 import { dentalServiceCatalog } from "../../dental/content/services";
+import { ADMIN_ROLES, MARKETING_ROLES, hasRole } from "../../lib/roles";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell,
@@ -43,7 +44,7 @@ type TeamMember = {
   id: string;
   name: string;
   email: string;
-  role: string;
+  roles: string[];
   is_active: boolean;
 };
 
@@ -142,7 +143,7 @@ export default function ReportsPage() {
   const [showExportMenu, setShowExportMenu] = useState<string | null>(null);
 
   useEffect(() => {
-    if (user && user.role !== "super_admin" && user.role !== "admin" && user.role !== "marketing") {
+    if (user && !hasRole(user.roles, ...MARKETING_ROLES)) {
       router.push("/dashboard");
     }
   }, [user, router]);
@@ -176,8 +177,8 @@ export default function ReportsPage() {
     }),
   [appointments, start, end, vertical]);
 
-  const agents = useMemo(() => team.filter((m) => m.role === "agent"), [team]);
-  const admins = useMemo(() => team.filter((m) => m.role === "admin" || m.role === "super_admin"), [team]);
+  const agents = useMemo(() => team.filter((m) => hasRole(m.roles, "agent")), [team]);
+  const admins = useMemo(() => team.filter((m) => hasRole(m.roles, ...ADMIN_ROLES)), [team]);
 
   // ── KPI Stats ──
   const kpi = useMemo(() => {
@@ -452,7 +453,7 @@ export default function ReportsPage() {
     </div>
   );
 
-  if (user?.role !== "super_admin" && user?.role !== "admin" && user?.role !== "marketing") return null;
+  if (!hasRole(user?.roles, ...MARKETING_ROLES)) return null;
 
   return (
     <main className="max-w-7xl mx-auto px-4 md:px-8 py-6 md:py-8">

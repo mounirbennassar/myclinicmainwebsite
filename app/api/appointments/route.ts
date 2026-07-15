@@ -1,9 +1,12 @@
 import {
+  ADMIN_ROLES,
   HttpError,
+  LEAD_ALL_ROLES,
   LEAD_VIEW_ROLES,
   actorLabel,
   errorResponse,
   getCurrentUser,
+  hasRole,
   requireRoles,
 } from "@/app/lib/auth";
 import { query, queryOne } from "@/app/lib/db";
@@ -112,17 +115,21 @@ export async function POST(request: Request) {
 export async function GET() {
   try {
     const user = await requireRoles(...LEAD_VIEW_ROLES);
-    if (user.role !== "super_admin" && !user.allowed_cities.length) {
+    const isSuperAdmin = hasRole(user.roles, "super_admin");
+    if (!isSuperAdmin && !user.allowed_cities.length) {
       return Response.json({ data: [] });
     }
 
     const conds: string[] = [];
     const params: unknown[] = [];
-    if (user.role !== "super_admin") {
+    if (!isSuperAdmin) {
       params.push(user.allowed_cities);
       conds.push(`city = ANY($${params.length}::text[])`);
     }
-    if (user.role === "agent") {
+    // Own-leads-only is what `agent` means, and it survives being paired with a
+    // non-lead role like content_manager. Pairing it with admin lifts it —
+    // that's the whole point of granting both.
+    if (hasRole(user.roles, "agent") && !hasRole(user.roles, ...LEAD_ALL_ROLES)) {
       params.push(user.id);
       conds.push(`assigned_to = $${params.length}::uuid`);
     }
@@ -144,13 +151,19 @@ export async function PATCH(request: Request) {
 
     // An agent may only touch their own leads, and nobody but a super_admin may
     // touch a lead outside their cities.
-    if (user.role !== "super_admin") {
+    if (!hasRole(user.roles, "super_admin")) {
       const lead = await queryOne<{ assigned_to: string | null; city: string | null }>(
         "select assigned_to, city from appointments where id = $1::uuid",
         [body.id]
       );
       if (!lead) throw new HttpError(403, "Forbidden");
-      if (user.role === "agent" && lead.assigned_to !== user.id) throw new HttpError(403, "Forbidden");
+      if (
+        hasRole(user.roles, "agent") &&
+        !hasRole(user.roles, ...LEAD_ALL_ROLES) &&
+        lead.assigned_to !== user.id
+      ) {
+        throw new HttpError(403, "Forbidden");
+      }
       if (!lead.city || !user.allowed_cities.includes(lead.city)) throw new HttpError(403, "Forbidden");
     }
 
@@ -168,7 +181,7 @@ export async function PATCH(request: Request) {
       sets.push("status_changed_at = now()");
     }
     // Only admins reassign a lead to another agent.
-    const reassigned = "assigned_to" in body && (user.role === "super_admin" || user.role === "admin");
+    const reassigned = "assigned_to" in body && hasRole(user.roles, ...ADMIN_ROLES);
     if (reassigned) {
       set("assigned_to", body.assigned_to || null, "::uuid");
       set("assigned_to_name", body.assigned_to_name || null);
