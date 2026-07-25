@@ -42,31 +42,37 @@ jobs:
           APP_DIR="${APP_DIR:-/opt/myclinic}"
           cd "$APP_DIR"
 
+          # SQL goes in via quoted heredocs — nesting quotes through
+          # sh -c '…"…''…"…' is exactly what broke the first run.
           echo "── source row counts (VM) ──"
-          docker compose exec -T db sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -tA -c "
-            select ''doctors: '' || count(*) from doctors
-            union all select ''team_members: '' || count(*) from team_members
-            union all select ''appointments: '' || count(*) from appointments"'
+          docker compose exec -T db sh -c 'psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" -tA' <<'SQL'
+            select 'doctors: ' || count(*) from doctors
+            union all select 'team_members: ' || count(*) from team_members
+            union all select 'appointments: ' || count(*) from appointments;
+          SQL
 
-          echo "── dump → restore (piped, nothing written to disk) ──"
+          echo "── dump → restore (piped, nothing written to the repo) ──"
           # ON_ERROR_STOP stays off for the restore: --clean emits harmless
           # "does not exist" drops on a fresh target. The row-count check
           # below is the real success criterion.
           docker compose exec -T -e TARGET_URL="$TARGET_URL" db sh -c '
             pg_dump --no-owner --no-privileges --clean --if-exists \
                     -U "$POSTGRES_USER" -d "$POSTGRES_DB" \
-            | psql -q "$TARGET_URL"' 2>&1 | grep -vE "does not exist, skipping" | tail -20
+            | psql -q "$TARGET_URL"' > /tmp/db-copy.log 2>&1 \
+            || { echo "copy failed:"; tail -40 /tmp/db-copy.log; exit 1; }
+          (grep -vE "does not exist, skipping" /tmp/db-copy.log | tail -20) || true
 
-          echo "── target row counts ──"
-          docker compose exec -T -e TARGET_URL="$TARGET_URL" db sh -c 'psql "$TARGET_URL" -tA -c "
-            select ''doctors: '' || count(*) from doctors
-            union all select ''team_members: '' || count(*) from team_members
-            union all select ''appointments: '' || count(*) from appointments"'
+          echo "── target row counts (must match source) ──"
+          docker compose exec -T -e TARGET_URL="$TARGET_URL" db sh -c 'psql -v ON_ERROR_STOP=1 "$TARGET_URL" -tA' <<'SQL'
+            select 'doctors: ' || count(*) from doctors
+            union all select 'team_members: ' || count(*) from team_members
+            union all select 'appointments: ' || count(*) from appointments;
+          SQL
 
           echo "── spot checks: today's fixes must be present in the target ──"
-          docker compose exec -T -e TARGET_URL="$TARGET_URL" db sh -c 'psql "$TARGET_URL" -tA -c "
-            select slug, is_active, array_to_string(specialties, '','') from doctors
-            where slug in (''dr-walaa-almasri'',''dr-salwa-al-thagafi'',''dr-badria-alnouh'')"'
-          docker compose exec -T -e TARGET_URL="$TARGET_URL" db sh -c 'psql "$TARGET_URL" -tA -c "
-            select email, array_to_string(roles, '','') from team_members
-            where email = ''karim.elsayed@myclinic.com.sa''"'
+          docker compose exec -T -e TARGET_URL="$TARGET_URL" db sh -c 'psql -v ON_ERROR_STOP=1 "$TARGET_URL" -tA' <<'SQL'
+            select slug, is_active, array_to_string(specialties, ',') from doctors
+            where slug in ('dr-walaa-almasri', 'dr-salwa-al-thagafi', 'dr-badria-alnouh');
+            select email, array_to_string(roles, ',') from team_members
+            where email = 'karim.elsayed@myclinic.com.sa';
+          SQL
