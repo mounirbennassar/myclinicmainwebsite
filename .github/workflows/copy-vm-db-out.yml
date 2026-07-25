@@ -1,0 +1,72 @@
+# Copy the VM's Postgres into an external cloud database (manual trigger).
+#
+# Purpose: Neon (the Vercel site's DB) died of quota exhaustion on ~2026-07-20.
+# The public site can't reach the VM's Postgres (loopback-only, private
+# network), but this runner RUNS on the VM — so it can dump the local database
+# and pipe it straight into a fresh cloud Postgres that Vercel can use, giving
+# the live site current data (doctor roster fixes, team accounts) until the
+# domain cutover retires Vercel entirely.
+#
+# Setup: add repository secret NEW_DATABASE_URL (Settings → Secrets and
+# variables → Actions) with the target's connection string, then run this
+# workflow from the Actions tab. The dump is piped container→target directly;
+# nothing is written to the repo or left on disk.
+#
+# ⚠️ The target must be EMPTY or disposable: --clean --if-exists drops and
+# recreates every object it restores.
+
+name: Copy VM database to external Postgres
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: vm-db-copy
+  cancel-in-progress: false
+
+jobs:
+  copy:
+    runs-on: [self-hosted, myclinic-vm]
+    timeout-minutes: 30
+    steps:
+      - name: Dump VM Postgres into target
+        env:
+          TARGET_URL: ${{ secrets.NEW_DATABASE_URL }}
+        run: |
+          set -euo pipefail
+          if [ -z "$TARGET_URL" ]; then
+            echo "::error::Repository secret NEW_DATABASE_URL is not set"
+            exit 1
+          fi
+          APP_DIR="${{ vars.DEPLOY_PATH }}"
+          APP_DIR="${APP_DIR:-/opt/myclinic}"
+          cd "$APP_DIR"
+
+          echo "── source row counts (VM) ──"
+          docker compose exec -T db sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -tA -c "
+            select ''doctors: '' || count(*) from doctors
+            union all select ''team_members: '' || count(*) from team_members
+            union all select ''appointments: '' || count(*) from appointments"'
+
+          echo "── dump → restore (piped, nothing written to disk) ──"
+          # ON_ERROR_STOP stays off for the restore: --clean emits harmless
+          # "does not exist" drops on a fresh target. The row-count check
+          # below is the real success criterion.
+          docker compose exec -T -e TARGET_URL="$TARGET_URL" db sh -c '
+            pg_dump --no-owner --no-privileges --clean --if-exists \
+                    -U "$POSTGRES_USER" -d "$POSTGRES_DB" \
+            | psql -q "$TARGET_URL"' 2>&1 | grep -vE "does not exist, skipping" | tail -20
+
+          echo "── target row counts ──"
+          docker compose exec -T -e TARGET_URL="$TARGET_URL" db sh -c 'psql "$TARGET_URL" -tA -c "
+            select ''doctors: '' || count(*) from doctors
+            union all select ''team_members: '' || count(*) from team_members
+            union all select ''appointments: '' || count(*) from appointments"'
+
+          echo "── spot checks: today's fixes must be present in the target ──"
+          docker compose exec -T -e TARGET_URL="$TARGET_URL" db sh -c 'psql "$TARGET_URL" -tA -c "
+            select slug, is_active, array_to_string(specialties, '','') from doctors
+            where slug in (''dr-walaa-almasri'',''dr-salwa-al-thagafi'',''dr-badria-alnouh'')"'
+          docker compose exec -T -e TARGET_URL="$TARGET_URL" db sh -c 'psql "$TARGET_URL" -tA -c "
+            select email, array_to_string(roles, '','') from team_members
+            where email = ''karim.elsayed@myclinic.com.sa''"'
