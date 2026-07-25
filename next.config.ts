@@ -7,10 +7,10 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
   images: {
-    // Doctor photos are served straight off Cloudinary's CDN at the exact width
-    // each layout asks for, instead of making the optimizer re-download a
-    // 409 KB original to emit a 4 KB thumbnail. See app/lib/image-loader.ts —
-    // it falls back to the built-in optimizer for every other image.
+    // ALL raster images are served off Cloudinary's CDN at the exact width each
+    // layout asks for — see app/lib/image-loader.ts. The loader must never emit
+    // /_next/image URLs: with a custom loader, a self-hosted Next server does
+    // not register that route (404s), it only works behind Vercel's edge.
     loader: "custom",
     loaderFile: "./app/lib/image-loader.ts",
     formats: ["image/avif", "image/webp"],
@@ -20,8 +20,8 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 60 * 60 * 24 * 30,
     deviceSizes: [360, 414, 640, 750, 828, 1080, 1200, 1440, 1920, 2048],
     imageSizes: [16, 24, 32, 48, 64, 96, 128, 192, 256, 320, 420],
-    // Still enforced for anything the loader hands back to the built-in
-    // optimizer (Vercel Blob, /api/uploads). Cloudinary + bamc bypass it.
+    // Unused while the custom loader is active (nothing reaches the built-in
+    // optimizer); kept so re-enabling it can't open an unrestricted proxy.
     remotePatterns: [
       {
         // Doctor profile photos from the clinic's legacy image server.
