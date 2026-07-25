@@ -71,8 +71,13 @@ services:
       # private network; production keeps the loopback default.
       - "${WEB_BIND:-127.0.0.1:3000}:3000"
     depends_on:
+      # service_started, NOT service_healthy: web serves the whole public site
+      # and auth/doctors/appointments/team from its own route handlers against
+      # the db. A crashed FastAPI must degrade utm/content/whatsapp/uploads —
+      # not keep the entire site down (2026-07-25: a backend boot crash held
+      # web+portal hostage and 502'd the portal).
       backend:
-        condition: service_healthy
+        condition: service_started
 
   # Dashboard portal — portal.myclinic.com.sa. Same image as web, switched
   # into portal mode: / redirects to /dashboard, responses are noindexed.
@@ -88,8 +93,9 @@ services:
     depends_on:
       web:
         condition: service_started
+      # Same rationale as web: login + doctors CMS are Next route handlers.
       backend:
-        condition: service_healthy
+        condition: service_started
 
 volumes:
   pgdata:

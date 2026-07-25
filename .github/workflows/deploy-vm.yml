@@ -59,11 +59,21 @@ jobs:
           sleep 10
           docker compose ps
 
+          # Always shown: if the backend is crash-looping, its boot error is
+          # otherwise invisible (this repo has no SSH path to the VM).
+          echo "── backend log tail ──"
+          docker compose logs --tail=100 backend || true
+
           echo "── health checks ──"
-          curl -fsS http://127.0.0.1:3000/api/health
+          # /api/health lives in FastAPI only, and since the explicit-rewrite
+          # change (2026-07-14) web/portal no longer proxy it — probe each
+          # container for what it actually serves.
           curl -fsS -o /dev/null -w 'site: %{http_code}\n' http://127.0.0.1:3000/
           curl -fsS -o /dev/null -w 'portal login: %{http_code}\n' http://127.0.0.1:3001/login
-          curl -fsS http://127.0.0.1:3001/api/health
+          # Backend is informational, not fatal: web/portal serve auth/doctors
+          # themselves; a dead FastAPI degrades utm/content/whatsapp/uploads.
+          docker compose exec -T backend python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8020/api/health').read().decode())" \
+            || echo "WARN: FastAPI backend is unhealthy — utm/content/whatsapp/uploads APIs are down (see backend log tail above)"
 
           echo "── pruning old images ──"
           docker image prune -f
