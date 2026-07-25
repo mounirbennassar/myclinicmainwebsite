@@ -3,21 +3,23 @@
 /**
  * Custom next/image loader (wired up in next.config.ts).
  *
- * Doctor photos come from two hosts and both were slow for the same reason:
- * every request went through Next's own optimizer, which first has to download
- * the full-size original from the origin before it can transcode anything.
+ * EVERY raster image is delivered by Cloudinary, resized to the exact width
+ * the layout asks for. There are two reasons, and both are load-bearing:
  *
- *   bamc.myclinic.com.sa  306 doctors  409 KB, 1182x1182, ~2.8s to fetch
- *   res.cloudinary.com     47 doctors  19.5 KB, full-size (no width asked for)
+ * 1. Perf — doctor photos come from bamc.myclinic.com.sa (409 KB, 1182x1182,
+ *    ~2.8s) and Cloudinary (full-size originals). Asking Cloudinary for the
+ *    exact width serves a ~4.7 KB WebP straight off its CDN edge instead of
+ *    making an optimizer re-download the original per request.
  *
- * So we ask Cloudinary for the exact width instead, and let the browser hit its
- * CDN directly — no optimizer hop, no re-downloading a 409 KB JPEG to emit a
- * 4 KB thumbnail. Cloudinary's /image/fetch/ proxies the bamc originals without
- * needing any API credentials, and caches the result on its edge. A 320px card
- * photo goes 409 KB → ~4.7 KB WebP.
+ * 2. Self-hosting — with a custom loader configured, a self-hosted Next 16
+ *    server does NOT register the /_next/image route at all
+ *    (next-server.js: `loader !== 'default' → render404`). It only works on
+ *    Vercel because their edge optimizer intercepts the URL before the Next
+ *    server sees it. So on the NourNet VM every /_next/image URL 404s and
+ *    renders as a broken image — the loader must never emit one.
  *
- * Anything else (local /public assets, Vercel Blob, /api/uploads) keeps using
- * the built-in optimizer.
+ * Local /public assets therefore go through Cloudinary's /image/fetch/ proxy,
+ * which pulls them from ASSET_ORIGIN once, resizes, and caches on its edge.
  */
 
 // My Clinic's official media cloud — every doctor photo lives here, and it is
@@ -26,8 +28,14 @@
 // public identifier; it appears in every image URL on the page).
 const CLOUD_NAME = "ubhucgne";
 
+// Public origin Cloudinary fetches /public assets from. Must be one canonical
+// host (not window.location.origin) so server-rendered and hydrated srcsets
+// match. The apex serves the same repo's /public both today (Vercel) and after
+// the NourNet cutover (VM), so fetched URLs never go stale across the move.
+const ASSET_ORIGIN =
+  process.env.NEXT_PUBLIC_ASSET_ORIGIN || "https://myclinic.com.sa";
+
 const CLOUDINARY_DELIVERY = /^(https:\/\/res\.cloudinary\.com\/[^/]+)\/image\/upload\/(.+)$/;
-const BAMC_ORIGIN = "https://bamc.myclinic.com.sa/";
 
 // A Cloudinary transformation segment is a comma-separated list of `key_value`
 // pairs ("f_auto,q_auto"). A public-id segment ("doctors") never looks like one,
@@ -43,6 +51,13 @@ function transformation(width: number, quality?: number): string {
   return `f_auto,${quality ? `q_${quality}` : "q_auto"},c_limit,w_${width}`;
 }
 
+function cloudinaryFetch(absoluteUrl: string, width: number, quality?: number): string {
+  return `https://res.cloudinary.com/${CLOUD_NAME}/image/fetch/${transformation(
+    width,
+    quality
+  )}/${encodeURIComponent(absoluteUrl)}`;
+}
+
 export default function imageLoader({
   src,
   width,
@@ -52,13 +67,11 @@ export default function imageLoader({
   width: number;
   quality?: number;
 }): string {
-  // Next's optimizer REJECTS SVG unless dangerouslyAllowSVG is enabled, so an
-  // <Image src="*.svg"> resolves to a /_next/image URL that 404s and renders as
-  // a broken image — which is exactly what was happening to the footer and
-  // dashboard logos. There is nothing to optimize in a vector file anyway:
-  // serve it as-is. (Enabling dangerouslyAllowSVG instead would let the
-  // optimizer run untrusted SVG from any allowlisted remote host.)
-  if (src.endsWith(".svg")) return src;
+  // Nothing to optimize in a vector file, and Cloudinary's fetch of untrusted
+  // SVG is as unwelcome as the built-in optimizer's: serve it as-is.
+  if (src.endsWith(".svg") || src.startsWith("data:") || src.startsWith("blob:")) {
+    return src;
+  }
 
   // Already on Cloudinary: rebuild the transformation with the width we need.
   const delivery = src.match(CLOUDINARY_DELIVERY);
@@ -71,15 +84,15 @@ export default function imageLoader({
     return `${base}/image/upload/${transformation(width, quality)}/${segments.join("/")}`;
   }
 
-  // The legacy image server: proxy it through Cloudinary, which resizes it once
-  // and then serves every subsequent request from its own CDN.
-  if (src.startsWith(BAMC_ORIGIN)) {
-    return `https://res.cloudinary.com/${CLOUD_NAME}/image/fetch/${transformation(
-      width,
-      quality
-    )}/${encodeURIComponent(src)}`;
+  // Local /public assets. Cloudinary cannot reach localhost, so dev serves the
+  // raw file (fine — no optimizer runs in dev with a custom loader anyway).
+  if (src.startsWith("/")) {
+    if (process.env.NODE_ENV === "development") return src;
+    return cloudinaryFetch(`${ASSET_ORIGIN}${src}`, width, quality);
   }
 
-  // Everything else keeps the built-in Image Optimization API.
-  return `/_next/image?url=${encodeURIComponent(src)}&w=${width}&q=${quality || 75}`;
+  // Any other absolute URL (bamc.myclinic.com.sa, Vercel Blob, …): proxy it
+  // through Cloudinary, which resizes it once and then serves every subsequent
+  // request from its own CDN.
+  return cloudinaryFetch(src, width, quality);
 }
