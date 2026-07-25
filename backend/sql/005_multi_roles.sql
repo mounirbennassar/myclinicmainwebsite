@@ -25,3 +25,12 @@ alter table team_members add constraint team_members_roles_check
     cardinality(roles) > 0
     and roles <@ array['super_admin','admin','agent','marketing','content_manager','doctors_manager']::text[]
   );
+
+-- The scalar role_check lives here too, NOT in 002/004: every migration file
+-- re-runs on every boot, so an older file re-asserting a narrower vocabulary
+-- rejects rows that use roles introduced later (2026-07-25: the first
+-- doctors_manager row crash-looped the backend through 002's constraint).
+-- When a new role is added, extend BOTH checks here (or in the newest file).
+alter table team_members drop constraint if exists team_members_role_check;
+alter table team_members add constraint team_members_role_check
+  check (role in ('super_admin','admin','agent','marketing','content_manager','doctors_manager'));

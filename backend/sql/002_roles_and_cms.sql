@@ -4,9 +4,11 @@
 begin;
 
 -- ── Extend the team role set ──────────────────────────────────────────────
-alter table team_members drop constraint if exists team_members_role_check;
-alter table team_members add constraint team_members_role_check
-  check (role in ('super_admin','admin','agent','marketing','content_manager'));
+-- (moved) team_members_role_check is owned by 005_multi_roles.sql. These files
+-- re-run on EVERY backend boot, so a file must never re-assert its own era's
+-- role vocabulary: the first doctors_manager row (2026-07-25) made this file's
+-- five-role constraint fail with CheckViolationError and crash-loop the
+-- backend. Only the newest migration may define the constraint.
 
 -- ── Blog + news posts ─────────────────────────────────────────────────────
 create table if not exists posts (

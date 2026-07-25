@@ -7,8 +7,9 @@
 
 begin;
 
-alter table team_members drop constraint if exists team_members_role_check;
-alter table team_members add constraint team_members_role_check
-  check (role in ('super_admin', 'admin', 'agent', 'marketing', 'content_manager', 'doctors_manager'));
+-- (moved) team_members_role_check is owned by 005_multi_roles.sql — see the
+-- note in 002: migrations re-run on every boot, so only the newest file may
+-- assert the role vocabulary.
+select 1;
 
 commit;
