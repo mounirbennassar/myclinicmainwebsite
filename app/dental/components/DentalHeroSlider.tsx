@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { WhatsAppIcon } from "@/app/components/icons";
@@ -107,6 +107,28 @@ export default function DentalHeroSlider({
   const slideRefs = useRef<Array<HTMLDivElement | null>>([]);
   const barRefs = useRef<Array<HTMLSpanElement | null>>([]);
   const goToRef = useRef<(i: number) => void>(() => {});
+
+  // Slides 2-4 used to render with loading="eager", so all four full-bleed
+  // images raced the LCP one for bandwidth on first paint — four ~100vw
+  // downloads to show one. (Next 16 calls out that exact pairing: `preload` is
+  // "not to be used when the `loading` property is used".) The first slide
+  // holds the stage for SLIDE_SECONDS, so the rest have seconds of headroom:
+  // mount them once the browser goes idle and let the LCP image have the pipe
+  // to itself. The wrapper divs stay mounted either way so the GSAP engine
+  // still finds four slides to drive.
+  const [deferredSlides, setDeferredSlides] = useState(false);
+  useEffect(() => {
+    const w = window as typeof window & {
+      requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number;
+      cancelIdleCallback?: (h: number) => void;
+    };
+    if (!w.requestIdleCallback) {
+      const t = setTimeout(() => setDeferredSlides(true), 1200);
+      return () => clearTimeout(t);
+    }
+    const h = w.requestIdleCallback(() => setDeferredSlides(true), { timeout: 2500 });
+    return () => w.cancelIdleCallback?.(h);
+  }, []);
 
   useGSAP(
     (context, contextSafe) => {
@@ -229,16 +251,17 @@ export default function DentalHeroSlider({
             className="absolute inset-0 will-change-[opacity]"
             aria-hidden={i !== 0}
           >
-            <Image
-              src={s.src}
-              alt={i === 0 ? c.imageAlt : ""}
-              fill
-              preload={i === 0}
-              loading={i === 0 ? undefined : "eager"}
-              sizes="100vw"
-              quality={72}
-              className={`object-cover ${s.pos} will-change-transform`}
-            />
+            {(i === 0 || deferredSlides) && (
+              <Image
+                src={s.src}
+                alt={i === 0 ? c.imageAlt : ""}
+                fill
+                preload={i === 0}
+                sizes="100vw"
+                quality={72}
+                className={`object-cover ${s.pos} will-change-transform`}
+              />
+            )}
           </div>
         ))}
 

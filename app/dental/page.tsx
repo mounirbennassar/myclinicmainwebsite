@@ -29,6 +29,15 @@ const WHATSAPP_LINK = `https://wa.me/966920022811?text=${encodeURIComponent("م�
 
 const easeOut = [0.21, 0.47, 0.32, 0.98] as const;
 
+// Captions live in EN/AR below and are matched by index, so the order here is
+// load-bearing. `offset` drops a tile on the lg grid for an editorial rhythm.
+const GALLERY = [
+  { src: "/dental/dentalv2/treatment-loupes.webp", offset: false },
+  { src: "/dental/dentalv2/consult-desk.webp", offset: true },
+  { src: "/dental/dentalv2/handpiece.webp", offset: false },
+  { src: "/dental/dentalv2/chairside-prep.webp", offset: true },
+];
+
 const fadeUp = {
   hidden: { opacity: 0, y: 28 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: easeOut } },
@@ -129,6 +138,7 @@ export default function DentalHub() {
     offset: ["start end", "end start"],
   });
   const techBlobY = useTransform(techProgress, [0, 1], ["0%", "-20%"]);
+  const techImgY = useTransform(techProgress, [0, 1], ["10%", "-10%"]);
 
   const t = isRtl ? AR : EN;
 
@@ -179,7 +189,7 @@ export default function DentalHub() {
                   transition={{ duration: 0.8, ease: easeOut }}
                   className="relative aspect-[4/5] rounded-2xl overflow-hidden shadow-xl shadow-[#003867]/10 will-change-transform"
                 >
-                  <Image src="/dental/39.webp" alt={t.story.imageAlt1} fill sizes="(max-width:1024px) 50vw, 25vw" quality={70} className="object-cover" />
+                  <Image src="/dental/dentalv2/shade-match.webp" alt={t.story.imageAlt1} fill sizes="(max-width:1024px) 50vw, 25vw" quality={70} className="object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#003867]/20 to-transparent" />
                 </motion.div>
                 <motion.div
@@ -190,7 +200,7 @@ export default function DentalHub() {
                   transition={{ duration: 0.8, delay: 0.1, ease: easeOut }}
                   className="relative aspect-[4/5] rounded-2xl overflow-hidden shadow-xl shadow-[#00677d]/15 mt-12 will-change-transform"
                 >
-                  <Image src="/dental/40.webp" alt={t.story.imageAlt2} fill sizes="(max-width:1024px) 50vw, 25vw" quality={70} className="object-cover" />
+                  <Image src="/dental/dentalv2/smile-mirror.webp" alt={t.story.imageAlt2} fill sizes="(max-width:1024px) 50vw, 25vw" quality={70} className="object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#003867]/20 to-transparent" />
                 </motion.div>
               </div>
@@ -394,7 +404,7 @@ export default function DentalHub() {
             <div className="relative">
               <div className="relative aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl shadow-[#00677d]/20">
                 <motion.div style={{ y: processImgY }} className="absolute inset-0 will-change-transform">
-                  <Image src="/dental/DSC04628_HDR.webp" alt={t.process.imageAlt} fill sizes="(max-width:1024px) 100vw, 50vw" quality={70} className="object-cover scale-110" />
+                  <Image src="/dental/dentalv2/model-explain.webp" alt={t.process.imageAlt} fill sizes="(max-width:1024px) 100vw, 50vw" quality={70} className="object-cover scale-110" />
                 </motion.div>
                 <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-[#003867]/45 via-[#00677d]/15 to-transparent" />
               </div>
@@ -460,31 +470,132 @@ export default function DentalHub() {
             </motion.p>
           </motion.div>
 
+          <div className="grid lg:grid-cols-12 gap-10 lg:gap-14 items-center max-w-6xl mx-auto">
+            {/* Proof shot: the intraoral scanner the first item talks about */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.9, ease: easeOut }}
+              className="lg:col-span-5"
+            >
+              <div className="relative">
+                <div className="relative aspect-[4/5] rounded-3xl overflow-hidden ring-1 ring-white/20 shadow-2xl shadow-black/40">
+                  <motion.div style={{ y: techImgY }} className="absolute inset-0 will-change-transform">
+                    <Image
+                      src="/dental/dentalv2/scan-3d.webp"
+                      alt={t.tech.imageAlt}
+                      fill
+                      sizes="(max-width:1024px) 100vw, 40vw"
+                      quality={72}
+                      className="object-cover scale-110"
+                    />
+                  </motion.div>
+                  {/* Tie the photo into the navy band instead of letting it sit on top of it */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#003867]/70 via-transparent to-transparent" aria-hidden />
+                </div>
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.6 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true, margin: "-100px" }}
+                  transition={{ duration: 0.55, delay: 0.4, ease: easeOut }}
+                  className={`absolute bottom-6 ${isRtl ? "right-0 md:-right-5" : "left-0 md:-left-5"} bg-white/95 backdrop-blur rounded-2xl px-4 py-3 flex items-center gap-3 shadow-xl ring-1 ring-[#00677d]/15`}
+                >
+                  <span className="w-10 h-10 rounded-full bg-gradient-to-br from-[#003867] to-[#00677d] flex items-center justify-center text-white shrink-0">
+                    <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>3d_rotation</span>
+                  </span>
+                  <span className="leading-tight">
+                    <span className="block text-sm font-extrabold text-slate-900">{t.tech.chipTitle}</span>
+                    <span className="block text-[11px] text-slate-500 font-medium">{t.tech.chipSub}</span>
+                  </span>
+                </motion.div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-60px" }}
+              variants={stagger}
+              className="lg:col-span-7 space-y-4"
+            >
+              {t.tech.items.map((item, i) => (
+                <motion.div
+                  key={i}
+                  variants={fadeUp}
+                  whileHover={{ x: isRtl ? -6 : 6 }}
+                  transition={{ type: "spring", stiffness: 280, damping: 22 }}
+                  className="group relative rounded-2xl p-[1.5px] bg-gradient-to-br from-white/30 via-white/10 to-[#bfe7ee]/20 overflow-hidden"
+                >
+                  <div className="relative h-full bg-[#0a3a5f]/70 backdrop-blur rounded-[calc(1rem-1.5px)] p-5 md:p-6 flex items-start gap-4 md:gap-5 overflow-hidden">
+                    {/* Shine sweep on hover */}
+                    <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none" aria-hidden />
+                    <div className="relative shrink-0 w-14 h-14 rounded-2xl bg-gradient-to-br from-white/20 to-[#bfe7ee]/20 ring-1 ring-white/20 flex items-center justify-center text-white group-hover:scale-110 transition-transform duration-300">
+                      <span className="material-symbols-outlined text-[26px]" style={{ fontVariationSettings: "'FILL' 1" }}>{item.icon}</span>
+                    </div>
+                    <div className="relative">
+                      <h3 className="text-lg font-extrabold">{item.title}</h3>
+                      <p className="mt-1.5 text-sm text-white/85 leading-relaxed">{item.body}</p>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Inside the clinic (editorial photo grid) ─────── */}
+      <section className="py-20 md:py-28 bg-gradient-to-b from-white via-[#00677d]/[0.04] to-white overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 md:px-8">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-80px" }}
+            variants={stagger}
+            className="text-center max-w-3xl mx-auto mb-14"
+          >
+            <motion.span variants={fadeUp} className="text-[11px] font-bold uppercase tracking-widest text-[#00677d]">{t.gallery.eyebrow}</motion.span>
+            <motion.h2 variants={fadeUp} className="mt-3 text-3xl md:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
+              {t.gallery.title}
+            </motion.h2>
+            <motion.div variants={fadeUp} className="mt-5 mx-auto h-1 w-24 rounded-full bg-gradient-to-r from-[#003867] via-[#00677d] to-[#00677d]/40" />
+            <motion.p variants={fadeUp} className="mt-5 text-lg text-slate-600 leading-relaxed">
+              {t.gallery.subtitle}
+            </motion.p>
+          </motion.div>
+
           <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-60px" }}
             variants={stagger}
-            className="grid md:grid-cols-3 gap-5 max-w-5xl mx-auto"
+            className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5"
           >
-            {t.tech.items.map((item, i) => (
-              <motion.div
-                key={i}
+            {GALLERY.map((g, i) => (
+              <motion.figure
+                key={g.src}
                 variants={fadeUp}
-                whileHover={{ y: -6 }}
-                transition={{ type: "spring", stiffness: 280, damping: 22 }}
-                className="group relative rounded-2xl p-[1.5px] bg-gradient-to-br from-white/30 via-white/10 to-[#bfe7ee]/20 overflow-hidden"
+                // Staggered drop echoes the mt-12 offset in the story collage
+                // above, so the row reads as a composition rather than a strip.
+                className={`group relative aspect-[4/5] rounded-2xl overflow-hidden shadow-lg shadow-[#003867]/10 ring-1 ring-[#003867]/10 ${g.offset ? "lg:mt-10" : ""}`}
               >
-                <div className="relative h-full bg-[#0a3a5f]/70 backdrop-blur rounded-[calc(1rem-1.5px)] p-6 overflow-hidden">
-                  {/* Shine sweep on hover */}
-                  <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none" aria-hidden />
-                  <div className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-white/20 to-[#bfe7ee]/20 ring-1 ring-white/20 flex items-center justify-center text-white group-hover:scale-110 transition-transform duration-300">
-                    <span className="material-symbols-outlined text-[26px]" style={{ fontVariationSettings: "'FILL' 1" }}>{item.icon}</span>
-                  </div>
-                  <h3 className="relative mt-5 text-lg font-extrabold">{item.title}</h3>
-                  <p className="relative mt-2 text-sm text-white/85 leading-relaxed">{item.body}</p>
-                </div>
-              </motion.div>
+                <Image
+                  src={g.src}
+                  alt={t.gallery.captions[i]}
+                  fill
+                  sizes="(max-width:640px) 50vw, (max-width:1024px) 33vw, 25vw"
+                  quality={70}
+                  className="object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#003867]/85 via-[#003867]/20 to-transparent" aria-hidden />
+                <span className="absolute inset-x-0 top-0 h-[2.5px] bg-gradient-to-r from-[#003867]/0 via-[#bfe7ee] to-[#003867]/0 scale-x-50 opacity-0 group-hover:scale-x-100 group-hover:opacity-100 transition-all duration-500" aria-hidden />
+                <figcaption className="absolute inset-x-0 bottom-0 p-4 md:p-5">
+                  <span className="block text-[13px] md:text-sm font-bold text-white leading-snug drop-shadow">
+                    {t.gallery.captions[i]}
+                  </span>
+                </figcaption>
+              </motion.figure>
             ))}
           </motion.div>
         </div>
@@ -634,8 +745,8 @@ const EN = {
       { value: dentalServiceCatalog.length, prefix: "+", label: "Dental services" },
     ] as StoryStat[],
     locationChip: "Riyadh & Jeddah",
-    imageAlt1: "My Clinic modern dental exam room",
-    imageAlt2: "My Clinic welcoming reception lobby",
+    imageAlt1: "A My Clinic dentist matching a shade guide against a patient's smile",
+    imageAlt2: "A My Clinic patient checking their new smile in a hand mirror",
     cta: "Book your visit",
   },
   offering: {
@@ -655,7 +766,7 @@ const EN = {
     ],
     chipTitle: "Flexible appointments",
     chipSub: "Times that suit your schedule",
-    imageAlt: "Welcoming My Clinic reception",
+    imageAlt: "A My Clinic dentist explaining a treatment on a dental model",
   },
   tech: {
     eyebrow: "Modern & Comfortable",
@@ -665,6 +776,20 @@ const EN = {
       { icon: "monitor_heart", title: "3D imaging & advanced digital X-rays", body: "Precise, low-dose scans for an accurate diagnosis." },
       { icon: "precision_manufacturing", title: "Same-day restorations", body: "Select crowns and restorations completed in a single visit." },
       { icon: "spa", title: "Comfortable sedation & treatment options", body: "Sedation available for those who prefer to sleep through it." },
+    ],
+    imageAlt: "A My Clinic dentist reviewing a patient's 3D dental scan on screen",
+    chipTitle: "Digital 3D scan",
+    chipSub: "No putty impressions",
+  },
+  gallery: {
+    eyebrow: "Inside The Clinic",
+    title: "A look inside My Clinic.",
+    subtitle: "Our team, our rooms, and the everyday care behind every appointment.",
+    captions: [
+      "Precision under magnification",
+      "Time to talk it through",
+      "Attention to every detail",
+      "Careful preparation, every session",
     ],
   },
   cta: {
@@ -697,8 +822,8 @@ const AR = {
       { value: dentalServiceCatalog.length, prefix: "+", label: "خدمة علاجية" },
     ] as StoryStat[],
     locationChip: "الرياض وجدة",
-    imageAlt1: "غرفة كشف أسنان حديثة في عيادتي",
-    imageAlt2: "ردهة استقبال عيادتي",
+    imageAlt1: "طبيب أسنان في عيادتي يطابق درجة لون الأسنان مع ابتسامة المريض",
+    imageAlt2: "مريض في عيادتي ينظر إلى ابتسامته الجديدة في المرآة",
     cta: "احجز موعدك",
   },
   offering: {
@@ -718,7 +843,7 @@ const AR = {
     ],
     chipTitle: "مواعيد مرنة",
     chipSub: "أوقات تناسب جدولك",
-    imageAlt: "ردهة استقبال عيادتي",
+    imageAlt: "طبيب أسنان في عيادتي يشرح خطة العلاج على مجسم أسنان",
   },
   tech: {
     eyebrow: "حديث ومريح",
@@ -728,6 +853,20 @@ const AR = {
       { icon: "monitor_heart", title: "تصوير 3D وأشعة رقمية متقدمة", body: "صور دقيقة وجرعة منخفضة لتشخيص أوضح." },
       { icon: "precision_manufacturing", title: "إجراء بعض التركيبات في نفس اليوم", body: "تيجان وتركيبات مختارة تنتهي في زيارة واحدة." },
       { icon: "spa", title: "خيارات تخدير وعلاج مريحة", body: "خيارات تخدير لمن يفضّل النوم خلال الجلسة." },
+    ],
+    imageAlt: "طبيب أسنان في عيادتي يستعرض صورة ثلاثية الأبعاد لأسنان المريض على الشاشة",
+    chipTitle: "مسح رقمي ثلاثي الأبعاد",
+    chipSub: "بدون طبعات معجون",
+  },
+  gallery: {
+    eyebrow: "داخل العيادة",
+    title: "جولة داخل عيادتي.",
+    subtitle: "فريقنا، وغرفنا، والرعاية اليومية خلف كل موعد.",
+    captions: [
+      "دقة تحت التكبير",
+      "وقت للنقاش والاستشارة",
+      "اهتمام بكل تفصيل",
+      "تحضير دقيق لكل جلسة",
     ],
   },
   cta: {

@@ -42,6 +42,10 @@ team-credentials.md
 /public/images/
 /public/pediatricegallery/
 /content/
+# dentalv2 camera originals are 4672x5840 / 6-17MB each (~230MB total). Only the
+# optimized .webp masters beside them are committed - see the *.webp negation.
+/public/dental/dentalv2/*.jpg
+/public/dental/dentalv2/*.png
 
 # vercel
 .vercel
