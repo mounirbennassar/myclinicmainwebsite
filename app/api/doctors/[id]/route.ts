@@ -1,7 +1,7 @@
 import { DOCTOR_ROLES, HttpError, errorResponse, requireRoles } from "@/app/lib/auth";
 import { DOCTOR_ARRAY_COLS, DOCTOR_TEXT_COLS, arr, str } from "@/app/lib/doctors";
 import { queryOne } from "@/app/lib/db";
-import { revalidateDoctorPages } from "../route";
+import { revalidateDoctorPages } from "@/app/lib/revalidation";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -45,7 +45,7 @@ export async function PATCH(request: Request, { params }: Params) {
       values
     );
     if (!doctor) throw new HttpError(404, "Doctor not found");
-    revalidateDoctorPages(doctor.slug);
+    await revalidateDoctorPages(doctor.slug);
     return Response.json({ doctor });
   } catch (err) {
     return errorResponse(err);
@@ -63,7 +63,7 @@ export async function DELETE(_request: Request, { params }: Params) {
       "delete from doctors where id = $1::uuid returning slug",
       [id]
     );
-    revalidateDoctorPages(gone?.slug);
+    await revalidateDoctorPages(gone?.slug);
     return Response.json({ success: true });
   } catch (err) {
     return errorResponse(err);

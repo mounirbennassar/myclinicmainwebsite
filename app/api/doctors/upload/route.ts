@@ -4,17 +4,18 @@ import { DOCTOR_ROLES, HttpError, errorResponse, requireRoles } from "@/app/lib/
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// Kept under Vercel's 4.5 MB serverless request-body limit — a larger body is
-// rejected by the platform before this handler runs, surfacing as an opaque
-// "network error". The dashboard downscales images client-side (see
+// Must stay below nginx's client_max_body_size (25m in deploy/nginx/
+// myclinic.conf) so an oversize file fails HERE with a clean 400 instead of
+// nginx's opaque 413. The dashboard downscales images client-side (see
 // downscaleImage in app/dashboard/doctors/page.tsx), so in practice uploads
 // arrive well under this; it's the backstop for anything that skips that path.
 const MAX_BYTES = 4 * 1024 * 1024;
 const FOLDER = "doctors";
 
 // My Clinic's official media cloud. Every doctor photo lives here under
-// doctors/<slug>, delivered through f_auto,q_auto. Uploads go here rather than
-// to the FastAPI container's local disk, which does not survive a Vercel deploy.
+// doctors/<slug>, delivered through f_auto,q_auto. Uploads go to Cloudinary
+// rather than a container's local disk so photos survive rebuilds and are
+// served resized from its CDN edge (see app/lib/image-loader.ts).
 const CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME || "ubhucgne";
 
 /** Cloudinary signs the alphabetically-sorted params, then appends the secret. */

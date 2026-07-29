@@ -12,6 +12,7 @@ from fastapi.responses import JSONResponse
 
 from .. import db
 from ..config import settings
+from ..revalidate import purge_next_cache
 from ..security import CONTENT_ROLES, CurrentUser, require_roles
 
 router = APIRouter(prefix="/api/content", tags=["content"])
@@ -135,6 +136,7 @@ async def create_post(request: Request, user: CurrentUser = Depends(require_role
         _str(b.get("excerpt_ar")), _str(b.get("body_en")), _str(b.get("body_ar")),
         _str(b.get("cover_image_url")), _arr(b.get("tags")), status, user.id, user.name,
     )
+    await purge_next_cache([f"/{post_type}/{slug}"])
     return {"post": post}
 
 
@@ -185,12 +187,24 @@ async def update_post(post_id: str, request: Request,
         f"update posts set {', '.join(sets)} where id = ${len(vals)}::uuid returning {POST_COLS}",
         *vals,
     )
+    # Purge the slug both before and after the edit — renaming must also
+    # refresh the old URL (it now 404s instead of serving the stale copy).
+    if post is not None:
+        await purge_next_cache([
+            f"/{post['type']}/{post['slug']}",
+            f"/{post['type']}/{existing['slug']}",
+        ])
     return {"post": post}
 
 
 @router.delete("/posts/{post_id}")
 async def delete_post(post_id: str, _: CurrentUser = Depends(require_roles(*CONTENT_ROLES))):
-    await db.execute("delete from posts where id = $1::uuid", post_id)
+    # Take type+slug back so the removed post's own URL is purged too — a
+    # deleted article still rendering from cache is worse than a stale list.
+    gone = await db.query_one(
+        "delete from posts where id = $1::uuid returning type, slug", post_id
+    )
+    await purge_next_cache([f"/{gone['type']}/{gone['slug']}"] if gone else [])
     return {"success": True}
 
 
@@ -217,6 +231,7 @@ async def create_page(request: Request, user: CurrentUser = Depends(require_role
         slug, title_en, _str(b.get("title_ar")), _str(b.get("body_en")), _str(b.get("body_ar")),
         _str(b.get("meta_description")), status, user.name,
     )
+    await purge_next_cache()
     return {"page": page}
 
 
@@ -254,12 +269,14 @@ async def update_page(page_id: str, request: Request,
     )
     if page is None:
         raise HTTPException(status_code=404, detail="Page not found")
+    await purge_next_cache()
     return {"page": page}
 
 
 @router.delete("/pages/{page_id}")
 async def delete_page(page_id: str, _: CurrentUser = Depends(require_roles(*CONTENT_ROLES))):
     await db.execute("delete from site_pages where id = $1::uuid", page_id)
+    await purge_next_cache()
     return {"success": True}
 
 

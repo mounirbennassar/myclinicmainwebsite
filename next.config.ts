@@ -29,29 +29,20 @@ const nextConfig: NextConfig = {
         hostname: "bamc.myclinic.com.sa",
       },
       {
-        // Dashboard image uploads (Vercel Blob).
-        protocol: "https",
-        hostname: "*.public.blob.vercel-storage.com",
-      },
-      {
         // Doctor photos + CMS media (Cloudinary).
         protocol: "https",
         hostname: "res.cloudinary.com",
       },
     ],
   },
-  // /api/auth/*, /api/doctors/*, /api/team/* and /api/appointments are served by
-  // Next route handlers (app/api/), so login, the doctors CMS, team management
-  // and — critically — the public booking form work on any host, including
-  // Vercel, where there is no FastAPI process. (Booking used to be proxied here
-  // too, which meant every enquiry submitted on the Vercel-hosted site 404'd and
-  // was lost.) The prefixes below are still owned by FastAPI (backend/) and are
-  // proxied to it; the rewrite keeps the API same-origin so the session cookie
-  // just rides along. Both sides read the same Postgres and sign the same HS256
-  // JWT with JWT_SECRET, so a session minted by either is valid for both.
-  //
-  // NOTE: what remains here still 404s on Vercel — the UTM dashboard, the
-  // blog/news CMS and WhatsApp.
+  // /api/auth/*, /api/doctors/*, /api/team/*, /api/appointments and
+  // /api/revalidate are served by Next route handlers (app/api/) — login, the
+  // doctors CMS, team management, the public booking form and cache purging
+  // live in the web/portal containers themselves. The prefixes below are owned
+  // by FastAPI (backend/) and are proxied to it; the rewrite keeps the API
+  // same-origin so the session cookie just rides along. Both sides read the
+  // same Postgres and sign the same HS256 JWT with JWT_SECRET, so a session
+  // minted by either is valid for both.
   //
   // These must stay an explicit prefix list rather than a blanket /api/:path*:
   // an array returned here is applied as `afterFiles`, which is matched BEFORE

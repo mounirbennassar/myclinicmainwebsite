@@ -29,11 +29,11 @@ type Doctor = {
 
 const CITIES = ["Jeddah", "Riyadh"];
 
-// Vercel's serverless functions reject any request body over 4.5 MB before the
-// route handler ever runs — so an untouched 5–8 MB phone photo fails as an
-// opaque "network error", not a clean 400. Downscale in the browser first: a
-// headshot on a card never needs more than ~1600px, and Cloudinary re-optimises
-// on delivery anyway, so this both fixes the limit and speeds the upload.
+// The upload route caps bodies at 4 MB (and nginx at 25 MB) — so an untouched
+// 5–8 MB phone photo would fail with an error instead of uploading. Downscale
+// in the browser first: a headshot on a card never needs more than ~1600px,
+// and Cloudinary re-optimises on delivery anyway, so this both avoids the
+// limit and speeds the upload.
 // Falls back to the original File whenever the browser can't decode it (e.g.
 // SVG), leaving the server's size guard as the backstop.
 async function downscaleImage(file: File, maxEdge = 1600, quality = 0.85): Promise<Blob> {
@@ -138,8 +138,8 @@ export default function DoctorsPage() {
       const shrunk = await downscaleImage(file);
       // After downscaling a headshot this is essentially never hit; it only
       // guards the fallback path (an image the browser couldn't decode) so an
-      // oversize file fails with a clear message instead of Vercel's opaque
-      // body-limit rejection.
+      // oversize file fails with a clear message instead of the server's
+      // less friendly 400.
       if (shrunk.size > 4 * 1024 * 1024) {
         setFormError("This image is too large. Please use a photo under 4 MB.");
         setUploading(false);

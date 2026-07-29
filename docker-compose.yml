@@ -35,6 +35,10 @@ services:
     build: ./backend
     restart: unless-stopped
     env_file: .env
+    environment:
+      # CMS mutations purge both Next containers' ISR caches so blog/news
+      # edits go live at once (backend/app/revalidate.py).
+      REVALIDATE_PEERS: http://web:3000,http://portal:3000
     volumes:
       - uploads:/app/uploads
     expose:
@@ -66,6 +70,10 @@ services:
     env_file: .env
     environment:
       BACKEND_ORIGIN: http://backend:8020
+      # web and portal each hold their own .next cache; a doctor edit saved on
+      # one must purge the other or it serves stale HTML for up to 300s
+      # (app/lib/revalidation.ts).
+      REVALIDATE_PEERS: http://portal:3000
     ports:
       # Staging overrides WEB_BIND (e.g. 0.0.0.0:3100) to be reachable on the
       # private network; production keeps the loopback default.
@@ -88,6 +96,7 @@ services:
     environment:
       BACKEND_ORIGIN: http://backend:8020
       APP_MODE: portal
+      REVALIDATE_PEERS: http://web:3000
     ports:
       - "${PORTAL_BIND:-127.0.0.1:3001}:3000"
     depends_on:

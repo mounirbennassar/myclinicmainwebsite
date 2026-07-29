@@ -1,0 +1,92 @@
+# Compare the VM's Postgres against the retired external copy (read-only).
+#
+# The Supabase database Vercel used until the 2026-07 domain cutover holds a
+# few edits that were made on the Vercel dashboard and never reached the VM
+# (split-brain: two dashboards, two databases). Before that project is deleted
+# — its egress grace ends 2026-08-21 — run this to list every row/column that
+# differs, then backfill the VM by hand. Nothing is written anywhere: this
+# REPLACED the old copy-vm-db-out.yml precisely because that one's
+# `pg_dump --clean` into the target would have destroyed the drifted values.
+#
+# Needs the repository secret NEW_DATABASE_URL (the external connection
+# string). Output lands in the workflow run's step summary.
+
+name: Diff VM database vs external Postgres
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: vm-db-diff
+  cancel-in-progress: false
+
+jobs:
+  diff:
+    runs-on: [self-hosted, myclinic-vm]
+    timeout-minutes: 15
+    steps:
+      - name: Dump both sides and report drift
+        env:
+          TARGET_URL: ${{ secrets.NEW_DATABASE_URL }}
+        run: |
+          set -euo pipefail
+          if [ -z "$TARGET_URL" ]; then
+            echo "::error::Repository secret NEW_DATABASE_URL is not set"
+            exit 1
+          fi
+          APP_DIR="${{ vars.DEPLOY_PATH }}"
+          APP_DIR="${APP_DIR:-/opt/myclinic}"
+          cd "$APP_DIR"
+          WORK="$(mktemp -d)"
+
+          # The table name rides in as an env var so the SQL stays inside one
+          # set of quotes — nesting quotes through sh -c is what broke the old
+          # copy workflow's first run.
+          for TABLE in doctors team_members; do
+            docker compose exec -T -e TBL="$TABLE" db sh -c 'psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "\copy (select * from $TBL order by 1) to stdout with (format csv, header)"' > "$WORK/vm-$TABLE.csv"
+            docker compose exec -T -e TBL="$TABLE" -e TARGET_URL="$TARGET_URL" db sh -c 'psql -v ON_ERROR_STOP=1 "$TARGET_URL" -c "\copy (select * from $TBL order by 1) to stdout with (format csv, header)"' > "$WORK/ext-$TABLE.csv"
+          done
+
+          python3 - "$WORK" > "$WORK/report.md" <<'PY'
+          import csv, sys, pathlib
+
+          work = pathlib.Path(sys.argv[1])
+          KEYS = {"doctors": "slug", "team_members": "email"}
+          out = ["# VM vs external Postgres — drift report", ""]
+          for table, key in KEYS.items():
+              vm = {r[key]: r for r in csv.DictReader(open(work / f"vm-{table}.csv"))}
+              ext = {r[key]: r for r in csv.DictReader(open(work / f"ext-{table}.csv"))}
+              out.append(f"## {table} — VM {len(vm)} rows, external {len(ext)} rows")
+              only_vm = sorted(set(vm) - set(ext))
+              only_ext = sorted(set(ext) - set(vm))
+              if only_vm:
+                  out.append(f"- rows only on VM (fine, VM is newer): {', '.join(only_vm[:20])}")
+              if only_ext:
+                  out.append(f"- rows ONLY on external — would be lost: {', '.join(only_ext[:20])}")
+              cell_diffs = 0
+              for k in sorted(set(vm) & set(ext)):
+                  for col, vm_val in vm[k].items():
+                      ext_val = ext[k].get(col)
+                      if ext_val is None or vm_val == ext_val:
+                          continue
+                      cell_diffs += 1
+                      if "password" in col or "secret" in col:
+                          out.append(f"- `{k}` **{col}**: (values differ — not shown)")
+                      else:
+                          out.append(
+                              f"- `{k}` **{col}**: VM=`{(vm_val or '∅')[:80]}` | external=`{(ext_val or '∅')[:80]}`"
+                          )
+              if not (only_vm or only_ext or cell_diffs):
+                  out.append("- ✅ identical")
+              out.append("")
+          out.append(
+              "> Backfill anything listed as external-only into the VM "
+              "(UPDATE ... WHERE col IS NULL guards), re-run until clean, "
+              "then Supabase can be deleted."
+          )
+          print("\n".join(out))
+          PY
+
+          cat "$WORK/report.md"
+          cat "$WORK/report.md" >> "$GITHUB_STEP_SUMMARY"
+          rm -rf "$WORK"

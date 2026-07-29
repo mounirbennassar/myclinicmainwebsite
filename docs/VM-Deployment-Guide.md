@@ -181,10 +181,20 @@ PORTAL_URL=https://portal.myclinic.com.sa
 JWT_SECRET=<must be IDENTICAL to the old server's value — changing it logs everyone out>
 ANANTYA_BASE_URL=<WhatsApp gateway URL>
 ANANTYA_API_KEY=<WhatsApp gateway key>
+CLOUDINARY_CLOUD_NAME=ubhucgne
+CLOUDINARY_API_KEY=<Cloudinary API key>
+CLOUDINARY_API_SECRET=<Cloudinary API secret>
 ```
 
 > ❗ `JWT_SECRET` and `POSTGRES_PASSWORD` must match what the imported
 > database/users expect. Copy them exactly from the old server.
+
+> ❗ The `CLOUDINARY_*` pair is what the dashboard's doctor-photo upload signs
+> with. Omit them and the portal rejects every photo upload with "Image
+> uploads are not configured (missing Cloudinary credentials)" — the rest of
+> the site is unaffected, so the gap only shows up when someone edits a
+> doctor. They live in Mounir's `.env.local` and the Cloudinary console
+> (Settings → API Keys).
 
 Lock it down:
 
@@ -341,84 +351,38 @@ serving the new code. **That's the full pipeline working.**
 
 ---
 
-## 11. nginx reverse proxy + SSL
+## 11. nginx reverse proxy + TLS
 
-Traffic reaches this VM through the company's firewall/load balancer
-(public IP → NAT → 10.97.100.10:80/443). Install nginx as the entry point:
-
-```bash
-# 🐧
-sudo apt-get install -y nginx
-sudo nano /etc/nginx/sites-available/myclinic
-```
-
-Paste:
-
-```nginx
-# Main website → web container (:3000)
-server {
-    listen 80;
-    server_name myclinicsa.com.sa www.myclinicsa.com.sa;
-    location / {
-        proxy_pass http://127.0.0.1:3000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-
-# Dashboard portal → portal container (:3001)
-server {
-    listen 80;
-    server_name portal.myclinic.com.sa;
-    location / {
-        proxy_pass http://127.0.0.1:3001;
-        proxy_set_header Host $host;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        client_max_body_size 10m;    # dashboard image uploads (max 8 MB)
-    }
-}
-```
-
-Enable it:
+nginx on the VM is the single public entry point (the public IP
+**193.105.25.131** NATs 80/443 straight here). Its config is **tracked in the
+repo** — `deploy/nginx/myclinic.conf` — covering the apex, the portal, the
+www/ads/testweb → apex 301s, HTTP/2, upstream keepalive and gzip. Edit it in
+git, then install:
 
 ```bash
-# 🐧
-sudo ln -s /etc/nginx/sites-available/myclinic /etc/nginx/sites-enabled/
+# 🐧 after a git pull in /opt/myclinic
+cd /opt/myclinic
+CERT=$(sudo grep -rhoP 'ssl_certificate\s+\K[^;]+' /etc/nginx/sites-enabled/ | head -1)
+KEY=$(sudo grep -rhoP 'ssl_certificate_key\s+\K[^;]+' /etc/nginx/sites-enabled/ | head -1)
+echo "cert: $CERT key: $KEY"   # both must be non-empty (the NourNet wildcard)
+sudo cp deploy/nginx/myclinic.conf /etc/nginx/sites-available/myclinic
+sudo sed -i "s|__SSL_CERT__|$CERT|; s|__SSL_KEY__|$KEY|" /etc/nginx/sites-available/myclinic
+sudo ln -sf /etc/nginx/sites-available/myclinic /etc/nginx/sites-enabled/myclinic
 sudo rm -f /etc/nginx/sites-enabled/default
 sudo nginx -t && sudo systemctl reload nginx
-
-# test from the Windows VM:
-```
-```powershell
-# 🪟 should return the website HTML
-curl.exe -s -H "Host: myclinicsa.com.sa" http://10.97.100.10/ | Select-Object -First 5
 ```
 
-**SSL — depends on the network setup (ask the infra team which applies):**
+> The wildcard certificate (`*.myclinic.com.sa` + apex, NourNet-issued, valid
+> to 2027-03-06) already lives on the VM; the grep lines copy whatever paths
+> the previous config used. If `echo` prints nothing, TLS is terminated by the
+> NourNet edge instead — delete the `BEGIN TLS…END TLS` section from the conf
+> before installing (the :80 blocks are loop-safe behind an edge because they
+> trust `X-Forwarded-Proto`).
 
-- **If the load balancer / WAF terminates HTTPS** (common in corporate
-  setups): nothing to do on the VM — nginx serves plain HTTP on 80 and the
-  LB handles certificates.
-- **If the VM must serve HTTPS itself AND is reachable from the internet
-  on port 80** (NAT rule in place + DNS pointing at the public IP):
-
-  ```bash
-  # 🐧
-  sudo apt-get install -y certbot python3-certbot-nginx
-  sudo certbot --nginx -d myclinicsa.com.sa -d www.myclinicsa.com.sa -d portal.myclinic.com.sa
-  ```
-
-- **If port 80 is NOT reachable from the internet:** certbot's HTTP
-  challenge cannot work — either get certificates from the infra team and
-  install them in nginx, or use certbot's DNS-01 challenge via your DNS
-  provider.
-
-**DNS cutover (when ready to go live on this VM):** point
-`myclinicsa.com.sa`, `www.myclinicsa.com.sa`, and `portal.myclinic.com.sa`
-A-records at the **public IP that NATs to 10.97.100.10** (infra team
-provides it).
+**DNS (NourNet panel — ns1/ns2.nour.net.sa):** `myclinic.com.sa`,
+`www.myclinic.com.sa`, `ads.myclinic.com.sa` and `portal.myclinic.com.sa` all
+point at **193.105.25.131**. (www/ads previously CNAME'd to Vercel; nginx now
+answers them with a 301 to the apex, so the site lives on exactly one host.)
 
 ---
 
@@ -538,6 +502,29 @@ cd /opt/myclinic-staging && docker compose up -d
 Workflow: feature branch → merge/push to `staging` → auto-deploys → review at
 `:3100` / `:3101` → PR `staging → main` → merge → production auto-deploys.
 
+## 14. Retiring Vercel & Supabase (post-cutover cleanup, 2026-07)
+
+The apex moved to this VM on 2026-07-29; Vercel and its Supabase database are
+now legacy. Retire them **in this order** — the database holds a few edits
+made on the Vercel dashboard that never reached the VM (split-brain), and
+they must be extracted first:
+
+1. **Extract the drift**: Actions → **Diff VM database vs external Postgres**
+   → Run. Backfill anything it reports as external-only into the VM's
+   Postgres (`UPDATE … WHERE col IS NULL` guards), re-run until clean.
+2. **DNS**: repoint `www` and `ads` from Vercel's CNAMEs to A 193.105.25.131
+   (NourNet panel). Wait for propagation (`dig +short www.myclinic.com.sa`).
+3. **Vercel**: once www/ads resolve to the VM, delete the project (or at
+   least remove the myclinic.com.sa domains from it). Nothing references it
+   after that — `x-vercel-ip-country` in the UTM tracker simply reads null.
+4. **Supabase**: after step 1 is clean, delete the project (its egress grace
+   ends **2026-08-21** — do it before then) and delete the GitHub repository
+   secret `NEW_DATABASE_URL`.
+5. **Neon** (the pre-Supabase database, dead since ~2026-07-20): contains
+   dashboard edits from 2026-07-05 → 07-20 that may never have been merged
+   anywhere. If the console still lets you export, extract before deleting;
+   otherwise accept the loss and delete.
+
 ## Quick checklist
 
 - [ ] §2 SSH works, outbound HTTPS to GitHub/Docker Hub confirmed
@@ -549,9 +536,9 @@ Workflow: feature branch → merge/push to `staging` → auto-deploys → review
 - [ ] §8 `docker compose up -d --build` → all 4 healthy, curls pass
 - [ ] §9 Runner installed as service, shows **Idle** in GitHub
 - [ ] §10 Manual workflow run green, then push-to-deploy tested
-- [ ] §11 nginx installed; SSL plan agreed with infra team
+- [ ] §11 nginx installed from deploy/nginx/myclinic.conf (TLS paths substituted)
 - [ ] §12 Issues enabled, templates visible
 - [ ] §13 Backup cron installed
-- [ ] Old `deploy.yml` disabled after final cutover
+- [ ] §14 Vercel + Supabase retired (drift extracted first), Neon decided
 
 Questions → Mounir (clicksalesmedia@gmail.com)

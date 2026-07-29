@@ -30,8 +30,7 @@ const CLOUD_NAME = "ubhucgne";
 
 // Public origin Cloudinary fetches /public assets from. Must be one canonical
 // host (not window.location.origin) so server-rendered and hydrated srcsets
-// match. The apex serves the same repo's /public both today (Vercel) and after
-// the NourNet cutover (VM), so fetched URLs never go stale across the move.
+// match. The apex is the NourNet VM's nginx, which serves this repo's /public.
 const ASSET_ORIGIN =
   process.env.NEXT_PUBLIC_ASSET_ORIGIN || "https://myclinic.com.sa";
 
@@ -91,8 +90,8 @@ export default function imageLoader({
     return cloudinaryFetch(`${ASSET_ORIGIN}${src}`, width, quality);
   }
 
-  // Any other absolute URL (bamc.myclinic.com.sa, Vercel Blob, …): proxy it
-  // through Cloudinary, which resizes it once and then serves every subsequent
+  // Any other absolute URL (e.g. bamc.myclinic.com.sa): proxy it through
+  // Cloudinary, which resizes it once and then serves every subsequent
   // request from its own CDN.
   return cloudinaryFetch(src, width, quality);
 }

@@ -1,7 +1,7 @@
-import { revalidatePath } from "next/cache";
 import { DOCTOR_ROLES, HttpError, errorResponse, requireRoles } from "@/app/lib/auth";
 import { DOCTOR_ARRAY_COLS, DOCTOR_TEXT_COLS, arr, str, uniqueDoctorSlug } from "@/app/lib/doctors";
 import { query, queryOne } from "@/app/lib/db";
+import { revalidateDoctorPages } from "@/app/lib/revalidation";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -61,26 +61,9 @@ export async function POST(request: Request) {
       `insert into doctors (${cols.join(", ")}) values (${placeholders.join(", ")}) returning *`,
       values
     );
-    revalidateDoctorPages(doctor?.slug);
+    await revalidateDoctorPages(doctor?.slug);
     return Response.json({ doctor });
   } catch (err) {
     return errorResponse(err);
   }
-}
-
-/**
- * Doctors surface on the home carousel, /find-doctor, /specialties, every
- * /doctors/[slug], and the dental + pediatric strips — all of them ISR'd. Purge
- * the whole route cache rather than enumerate them: an admin edit is rare, and
- * missing a page here is exactly the "I changed it but the site still shows the
- * old thing" bug this work exists to kill.
- *
- * `slug` additionally purges that one doctor's profile by its literal path. The
- * blanket layout purge above already covers it, but the profile page is the one
- * an editor checks first, so it is worth naming explicitly rather than leaving
- * it to a wildcard someone may later narrow.
- */
-export function revalidateDoctorPages(slug?: string | null): void {
-  revalidatePath("/", "layout");
-  if (slug) revalidatePath(`/doctors/${slug}`);
 }

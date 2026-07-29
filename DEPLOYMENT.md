@@ -6,7 +6,7 @@ dashboard lives on its own subdomain (**portal.myclinic.com.sa**) served by a
 dedicated container:
 
 ```
-  myclinicsa.com.sa ──────► ┌────────────────────────────┐
+  myclinic.com.sa ────────► ┌────────────────────────────┐
         │ nginx (SSL)       │ web    (Next.js, :3000)    │──┐
         │                   └────────────────────────────┘  │ /api/* rewrite
   portal.myclinic.com.sa ─► ┌────────────────────────────┐  │
@@ -89,39 +89,16 @@ variables → Actions):
 
 Put the matching public key in the server's `~/.ssh/authorized_keys`.
 
-## Reverse proxy (nginx + SSL)
+## Reverse proxy (nginx + TLS)
 
-DNS: point both the main domain and the `portal.` subdomain at the server.
+nginx is the single public entry point; its full config is tracked at
+`deploy/nginx/myclinic.conf` (apex + portal vhosts, www/ads → apex 301s,
+HTTP/2, upstream keepalive, gzip, TLS via the NourNet wildcard cert). Install
+and reload with the commands in its header — see also
+`docs/VM-Deployment-Guide.md` §11.
 
-```nginx
-# Main website → web container
-server {
-    server_name myclinicsa.com.sa www.myclinicsa.com.sa;
-    location / {
-        proxy_pass http://127.0.0.1:3000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-
-# Dashboard portal → portal container
-server {
-    server_name portal.myclinic.com.sa;
-    location / {
-        proxy_pass http://127.0.0.1:3001;
-        proxy_set_header Host $host;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        client_max_body_size 10m;   # dashboard image uploads go up to 8 MB
-    }
-}
-```
-
-```bash
-sudo apt-get install -y nginx certbot python3-certbot-nginx
-sudo certbot --nginx -d myclinicsa.com.sa -d www.myclinicsa.com.sa -d portal.myclinic.com.sa
-```
+DNS: `myclinic.com.sa`, `www`, `ads` and `portal.myclinic.com.sa` all A-record
+to the VM's public IP (193.105.25.131).
 
 ## Day-2 operations
 

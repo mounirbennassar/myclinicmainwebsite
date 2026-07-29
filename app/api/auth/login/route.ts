@@ -53,8 +53,9 @@ export async function POST(request: Request) {
     });
 
     // Only mark the cookie Secure when the request actually arrived over HTTPS
-    // (true on Vercel, false on plain-http local dev / the VM before its TLS
-    // cutover) — a Secure cookie on an http origin is silently dropped.
+    // (true behind nginx's TLS on the VM — it forwards X-Forwarded-Proto —
+    // false on plain-http local dev) — a Secure cookie on an http origin is
+    // silently dropped.
     const isHttps = request.headers.get("x-forwarded-proto") === "https";
     response.headers.append(
       "Set-Cookie",

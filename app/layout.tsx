@@ -23,7 +23,10 @@ const tajawal = Tajawal({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://myclinicsa.com.sa"),
+  // The live apex (NourNet VM). Every relative canonical/OG URL below resolves
+  // against this — it must track the domain visitors actually use, and the old
+  // myclinicsa.com.sa no longer even resolves.
+  metadataBase: new URL("https://myclinic.com.sa"),
   title: "My Clinic | عيادتي — عيادات متخصصة في جدة والرياض",
   description:
     "عيادتي — تجربة رعاية صحية متكاملة وفاخرة. أكثر من 22 تخصصا طبيا و100 طبيب في جدة والرياض. احجز موعدك الآن 920022811. My Clinic — Premium healthcare with 22+ specialties & 100+ doctors across Jeddah & Riyadh. Book now.",

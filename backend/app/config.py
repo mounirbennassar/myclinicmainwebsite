@@ -29,6 +29,12 @@ class Settings(BaseSettings):
     # Comma-separated list of non-@myclinic.com.sa emails allowed to log in.
     login_email_exceptions: str = "amr.ali@inception.sa"
 
+    # Next.js containers whose ISR caches must be purged after CMS mutations
+    # (set in docker-compose.yml, e.g. "http://web:3000,http://portal:3000").
+    # The purge authenticates with revalidate_secret, defaulting to jwt_secret.
+    revalidate_peers: str = ""
+    revalidate_secret: str = ""
+
     # Where doctor/content image uploads are stored, served at /api/uploads/*.
     uploads_dir: Path = BACKEND_DIR / "uploads"
 
