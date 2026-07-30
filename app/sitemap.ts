@@ -20,6 +20,7 @@ const STATIC_ROUTES = [
   "/health-homecare",
   "/about-us",
   "/contact",
+  "/feedback",
   "/blog",
   "/news",
   "/privacy-policy",

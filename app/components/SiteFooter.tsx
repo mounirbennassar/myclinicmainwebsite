@@ -28,6 +28,7 @@ export default function SiteFooter() {
     { href: "/specialties", en: "Specialties", ar: "التخصصات" },
     { href: "/about-us", en: "About Us", ar: "من نحن" },
     { href: "/contact", en: "Contact", ar: "تواصل معنا" },
+    { href: "/feedback", en: "Feedback & Complaints", ar: "الملاحظات والشكاوى" },
   ];
 
   const serviceLinks = [
