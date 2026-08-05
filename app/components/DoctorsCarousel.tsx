@@ -128,7 +128,19 @@ export default function DoctorsCarousel({ specialty, showTabs = false, limit, in
           </>
         )}
 
-        <div ref={railRef} className="flex gap-5 overflow-x-auto hide-scrollbar snap-x snap-mandatory scroll-smooth pb-2 -mx-1 px-1">
+        {/* No `scroll-smooth` here, and it is load-bearing. In Arabic this rail
+            inherits RTL, so the browser has to place it at its right-hand start
+            edge; `snap-mandatory` turns that into a snap adjustment, and
+            `scroll-smooth` turned the adjustment into an *animated* scroll that
+            ran during load. A scroll ends Chrome's LCP recording, and this one
+            fired before the hero ever painted — so the document produced no LCP
+            candidate at all, Lighthouse reported NO_LCP, and PageSpeed could not
+            score Performance (it also took Total Blocking Time and ~20 other
+            audits down with it). /dental's identical strips escaped it only
+            because they force dir="ltr", so they have no start-edge adjustment.
+            Smooth scrolling is unaffected: the arrow handler passes
+            behavior:"smooth" to scrollBy itself. */}
+        <div ref={railRef} className="flex gap-5 overflow-x-auto hide-scrollbar snap-x snap-mandatory pb-2 -mx-1 px-1">
           {loading
             ? Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="snap-start shrink-0 w-[260px] bg-surface-container-lowest rounded-3xl overflow-hidden border border-outline-variant/20">
