@@ -98,9 +98,11 @@ export default function KidsDoctorsStrip() {
                     <div className={`absolute bottom-3 left-3 bg-white/95 backdrop-blur text-[#004d99] px-3 py-1 rounded-full font-extrabold shadow-sm ${isRtl ? "text-[11px]" : "text-[10px] uppercase tracking-wider"}`}>
                       {isRtl ? "أطفال" : "Pediatrics"}
                     </div>
-                    {/* pill is pinned bottom-left here regardless of direction, so the
-                        mark always takes the right corner */}
-                    <DoctorWatermark isRtl={false} />
+                    {/* Kept at the bottom: this panel's rounded-t-[8.5rem] arch clips
+                        its top corners, which would cut a top-placed mark in half. The
+                        pill is pinned bottom-left regardless of direction, so the mark
+                        always takes the right corner. */}
+                    <DoctorWatermark isRtl={false} placement="bottom" />
                   </div>
                   <div className="px-2" dir={isRtl ? "rtl" : "ltr"}>
                     <h3 className={`text-lg font-extrabold text-slate-900 mb-1 leading-tight ${isRtl ? "text-right" : "text-left"}`}>{name}</h3>

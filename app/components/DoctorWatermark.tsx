@@ -14,22 +14,35 @@
  * The white drop-shadow is what keeps it readable in both directions: at this
  * opacity navy alone disappears into dark hair or a dark suit, and the halo
  * gives it an edge without making the mark itself heavier.
+ *
+ * Placement and size are props, not `className` overrides: Tailwind utilities
+ * of the same kind (top-3 vs bottom-3, max-w-[104px] vs max-w-[150px]) carry
+ * equal specificity, so which one wins is decided by their order in the
+ * generated stylesheet rather than the order they appear in the class string —
+ * an override that happens to work is one refactor away from silently flipping.
  */
 export default function DoctorWatermark({
   isRtl = false,
+  placement = "top",
+  maxWidth = 104,
   className = "",
 }: {
-  /** Flips the mark to the corner opposite the specialty pill. */
+  /** Arabic puts the mark top-left, English top-right. */
   isRtl?: boolean;
+  /** "bottom" is for panels whose top corners are clipped (the pediatric arch). */
+  placement?: "top" | "bottom";
+  /** Cap in px — inline so it always beats the utility class. */
+  maxWidth?: number;
   className?: string;
 }) {
   return (
     <span
       aria-hidden
-      className={`pointer-events-none select-none absolute z-10 bottom-3 ${
-        isRtl ? "left-3" : "right-3"
-      } w-[42%] max-w-[104px] aspect-[597/216] opacity-[0.22] ${className}`}
+      className={`pointer-events-none select-none absolute z-10 ${
+        placement === "top" ? "top-3" : "bottom-3"
+      } ${isRtl ? "left-3" : "right-3"} w-[42%] aspect-[597/216] opacity-[0.22] ${className}`}
       style={{
+        maxWidth,
         backgroundImage: "url('/logo-dark.svg')",
         backgroundSize: "contain",
         backgroundRepeat: "no-repeat",
