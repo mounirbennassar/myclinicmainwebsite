@@ -11,8 +11,18 @@ export const revalidate = 300;
 export const dynamicParams = true; // render doctors added after build on-demand
 
 export async function generateStaticParams() {
-  const slugs = await getAllDoctorSlugs();
-  return slugs.map((slug) => ({ slug }));
+  // Prerendering the roster is an optimization, not a requirement: with
+  // dynamicParams above, any slug missing from this list still renders on
+  // demand at request time. Letting a database blip throw here instead takes
+  // the whole build down — `next build` dies with "Failed to collect page data
+  // for /doctors/[slug]" and the deploy fails, even though every other page
+  // compiled fine. Degrade to zero prerendered profiles instead.
+  try {
+    const slugs = await getAllDoctorSlugs();
+    return slugs.map((slug) => ({ slug }));
+  } catch {
+    return [];
+  }
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
