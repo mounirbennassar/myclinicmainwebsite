@@ -79,12 +79,21 @@ const COPY: { en: Copy; ar: Copy } = {
   },
 };
 
-/* Headline line split into masked words so each word can slide up on load. */
+/*
+ * Headline line split into masked words so each word can slide up on load.
+ *
+ * Each padding/negative-margin pair grows the overflow-hidden clip box without
+ * moving the glyph, buying room for ink that sits outside the em box. The top
+ * pair is what keeps Arabic legible: at the lg size the clip box starts 39px
+ * above the baseline, while أسنانك and الأمثل paint up to 49px — hamza-carrying
+ * alef got its head sliced off. `leading-[1.08]` on the h1 leaves no slack to
+ * absorb it, so the headroom has to come from here.
+ */
 function SplitWords({ text, className }: { text: string; className?: string }) {
   return (
     <>
       {text.split(" ").map((w, i) => (
-        <span key={i} className="dhs2-mask inline-block overflow-hidden align-bottom pb-[0.14em] -mb-[0.14em]">
+        <span key={i} className="dhs2-mask inline-block overflow-hidden align-bottom pt-[0.3em] -mt-[0.3em] pb-[0.14em] -mb-[0.14em]">
           <span className={`dhs2-word inline-block will-change-transform ${className ?? ""}`}>{w}&nbsp;</span>
         </span>
       ))}
