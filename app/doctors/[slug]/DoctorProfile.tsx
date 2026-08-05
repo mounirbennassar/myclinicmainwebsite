@@ -46,7 +46,7 @@ export default function DoctorProfile({ doctor }: { doctor: Doctor }) {
               <Image src={doctor.image_url} alt={doctor.name_en} fill preload className="object-cover object-top" sizes="(max-width:1024px) 100vw, 40vw" />
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-primary/30 to-transparent" />
-            <DoctorWatermark isRtl={isRtl} maxWidth={150} />
+            <DoctorWatermark isRtl={isRtl} maxWidth={112} />
           </div>
         </motion.div>
 

@@ -24,7 +24,7 @@
 export default function DoctorWatermark({
   isRtl = false,
   placement = "top",
-  maxWidth = 104,
+  maxWidth = 78,
   className = "",
 }: {
   /** Arabic puts the mark top-left, English top-right. */
@@ -40,7 +40,7 @@ export default function DoctorWatermark({
       aria-hidden
       className={`pointer-events-none select-none absolute z-10 ${
         placement === "top" ? "top-3" : "bottom-3"
-      } ${isRtl ? "left-3" : "right-3"} w-[42%] aspect-[597/216] opacity-[0.22] ${className}`}
+      } ${isRtl ? "left-3" : "right-3"} w-[32%] aspect-[597/216] opacity-[0.22] ${className}`}
       style={{
         maxWidth,
         backgroundImage: "url('/logo-dark.svg')",
