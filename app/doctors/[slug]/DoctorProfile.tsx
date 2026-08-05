@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useLang } from "@/app/i18n/context";
+import DoctorWatermark from "@/app/components/DoctorWatermark";
 import translations, { type TranslationKey } from "@/app/i18n/translations";
 import { specNameToKey } from "@/app/lib/specialties";
 import { trackWhatsAppClick } from "@/app/lib/tracking";
@@ -38,11 +39,14 @@ export default function DoctorProfile({ doctor }: { doctor: Doctor }) {
       <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-start">
         {/* Photo */}
         <motion.div initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }} className="lg:col-span-5">
-          <div className="relative aspect-[4/5] rounded-[2rem] overflow-hidden bg-surface-container shadow-[0_40px_80px_-30px_rgba(0,77,153,0.35)] border-4 border-white">
+          {/* bg-white so the cut-out portraits' white circular disc blends in
+              instead of reading as a circle behind the doctor. */}
+          <div className="relative aspect-[4/5] rounded-[2rem] overflow-hidden bg-white shadow-[0_40px_80px_-30px_rgba(0,77,153,0.35)] border-4 border-white">
             {doctor.image_url && (
               <Image src={doctor.image_url} alt={doctor.name_en} fill preload className="object-cover object-top" sizes="(max-width:1024px) 100vw, 40vw" />
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-primary/30 to-transparent" />
+            <DoctorWatermark isRtl={isRtl} className="max-w-[150px] bottom-5" />
           </div>
         </motion.div>
 

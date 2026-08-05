@@ -6,6 +6,7 @@ import type { Doctor } from "@/app/lib/doctors";
 import { useDoctors } from "@/app/components/DoctorsProvider";
 import { useLang } from "@/app/i18n/context";
 import { doctorAvatar } from "@/app/lib/doctor-avatar";
+import DoctorWatermark from "@/app/components/DoctorWatermark";
 import {
   doctorEducation,
   doctorLanguages,
@@ -122,7 +123,9 @@ export default function DentalDoctorsStrip({ match, limit = 8, variant = "sectio
                   transition={{ duration: 0.55, delay: i * 0.05, ease: [0.21, 0.47, 0.32, 0.98] }}
                   className="w-[260px] sm:w-[280px] lg:w-[300px] snap-start shrink-0 group bg-white rounded-2xl p-5 md:p-6 shadow-lg shadow-[#00677d]/10 border border-[#00677d]/10 hover:border-[#00677d]/40 hover:-translate-y-2 hover:shadow-2xl hover:shadow-[#00677d]/15 transition-all duration-300"
                 >
-                  <div className="relative w-full aspect-[4/5] rounded-xl overflow-hidden mb-5 bg-gradient-to-br from-[#003867]/5 to-[#00677d]/10">
+                  {/* Flat white, not the brand tint — the cut-out portraits carry a
+                      white circular disc that a tinted panel exposes as a circle. */}
+                  <div className="relative w-full aspect-[4/5] rounded-xl overflow-hidden mb-5 bg-white">
                     <Image
                       alt={name}
                       src={doc.image_url || doctorAvatar(doc.name_en, doc.name_ar, doc.gender)}
@@ -134,6 +137,7 @@ export default function DentalDoctorsStrip({ match, limit = 8, variant = "sectio
                     <div className={`absolute top-3 ${isRtl ? "right-3" : "left-3"} bg-gradient-to-r from-[#003867] to-[#00677d] text-white px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-md`}>
                       {isRtl ? "أسنان" : "Dental"}
                     </div>
+                    <DoctorWatermark isRtl={isRtl} />
                   </div>
                   <h3 className="text-lg font-extrabold text-slate-900 mb-1 leading-tight">{name}</h3>
                   <p className="text-[#00677d] text-sm font-semibold mb-4 leading-tight">{title}</p>
@@ -173,7 +177,7 @@ export default function DentalDoctorsStrip({ match, limit = 8, variant = "sectio
               onClick={(e) => e.stopPropagation()}
               dir={isRtl ? "rtl" : "ltr"}
             >
-              <div className="relative h-72 sm:h-96 overflow-hidden">
+              <div className="relative h-72 sm:h-96 overflow-hidden bg-white">
                 <Image src={selected.image_url || doctorAvatar(selected.name_en, selected.name_ar, selected.gender)} alt={selected.name_en} fill className="object-cover object-top" sizes="(max-width: 640px) 100vw, 512px" />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#003867] via-[#00677d]/40 to-transparent" />
                 <button

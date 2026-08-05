@@ -9,6 +9,7 @@ import { useLang } from "@/app/i18n/context";
 import translations, { type TranslationKey } from "@/app/i18n/translations";
 import { doctorFilters, specNameToKey } from "@/app/lib/specialties";
 import { doctorAvatar } from "@/app/lib/doctor-avatar";
+import DoctorWatermark from "@/app/components/DoctorWatermark";
 import { buildDoctorIndex, searchDoctors, closestDoctors } from "@/app/lib/doctor-search";
 import type { Doctor } from "@/app/lib/doctors";
 
@@ -219,7 +220,7 @@ export default function DoctorDirectory({ doctors }: { doctors: Doctor[] }) {
                       onClick={() => goTo(d)}
                       className={`w-full flex items-center gap-3 px-4 py-3 transition-colors cursor-pointer ${isRtl ? "text-right" : "text-left"} ${i === active ? "bg-primary/10" : "hover:bg-surface-container/70"}`}
                     >
-                      <span className="relative w-12 h-12 rounded-xl overflow-hidden bg-surface-container shrink-0">
+                      <span className="relative w-12 h-12 rounded-xl overflow-hidden bg-white shrink-0">
                         <Image src={d.image_url || doctorAvatar(d.name_en, d.name_ar)} alt="" fill className="object-cover object-top" sizes="48px" />
                       </span>
                       <span className="min-w-0 flex-1">
@@ -351,9 +352,12 @@ export default function DoctorDirectory({ doctors }: { doctors: Doctor[] }) {
               {shown.map((d, i) => (
                 <motion.div key={d.id} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: (i % PAGE % 8) * 0.03 }}>
                   <Link href={`/doctors/${d.slug}`} className="group block h-full bg-surface-container-lowest rounded-3xl overflow-hidden border border-outline-variant/20 shadow-clinical hover:shadow-xl hover:-translate-y-1 transition-all">
-                    <div className="relative aspect-[4/5] overflow-hidden bg-surface-container">
+                    {/* bg-white — see DoctorWatermark: the cut-out portraits carry a
+                        white circular disc that a tinted panel turns into a visible circle. */}
+                    <div className="relative aspect-[4/5] overflow-hidden bg-white">
                       <Image src={d.image_url || doctorAvatar(d.name_en, d.name_ar)} alt={d.name_en} fill className="object-cover object-top group-hover:scale-105 transition-transform duration-500" sizes="(max-width:768px) 50vw, (max-width:1280px) 33vw, 25vw" loading={i < 8 ? "eager" : "lazy"} />
                       <div className="absolute inset-0 bg-gradient-to-t from-primary/55 via-transparent to-transparent" />
+                      <DoctorWatermark isRtl={isRtl} />
                       {d.specialties[0] && (
                         <span className={`absolute bottom-3 ${isRtl ? "right-3" : "left-3"} bg-secondary-fixed text-on-secondary-fixed px-2.5 py-1 rounded-full text-[10px] font-bold`}>{tSpec(d.specialties[0])}</span>
                       )}

@@ -6,6 +6,7 @@ import type { Doctor } from "@/app/lib/doctors";
 import { useDoctors } from "@/app/components/DoctorsProvider";
 import { useLang } from "@/app/i18n/context";
 import { doctorAvatar } from "@/app/lib/doctor-avatar";
+import DoctorWatermark from "@/app/components/DoctorWatermark";
 import {
   doctorEducation,
   doctorLocation,
@@ -82,7 +83,10 @@ export default function KidsDoctorsStrip() {
                   className="w-[260px] sm:w-[280px] lg:w-[300px] snap-start shrink-0 group bg-white rounded-[2rem] p-4 pb-5 ring-1 ring-slate-100 shadow-[0_18px_44px_-22px_rgba(0,77,153,0.3)] hover:-translate-y-2 hover:shadow-[0_28px_56px_-24px_rgba(0,77,153,0.4)] transition-all duration-300"
                 >
                   {/* Arch portrait */}
-                  <div className={`relative w-full aspect-[4/4.7] rounded-t-[8.5rem] rounded-b-2xl overflow-hidden mb-5 ${i % 2 === 0 ? "bg-[#EAF5FE]" : "bg-[#FFF6DF]"}`}>
+                  {/* The alternating pastel fills were dropped for flat white: the
+                      cut-out portraits sit on a white circular disc, which any tint
+                      exposes as a hard circle behind the doctor. */}
+                  <div className="relative w-full aspect-[4/4.7] rounded-t-[8.5rem] rounded-b-2xl overflow-hidden mb-5 bg-white">
                     <Image
                       alt={name}
                       src={doc.image_url || doctorAvatar(doc.name_en, doc.name_ar, doc.gender)}
@@ -94,6 +98,9 @@ export default function KidsDoctorsStrip() {
                     <div className={`absolute bottom-3 left-3 bg-white/95 backdrop-blur text-[#004d99] px-3 py-1 rounded-full font-extrabold shadow-sm ${isRtl ? "text-[11px]" : "text-[10px] uppercase tracking-wider"}`}>
                       {isRtl ? "أطفال" : "Pediatrics"}
                     </div>
+                    {/* pill is pinned bottom-left here regardless of direction, so the
+                        mark always takes the right corner */}
+                    <DoctorWatermark isRtl={false} />
                   </div>
                   <div className="px-2" dir={isRtl ? "rtl" : "ltr"}>
                     <h3 className={`text-lg font-extrabold text-slate-900 mb-1 leading-tight ${isRtl ? "text-right" : "text-left"}`}>{name}</h3>
