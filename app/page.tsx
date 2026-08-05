@@ -34,10 +34,33 @@ function mixDoctors(list: Doctor[]): Doctor[] {
 // up and report it as broken.
 export const revalidate = 300;
 
+// A dead database rejects and the catch below handles it. An *unreachable* one
+// is worse: the socket just hangs, and because this await sits in front of the
+// render, the whole document hangs with it — no HTML, no TTFB, until the
+// platform's own timeout fires. (Locally, against the retired Neon instance,
+// `/` never responds at all.) Cap the wait instead: past the budget we render
+// with no `initialDoctors`, which is the same path the catch already takes, and
+// the carousel falls back to its client-side /api/doctors fetch.
+const DOCTORS_SSR_BUDGET_MS = 2500;
+
+async function doctorsWithinBudget(): Promise<Doctor[]> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      getAllActiveDoctors(),
+      new Promise<Doctor[]>((resolve) => {
+        timer = setTimeout(() => resolve([]), DOCTORS_SSR_BUDGET_MS);
+      }),
+    ]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export default async function Home() {
   let doctors: Doctor[] = [];
   try {
-    doctors = mixDoctors(await getAllActiveDoctors());
+    doctors = mixDoctors(await doctorsWithinBudget());
   } catch {
     // The page must stay buildable without a reachable database; the carousel
     // then falls back to its client-side /api/doctors fetch.
