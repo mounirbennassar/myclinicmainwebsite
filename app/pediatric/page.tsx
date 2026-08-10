@@ -7,6 +7,8 @@ import KidsHub from "./KidsHub";
 export const revalidate = 300;
 
 export default async function PediatricPage() {
-  const doctors = await getDoctorsBySpecialty("Pediatrics", 16);
+  // Every pediatrician, not the first 16 — the carousel windows the render
+  // itself, so a full roster costs nothing up front.
+  const doctors = await getDoctorsBySpecialty("Pediatrics");
   return <KidsHub doctors={doctors} />;
 }

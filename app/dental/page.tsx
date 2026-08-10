@@ -657,7 +657,7 @@ export default function DentalHub() {
       </section>
 
       {/* ── Doctors / Testimonials / Hours+Form / Footer ─ */}
-      <DentalDoctorsStrip limit={99} />
+      <DentalDoctorsStrip />
       <DentalTestimonials />
       <DentalHoursAndBooking service="general" />
       <SiteFooter />

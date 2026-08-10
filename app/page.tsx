@@ -1,12 +1,12 @@
-import { getAllActiveDoctors } from "./lib/doctors";
-import type { Doctor } from "./lib/doctors";
+import { getAllActiveDoctors, toDoctorCard } from "./lib/doctors";
+import type { DoctorCard } from "./lib/doctors";
 import HomeClient from "./HomeClient";
 
 // Deterministic (pure) shuffle — mixes specialties so the carousel's "All" tab
 // interleaves dental with everyone else, without an impure Math.random in render.
 // Seeded by roster size so the order is stable per build yet re-mixes if the
 // roster changes. mulberry32 PRNG.
-function mixDoctors(list: Doctor[]): Doctor[] {
+function mixDoctors(list: DoctorCard[]): DoctorCard[] {
   const a = [...list];
   let s = (a.length * 2654435761) >>> 0;
   const rand = () => {
@@ -43,22 +43,26 @@ export const revalidate = 300;
 // the carousel falls back to its client-side /api/doctors fetch.
 const DOCTORS_SSR_BUDGET_MS = 2500;
 
-async function doctorsWithinBudget(): Promise<Doctor[]> {
+// The whole roster is handed to the client, so it travels in the RSC payload
+// as JSON inside the HTML. Send only the seven fields a card renders: the
+// other ten columns are ~46% of those bytes and nothing reads them here.
+async function doctorsWithinBudget(): Promise<DoctorCard[]> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   try {
-    return await Promise.race([
+    const rows = await Promise.race([
       getAllActiveDoctors(),
-      new Promise<Doctor[]>((resolve) => {
+      new Promise<[]>((resolve) => {
         timer = setTimeout(() => resolve([]), DOCTORS_SSR_BUDGET_MS);
       }),
     ]);
+    return rows.map(toDoctorCard);
   } finally {
     clearTimeout(timer);
   }
 }
 
 export default async function Home() {
-  let doctors: Doctor[] = [];
+  let doctors: DoctorCard[] = [];
   try {
     doctors = mixDoctors(await doctorsWithinBudget());
   } catch {

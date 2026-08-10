@@ -28,6 +28,19 @@ export function normEn(s: string): string {
     [/\bal[ -]/g, "al"],
     [/ee/g, "i"],
     [/ou/g, "u"],
+    // "Abd al Rahman" / "Abdul Rahman" / "Abdelrahman" / "Abdulrahman" are the
+    // same man, and the roster genuinely carries several of these spellings.
+    // Glue the article to the name so they all collapse to one token; without
+    // this the spaced forms never reach the single stored token — the length
+    // gap is wider than the typo budget and neither contains the other.
+    [/\babd\s*[uae]?l\s*/g, "abdul"],
+    [/ph/g, "f"], // Mustapha ↔ Mustafa
+    [/y\b/g, "i"], // Samy ↔ Sami, Fahmy ↔ Fahmi
+    // Doubling carries no information in Arabic→Latin transliteration, and it
+    // is where most near-miss spellings live: Julnnar/Gelnar, Hassan/Hasan,
+    // Abdullah/Abdulah. Collapsing it on BOTH sides brings those pairs inside
+    // the typo budget. Must run last, after the pairs above have settled.
+    [/(.)\1+/g, "$1"],
   ];
   for (const [re, to] of pairs) out = out.replace(re, to);
   return out.replace(/\s+/g, " ").trim();
@@ -64,6 +77,68 @@ export function normQuery(q: string): string[] {
   return Array.from(new Set(sources.filter(Boolean)));
 }
 
+/**
+ * Everyday words patients actually type, per canonical specialty (the labels in
+ * `doctorFilters`). Nobody searches "Otorhinolaryngology" — they search "ear",
+ * "أذن", or "sinus". Without this table those queries return nothing at all,
+ * because the only specialty text in the index is the clinical label itself.
+ *
+ * Written in plain script and normalized at index time, so Arabic entries may
+ * be spelled with any alef/taa-marbuta variant. Overlap between specialties is
+ * intentional: "chest" is honestly both cardiology and pulmonology.
+ */
+const SPECIALTY_TERMS: Record<string, string> = {
+  "Allergy & Immunology": "allergy allergies allergic immunology immune asthma eczema sinus hayfever حساسية تحسس مناعة ربو اكزيما",
+  "Audio-vestibular & Speech": "hearing hear ear deaf balance dizziness vertigo speech language audiology tinnitus سمع سمعيات اذن توازن دوخة دوار نطق تخاطب طنين",
+  Cardiology: "heart cardiac cardiology chest palpitations pressure hypertension cholesterol artery قلب قلبية صدر ضغط شرايين كوليسترول خفقان",
+  Dental: "dental dentist dentistry teeth tooth gum gums braces orthodontics implant whitening filling root canal smile اسنان سنان اسنانك لثة تقويم زراعة تبييض حشوة عصب ابتسامة",
+  "Dermatology & Cosmetics": "skin dermatology dermatologist cosmetic cosmetics acne pimples hair loss laser botox filler eczema psoriasis rash mole جلد جلدية بشرة تجميل حبوب شباب شعر تساقط ليزر بوتوكس فيلر صدفية طفح",
+  Emergency: "emergency urgent er accident trauma طوارئ اسعاف حوادث",
+  "Endocrinology & Diabetes": "diabetes diabetic sugar endocrine endocrinology thyroid hormone hormones obesity insulin سكري سكر غدد درقية هرمونات سمنة انسولين",
+  ENT: "ent ear nose throat sinus sinuses tonsils snoring voice hearing انف اذن حنجرة جيوب لوز شخير صوت",
+  "Family Medicine": "family general practitioner gp primary care checkup اسرة عائلة عام ممارس فحص",
+  "Gastroenterology & Hepatology": "stomach gastro gastroenterology digestive digestion liver hepatology colon bowel endoscopy colonoscopy ulcer reflux معدة هضمي هضم كبد قولون منظار قرحة ارتجاع امعاء",
+  "General & Bariatric Surgery": "surgery surgeon surgical bariatric weight sleeve hernia gallbladder appendix جراحة جراح سمنة تكميم فتق مرارة زائدة عملية",
+  "Geriatric Medicine": "geriatric elderly aging seniors old age كبار السن مسنين شيخوخة",
+  Hematology: "blood hematology anemia clotting platelets leukemia دم دموية فقر الدم صفائح تخثر",
+  "Internal Medicine": "internal internist general medicine باطنية باطني",
+  Nephrology: "kidney kidneys renal nephrology dialysis كلى كلية غسيل الكلى",
+  Neurology: "brain nerve nerves neurology neurologist headache migraine epilepsy seizure stroke numbness مخ اعصاب عصبية صداع شقيقة صرع تشنج جلطة تنميل",
+  Nutrition: "nutrition nutritionist diet dietitian dietician weight slimming meal تغذية حمية غذائي وزن رجيم تنحيف",
+  "Obstetrics & Gynecology": "gynecology gynecologist obstetrics obgyn pregnancy pregnant women woman birth delivery fertility ivf period uterus ovary نساء ولادة حمل حامل خصوبة اطفال انابيب دورة رحم مبيض",
+  "Occupational Medicine": "occupational work workplace employment مهني عمل",
+  Ophthalmology: "eye eyes vision sight ophthalmology ophthalmologist optometry cataract lasik glaucoma retina glasses عيون عين نظر ابصار ليزك مياه بيضاء زرقاء شبكية نظارات",
+  Orthopedics: "bone bones joint joints knee shoulder hip spine back fracture orthopedic orthopedics sports injury عظام مفاصل ركبة كتف ورك عمود فقري ظهر كسر اصابة",
+  Pediatrics: "child children kid kids baby babies infant newborn pediatric pediatrics vaccination اطفال طفل رضيع مواليد تطعيم لقاح",
+  Physiotherapy: "physiotherapy physiotherapist physical therapy rehab rehabilitation exercise علاج طبيعي تاهيل",
+  "Psychiatry & Psychology": "psychiatry psychiatrist psychology psychologist mental depression anxiety stress therapy counselling adhd نفسي نفسية اكتئاب قلق توتر ارشاد سلوكي فرط الحركة",
+  "Pulmonology & Sleep Medicine": "lung lungs chest breathing breath respiratory pulmonology asthma copd sleep apnea snoring رئة رئوية صدرية تنفس ربو نوم شخير انقطاع النفس",
+  Rheumatology: "rheumatology rheumatologist arthritis joint pain lupus gout osteoporosis روماتيزم مفاصل التهاب المفاصل ذئبة نقرس هشاشة",
+  Urology: "urology urologist urinary bladder prostate stones kidney stone incontinence مسالك بولية مثانة بروستات حصوات حصى تبول",
+};
+
+/** Split a term list into its normalized English and Arabic tokens. */
+function termTokens(terms: string): string[] {
+  const out: string[] = [];
+  for (const word of terms.split(/\s+/)) {
+    if (!word) continue;
+    const normalized = /[؀-ۿ]/.test(word) ? normAr(word) : normEn(word);
+    for (const token of normalized.split(" ")) if (token) out.push(token);
+  }
+  return out;
+}
+
+/** Memoized per specialty — the table is static, the index is rebuilt often. */
+const termCache = new Map<string, string[]>();
+function specialtyTerms(specialty: string): string[] {
+  let cached = termCache.get(specialty);
+  if (!cached) {
+    cached = termTokens(SPECIALTY_TERMS[specialty] || "");
+    termCache.set(specialty, cached);
+  }
+  return cached;
+}
+
 export type DoctorIndexEntry = {
   doctor: Doctor;
   /** Highest-value tokens: the doctor's own name in both scripts. */
@@ -72,6 +147,8 @@ export type DoctorIndexEntry = {
   fieldTokens: string[];
   /** Whole normalized name strings for substring + bigram matching. */
   nameJoined: string[];
+  /** The same names with spaces removed, so word breaks never block a match. */
+  namePacked: string[];
 };
 
 /** Build once per doctors list + language (localized specialty labels). */
@@ -86,19 +163,30 @@ export function buildDoctorIndex(
       ...d.specialties.map((s) => normEn(s)),
       ...d.specialties.map((s) => normAr(specLabel(s))),
       ...d.specialties.map((s) => normEn(specLabel(s))),
+      // The free-text specialty is the only clinical label some doctors carry
+      // (a few have no canonical specialty at all), so index it in both
+      // scripts rather than assuming it was written in English.
       normEn(d.specialty_raw || ""),
+      normAr(d.specialty_raw || ""),
       normEn(d.title || ""),
+      normAr(d.title_ar || ""),
       normEn(d.qualification_en || ""),
+      normAr(d.qualification_ar || ""),
       ...d.branches.map((b) => normEn(b)),
       ...d.cities.map((c) => normEn(c)),
       d.cities.includes("Jeddah") ? "جده" : "",
       d.cities.includes("Riyadh") ? "الرياض" : "",
     ];
+    const nameJoined = [nameEn, nameAr].filter(Boolean);
     return {
       doctor: d,
       nameTokens: [...nameEn.split(" "), ...nameAr.split(" ")].filter(Boolean),
-      fieldTokens: fields.flatMap((f) => f.split(" ")).filter(Boolean),
-      nameJoined: [nameEn, nameAr].filter(Boolean),
+      fieldTokens: [
+        ...fields.flatMap((f) => f.split(" ")).filter(Boolean),
+        ...d.specialties.flatMap(specialtyTerms),
+      ],
+      nameJoined,
+      namePacked: nameJoined.map((n) => n.replace(/ /g, "")).filter((n) => n.length >= 4),
     };
   });
 }
@@ -173,6 +261,11 @@ export function searchDoctors(index: DoctorIndexEntry[], q: string): Doctor[] {
         for (const j of e.nameJoined) {
           if (t.length >= 3 && j.includes(t)) best = Math.max(best, 36);
         }
+        // Word breaks differ between how a name is stored and how it is typed
+        // ("Abu Shanab" vs "Abushanab"), so try the space-free form too.
+        for (const p of e.namePacked) {
+          if (t.length >= 4 && p.includes(t)) best = Math.max(best, 34);
+        }
         for (const f of e.fieldTokens) {
           best = Math.max(best, fuzzyScore(t, f, false));
         }
@@ -187,6 +280,13 @@ export function searchDoctors(index: DoctorIndexEntry[], q: string): Doctor[] {
         if (name === query) total += 180;
         else if (name.startsWith(query)) total += 80;
         else if (query.length >= 4 && name.includes(query)) total += 45;
+      }
+      const packedQuery = query.replace(/ /g, "");
+      if (packedQuery.length < 4) continue;
+      for (const packed of e.namePacked) {
+        if (packed === packedQuery) total += 160;
+        else if (packed.startsWith(packedQuery)) total += 70;
+        else if (packed.includes(packedQuery)) total += 40;
       }
     }
     if (ok) scored.push({ d: e.doctor, score: total });

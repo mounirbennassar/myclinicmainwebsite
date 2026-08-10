@@ -22,6 +22,31 @@ export type Doctor = {
   sort_order: number;
 };
 
+/**
+ * The only fields a carousel card actually renders. The home page ships its
+ * whole roster to the browser inside the RSC payload, so every unused column
+ * is dead weight in the HTML — narrowing the prop lets the page send half as
+ * much. `Doctor` is assignable to this, so callers holding full records
+ * (the dental and pediatric strips) keep working unchanged.
+ */
+export type DoctorCard = Pick<
+  Doctor,
+  "id" | "slug" | "name_en" | "name_ar" | "image_url" | "specialties" | "specialty_raw"
+>;
+
+/** Strip a full record down to what a card needs. */
+export function toDoctorCard(d: Doctor): DoctorCard {
+  return {
+    id: d.id,
+    slug: d.slug,
+    name_en: d.name_en,
+    name_ar: d.name_ar,
+    image_url: d.image_url,
+    specialties: d.specialties,
+    specialty_raw: d.specialty_raw,
+  };
+}
+
 // Lightweight column set for lists/cards/carousels (skips email).
 const CARD_COLS =
   "id, slug, name_en, name_ar, image_url, qualification_en, qualification_ar, specialty_raw," +
@@ -63,24 +88,20 @@ export function getAllActiveDoctors(): Promise<Doctor[]> {
 
 /**
  * Active doctors in one canonical specialty — used by landing-page carousels
- * and the dental/pediatric strips. Pass `null` for every match (the dental
- * strip lists all 64 dentists).
+ * and the dental/pediatric strips.
+ *
+ * Unlimited by default. It used to stop at 16, which quietly hid most of a
+ * specialty from its own landing page (39 of 55 pediatricians, 24 of 40 family
+ * doctors). A caller that genuinely wants a teaser must now say so, because
+ * the failure mode of the old default was invisible: the page looked full.
  */
-export function getDoctorsBySpecialty(specialty: string, limit: number | null = 16): Promise<Doctor[]> {
+export function getDoctorsBySpecialty(specialty: string, limit: number | null = null): Promise<Doctor[]> {
   return query<Doctor>(
     `select ${CARD_COLS} from doctors
      where is_active and specialties @> ARRAY[$1]::text[]
      order by sort_order desc, name_en asc
      ${limit === null ? "" : "limit $2"}`,
     limit === null ? [specialty] : [specialty, limit]
-  );
-}
-
-/** Featured/leading doctors for the home carousel. */
-export function getFeaturedDoctors(limit = 16): Promise<Doctor[]> {
-  return query<Doctor>(
-    `select ${CARD_COLS} from doctors where is_active order by sort_order desc, name_en asc limit $1`,
-    [limit]
   );
 }
 

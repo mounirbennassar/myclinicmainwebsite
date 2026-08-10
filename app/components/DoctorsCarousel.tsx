@@ -8,7 +8,7 @@ import translations, { type TranslationKey } from "@/app/i18n/translations";
 import { doctorFilters, specNameToKey } from "@/app/lib/specialties";
 import { doctorAvatar } from "@/app/lib/doctor-avatar";
 import DoctorWatermark from "@/app/components/DoctorWatermark";
-import type { Doctor } from "@/app/lib/doctors";
+import type { DoctorCard } from "@/app/lib/doctors";
 
 type Props = {
   /** Limit to one canonical specialty (landing pages). Omit for the home carousel. */
@@ -19,11 +19,18 @@ type Props = {
   limit?: number;
   /** Server-fetched doctors. When provided the carousel renders them directly
    *  and skips the client fetch (faster + works even if /api/doctors is down). */
-  initialDoctors?: Doctor[];
+  initialDoctors?: DoctorCard[];
   /** Optional heading overrides. */
   eyebrowEn?: string; eyebrowAr?: string;
   headingEn?: string; headingAr?: string;
 };
+
+// The rail renders a window, not the roster: mounting 377 cards up front costs
+// hydration time for cards nobody scrolls to. The window opens as the user
+// reaches the end of the rail, so every doctor is reachable — which is the
+// point; a doctor the clinic employs must never be absent from the home page.
+const WINDOW_START = 24;
+const WINDOW_STEP = 24;
 
 export default function DoctorsCarousel({ specialty, showTabs = false, limit, initialDoctors, eyebrowEn, eyebrowAr, headingEn, headingAr }: Props) {
   const { lang } = useLang();
@@ -32,7 +39,7 @@ export default function DoctorsCarousel({ specialty, showTabs = false, limit, in
   const railRef = useRef<HTMLDivElement>(null);
 
   const hasInitial = Array.isArray(initialDoctors);
-  const [doctors, setDoctors] = useState<Doctor[]>(initialDoctors ?? []);
+  const [doctors, setDoctors] = useState<DoctorCard[]>(initialDoctors ?? []);
   const [loading, setLoading] = useState(!hasInitial);
   // "" = the "All" tab → a shuffled mix across every specialty (dental included).
   // Landing pages pin a single specialty; the home carousel opens on the mix.
@@ -53,7 +60,7 @@ export default function DoctorsCarousel({ specialty, showTabs = false, limit, in
       .then((r) => r.json())
       .then((d) => {
         if (cancelled) return;
-        const list: Doctor[] = d.doctors || [];
+        const list: DoctorCard[] = d.doctors || [];
         setDoctors(list);
         setLoading(false);
       })
@@ -62,19 +69,48 @@ export default function DoctorsCarousel({ specialty, showTabs = false, limit, in
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [specialty, limit, showTabs]);
 
+  // Canonical specialties first, then anything else the roster actually
+  // contains. The old version intersected with `doctorFilters` and dropped the
+  // rest, so a specialty typed in the dashboard that isn't on that hard-coded
+  // list left its doctors with no tab to appear under.
   const tabs = useMemo(() => {
     if (!showTabs) return [];
-    const present = new Set(doctors.flatMap((d) => d.specialties));
-    return doctorFilters.filter((s) => present.has(s));
+    const counts = new Map<string, number>();
+    for (const d of doctors) for (const s of d.specialties) counts.set(s, (counts.get(s) || 0) + 1);
+    const canonical = doctorFilters.filter((s) => counts.has(s));
+    const extra = [...counts.keys()].filter((s) => !doctorFilters.includes(s)).sort();
+    return [...canonical, ...extra].map((name) => ({ name, count: counts.get(name) || 0 }));
   }, [showTabs, doctors]);
 
+  // Every doctor in the active tab — no cap. "All" keeps the shuffled
+  // cross-specialty mix, which now runs to the end of the roster instead of
+  // stopping at the first 40 (doctors past that point were unreachable from
+  // the home page entirely unless they happened to hold a tabbed specialty).
   const visible = useMemo(() => {
-    if (showTabs) {
-      if (activeTab) return doctors.filter((d) => d.specialties.includes(activeTab));
-      return doctors.slice(0, 40); // "All" = the shuffled cross-specialty mix, capped for perf
-    }
+    if (showTabs && activeTab) return doctors.filter((d) => d.specialties.includes(activeTab));
     return doctors;
   }, [doctors, showTabs, activeTab]);
+
+  // Grow the render window when the end of the rail scrolls into view.
+  const [windowSize, setWindowSize] = useState(WINDOW_START);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  useEffect(() => { setWindowSize(WINDOW_START); }, [activeTab]);
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el || windowSize >= visible.length) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) setWindowSize((n) => n + WINDOW_STEP);
+      },
+      // The rail is the scroll container, and the sentinel sits past its right
+      // edge; a generous margin loads the next batch before it is reached.
+      { root: railRef.current, rootMargin: "0px 600px" }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [windowSize, visible.length]);
+
+  const rendered = visible.slice(0, windowSize);
 
   const scroll = (dir: "prev" | "next") => {
     const el = railRef.current;
@@ -105,11 +141,11 @@ export default function DoctorsCarousel({ specialty, showTabs = false, limit, in
       {showTabs && tabs.length > 0 && (
         <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-3 mb-6">
           <button onClick={() => setActiveTab("")} className={`shrink-0 px-4 py-2 rounded-full text-sm font-bold transition-colors cursor-pointer ${activeTab === "" ? "bg-primary text-white" : "bg-surface-container text-on-surface-variant hover:text-primary"}`}>
-            {isRtl ? "الكل" : "All"}
+            {isRtl ? "الكل" : "All"} <span className="tabular-nums opacity-70">({doctors.length})</span>
           </button>
-          {tabs.map((s) => (
-            <button key={s} onClick={() => setActiveTab(s)} className={`shrink-0 px-4 py-2 rounded-full text-sm font-bold transition-colors cursor-pointer ${activeTab === s ? "bg-primary text-white" : "bg-surface-container text-on-surface-variant hover:text-primary"}`}>
-              {tSpec(s)}
+          {tabs.map(({ name, count }) => (
+            <button key={name} onClick={() => setActiveTab(name)} className={`shrink-0 px-4 py-2 rounded-full text-sm font-bold transition-colors cursor-pointer ${activeTab === name ? "bg-primary text-white" : "bg-surface-container text-on-surface-variant hover:text-primary"}`}>
+              {tSpec(name)} <span className="tabular-nums opacity-70">({count})</span>
             </button>
           ))}
         </div>
@@ -150,7 +186,7 @@ export default function DoctorsCarousel({ specialty, showTabs = false, limit, in
               ))
             : visible.length === 0
             ? <p className="text-on-surface-variant py-10">{t.noDoctorsYet}</p>
-            : visible.map((d) => (
+            : rendered.map((d) => (
                 <Link key={d.id} href={`/doctors/${d.slug}`} className="group snap-start shrink-0 w-[260px] bg-surface-container-lowest rounded-3xl overflow-hidden border border-outline-variant/20 shadow-clinical hover:shadow-xl hover:-translate-y-1 transition-all">
                   {/* bg-white, not bg-surface-container: many portraits are cut-out
                       PNGs sitting on a white circular disc with transparency outside
@@ -172,6 +208,13 @@ export default function DoctorsCarousel({ specialty, showTabs = false, limit, in
                   </div>
                 </Link>
               ))}
+
+          {/* Opens the next batch as the rail nears its end. Kept as a direct
+              child so it rides the same horizontal scroll; the arrow handler
+              measures `:scope > a`, so a bare div here does not confuse it. */}
+          {!loading && windowSize < visible.length && (
+            <div ref={sentinelRef} aria-hidden="true" className="shrink-0 w-px self-stretch" />
+          )}
         </div>
       </div>
     </section>

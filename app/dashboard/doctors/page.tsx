@@ -369,6 +369,15 @@ export default function DoctorsPage() {
                     <button key={s} type="button" onClick={() => toggleArr("specialties", s)} className={`px-2.5 py-1 rounded-full text-[11px] font-medium border transition-colors ${form.specialties.includes(s) ? "bg-[#004d99] text-white border-[#004d99]" : "bg-white text-slate-600 border-slate-200 hover:border-[#004d99]/40"}`}>{s}</button>
                   ))}
                 </div>
+                {/* A doctor with no specialty gets no filter tab on the home
+                    carousel and no entry in the /find-doctor specialty menu —
+                    they are only reachable by name. Say so at the point of
+                    entry rather than letting it surface as a missing doctor. */}
+                {form.specialties.length === 0 && (
+                  <p className="mt-1.5 text-[11px] font-medium text-amber-600">
+                    Pick at least one — without a specialty this doctor won&apos;t appear under any filter on the site.
+                  </p>
+                )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

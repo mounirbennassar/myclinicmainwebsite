@@ -18,18 +18,30 @@ export async function GET(request: Request) {
     const limitRaw = Number(searchParams.get("limit"));
     const limit = Number.isFinite(limitRaw) && limitRaw > 0 ? Math.floor(limitRaw) : null;
 
+    // A `?specialty=` query used to fall back to `limit 16` when the caller
+    // named no limit, so a carousel asking for "every cardiologist" silently
+    // got the first 16. Absent `?limit=` now means exactly that: no limit.
     const doctors = specialty
       ? await query(
           `select ${CARD_COLS} from doctors
            where is_active and specialties @> ARRAY[$1]::text[]
-           order by sort_order desc, name_en asc limit $2`,
-          [specialty, limit ?? 16]
+           order by sort_order desc, name_en asc
+           ${limit === null ? "" : "limit $2"}`,
+          limit === null ? [specialty] : [specialty, limit]
         )
       : await query(
           `select ${CARD_COLS} from doctors where is_active order by sort_order desc, name_en asc`
         );
 
-    return Response.json({ doctors }, { headers: { "Cache-Control": "public, max-age=300" } });
+    // `max-age=300` let a browser keep serving the old roster for five minutes
+    // after a dashboard save, which reads as "I added a doctor and they aren't
+    // there". A cache purge cannot reach a private cache, so don't create one:
+    // revalidate every time, and let shared caches serve stale only while they
+    // refetch in the background.
+    return Response.json(
+      { doctors },
+      { headers: { "Cache-Control": "public, max-age=0, must-revalidate, s-maxage=60, stale-while-revalidate=300" } }
+    );
   } catch (err) {
     return errorResponse(err);
   }

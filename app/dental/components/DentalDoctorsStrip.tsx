@@ -18,11 +18,12 @@ import DentalDoctorCard from "./DentalDoctorCard";
 
 type Props = {
   match?: (titleOrSpec: string) => boolean;
-  limit?: number;
+  /** Cap the rail. Omit for every match — the default. */
+  limit?: number | null;
   variant?: "section" | "footer";
 };
 
-export default function DentalDoctorsStrip({ match, limit = 8, variant = "section" }: Props) {
+export default function DentalDoctorsStrip({ match, limit = null, variant = "section" }: Props) {
   const { lang } = useLang();
   const isRtl = lang === "ar";
   const carouselRef = useRef<HTMLDivElement>(null);
@@ -38,7 +39,12 @@ export default function DentalDoctorsStrip({ match, limit = 8, variant = "sectio
     const matched = match
       ? all.filter((d) => match(`${d.specialty_raw || ""} ${d.title || ""} ${d.title_ar || ""}`))
       : all;
-    return (matched.length ? matched : all).slice(0, limit);
+    // Show every specialist who matches. The old default stopped at 8, which
+    // would drop 5 of the 13 implant/oral surgeons once the per-service pages
+    // go live (they are all DentalComingSoon placeholders today, so only the
+    // uncapped /dental call currently reaches this).
+    const list = matched.length ? matched : all;
+    return limit === null ? list : list.slice(0, limit);
   }, [all, match, limit]);
 
   if (variant === "footer") {

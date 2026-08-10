@@ -9,7 +9,7 @@ import SiteNav from "./components/SiteNav";
 import { WhatsAppIcon } from "./components/icons";
 import SiteFooter from "./components/SiteFooter";
 import DoctorsCarousel from "./components/DoctorsCarousel";
-import type { Doctor } from "./lib/doctors";
+import type { DoctorCard } from "./lib/doctors";
 
 const specKeys = [
   "allergyImmunology", "audioVestibular", "cardiology", "dental", "dermatologyCosmetics",
@@ -46,7 +46,7 @@ const slideImages = ["/clinic/reception.webp", "/clinic/lobby.webp", "/clinic/nu
 
 const WHATSAPP_LINK = `https://wa.me/966920022811?text=${encodeURIComponent("مرحباً، أود حجز موعد في عيادتي")}`;
 
-export default function HomeClient({ initialDoctors }: { initialDoctors?: Doctor[] }) {
+export default function HomeClient({ initialDoctors }: { initialDoctors?: DoctorCard[] }) {
   const { lang } = useLang();
   const t = translations[lang];
   const isRtl = lang === "ar";
