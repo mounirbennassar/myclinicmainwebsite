@@ -57,9 +57,16 @@ export const metadata: Metadata = {
 
 // Subset of Material Symbols glyphs actually rendered by the site. Keeping the
 // list in the CSS URL makes Google Fonts serve a ~50KB font instead of the full
-// ~1.1MB icon set. If you add a new icon name in code, append it here too.
+// ~1.1MB icon set.
+//
+// An icon used in code but absent here does not fall back to a blank or a
+// generic glyph — the browser renders the ligature's literal text, so the page
+// shows the words "manage_search" where the magnifier should be. That is not
+// obvious from reading either file, so `npm run build` now runs
+// scripts/check-icon-subset.mjs and fails when the two drift apart. Add the
+// name here when you add the icon in code, or the build will tell you.
 const MATERIAL_SYMBOLS_ICONS =
-  "accessibility,add,align_horizontal_center,allergy,apartment,arrow_back,arrow_forward,auto_awesome,biotech,bloodtype,bolt,build,cake,calendar_month,call,cardiology,check,check_circle,checklist,chevron_left,chevron_right,child_care,child_friendly,clinical_notes,close,dentistry,dermatology,diagnosis,diamond,diversity_1,diversity_3,ecg_heart,elderly,emergency,endocrinology,ent,event,event_available,family_restroom,favorite,gastroenterology,groups,gynecology,health_and_safety,hearing,history,home,home_health,laser_pointer,lightbulb,local_pharmacy,location_on,lock,mail,mark_chat_read,medical_services,medication,menu,metabolism,monitor_heart,monitor_weight,nephrology,neurology,payments,person,physical_therapy,pin_drop,precision_manufacturing,pregnant_woman,psychology,public,pulmonology,radiology,receipt_long,restaurant,rheumatology,rocket_launch,sanitizer,schedule,school,science,screw_top,search,search_off,send,sentiment_very_satisfied,shield,shield_with_heart,shower,skeleton,smartphone,spa,sports_soccer,stadia_controller,star,stethoscope,straighten,support_agent,surgical,touch_app,translate,vaccines,verified,verified_user,video_call,videocam,visibility,visibility_off,vital_signs,volunteer_activism,water_drop,work,zoom_in";
+  "3d_rotation,accessibility,add,align_horizontal_center,allergy,apartment,arrow_back,arrow_forward,auto_awesome,biotech,bloodtype,bolt,build,cake,calendar_month,call,cardiology,check,check_circle,checklist,chevron_left,chevron_right,child_care,child_friendly,clinical_notes,close,dentistry,dermatology,diagnosis,diamond,diversity_1,diversity_3,ecg_heart,elderly,emergency,endocrinology,ent,event,event_available,family_restroom,favorite,filter_alt_off,gastroenterology,groups,gynecology,health_and_safety,hearing,history,home,home_health,laser_pointer,lightbulb,local_pharmacy,location_on,lock,mail,manage_search,mark_chat_read,medical_services,medication,menu,metabolism,monitor_heart,monitor_weight,nephrology,neurology,payments,person,physical_therapy,pin_drop,precision_manufacturing,pregnant_woman,psychology,public,pulmonology,radiology,receipt_long,restaurant,rheumatology,rocket_launch,sanitizer,schedule,school,science,screw_top,search,search_off,send,sentiment_very_satisfied,shield,shield_with_heart,shower,skeleton,smartphone,spa,sports_soccer,stadia_controller,star,stethoscope,straighten,support_agent,surgical,touch_app,translate,vaccines,verified,verified_user,video_call,videocam,visibility,visibility_off,vital_signs,volunteer_activism,water_drop,work,zoom_in";
 
 const MATERIAL_SYMBOLS_CSS = `https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&icon_names=${MATERIAL_SYMBOLS_ICONS}&display=block`;
 
