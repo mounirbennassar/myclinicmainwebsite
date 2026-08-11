@@ -22,6 +22,36 @@ function mixDoctors(list: DoctorCard[]): DoctorCard[] {
   return a;
 }
 
+/**
+ * Doctors the clinic wants at the head of the home carousel, in this order.
+ * Everyone else follows in the shuffled mix.
+ *
+ * Pinned by slug, not by name: a slug is fixed at creation and survives the
+ * spelling corrections and title changes that names go through (two of these
+ * are recorded as "Prof.", and Abdulqawi Mansari is spelled without the "Al").
+ * A slug that no longer exists is skipped rather than leaving a hole, so a
+ * removed doctor degrades to "not pinned" instead of breaking the carousel.
+ */
+const PINNED_SLUGS = [
+  "dr-mohammed-samannodi",
+  "dr-prof-mohammed-batais",
+  "dr-abdullah-baatiyyah",
+  "dr-prof-turky-almigbal",
+  "dr-ahmed-alzahrani",
+  "dr-rakan-barghouthi",
+  "dr-abdulqawi-mansari",
+  "dr-ibraheem-algarni",
+  "dr-jehad-hariri",
+  "dr-mervat-qutub",
+];
+
+function pinFeatured(list: DoctorCard[]): DoctorCard[] {
+  const bySlug = new Map(list.map((d) => [d.slug, d]));
+  const pinned = PINNED_SLUGS.map((s) => bySlug.get(s)).filter((d): d is DoctorCard => Boolean(d));
+  const seen = new Set(pinned.map((d) => d.slug));
+  return [...pinned, ...list.filter((d) => !seen.has(d.slug))];
+}
+
 // Doctors are fetched on the server and baked into the page, so the home
 // carousel never depends on a client-side API call — same pattern as /pediatric
 // and /women-care.
@@ -64,7 +94,9 @@ async function doctorsWithinBudget(): Promise<DoctorCard[]> {
 export default async function Home() {
   let doctors: DoctorCard[] = [];
   try {
-    doctors = mixDoctors(await doctorsWithinBudget());
+    // Shuffle first so the unpinned remainder still interleaves specialties,
+    // then lift the featured doctors to the front in their requested order.
+    doctors = pinFeatured(mixDoctors(await doctorsWithinBudget()));
   } catch {
     // The page must stay buildable without a reachable database; the carousel
     // then falls back to its client-side /api/doctors fetch.
