@@ -222,7 +222,13 @@ export default function DoctorsCarousel({ specialty, showTabs = false, limit, in
                     {d.specialties[0] && <span className={`absolute bottom-3 ${isRtl ? "right-3" : "left-3"} bg-secondary-fixed text-on-secondary-fixed px-2.5 py-1 rounded-full text-[10px] font-bold`}>{tSpec(d.specialties[0])}</span>}
                   </div>
                   <div className="p-5">
-                    <h3 className="font-headline font-extrabold text-primary text-lg leading-tight mb-1 line-clamp-1">{isRtl && d.name_ar ? d.name_ar : d.name_en}</h3>
+                    {/* Two lines, not one: at 18px a 260px card fits ~22
+                        characters and the roster runs to 31 ("Assoc. Prof.
+                        Mohammed Alsofiani"), so a clamped single line cut real
+                        names. Slightly smaller type plus a reserved two-line
+                        box shows every name in full while keeping the cards
+                        the same height. */}
+                    <h3 className="font-headline font-extrabold text-primary text-[15px] leading-snug mb-1 line-clamp-2 min-h-[2.75em]">{isRtl && d.name_ar ? d.name_ar : d.name_en}</h3>
                     <p className="text-on-surface-variant text-sm font-medium line-clamp-2 min-h-[2.5em]">{isRtl && d.specialties[0] ? tSpec(d.specialties[0]) : d.specialty_raw}</p>
                     <span className="mt-3 inline-flex items-center gap-1 text-primary text-sm font-bold group-hover:gap-2 transition-all">
                       {isRtl ? "عرض الملف" : "View profile"}

@@ -363,7 +363,9 @@ export default function DoctorDirectory({ doctors }: { doctors: Doctor[] }) {
                       )}
                     </div>
                     <div className="p-4 md:p-5">
-                      <h3 className="font-headline font-extrabold text-primary text-base md:text-lg leading-tight mb-1 line-clamp-1">{isRtl && d.name_ar ? d.name_ar : d.name_en}</h3>
+                      {/* Full name over two lines — see DoctorsCarousel: a
+                          single clamped line cut the longer names. */}
+                      <h3 className="font-headline font-extrabold text-primary text-[15px] md:text-base leading-snug mb-1 line-clamp-2 min-h-[2.75em]">{isRtl && d.name_ar ? d.name_ar : d.name_en}</h3>
                       <p className="text-on-surface-variant text-xs md:text-sm font-medium mb-2 line-clamp-2 min-h-[2.5em]">{subtitle(d)}</p>
                       {d.cities[0] && (
                         <p className="flex items-center gap-1 text-xs text-on-surface-variant/80">
