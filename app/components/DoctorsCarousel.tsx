@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useLang } from "@/app/i18n/context";
 import translations, { type TranslationKey } from "@/app/i18n/translations";
-import { doctorFilters, specNameToKey } from "@/app/lib/specialties";
+import { doctorFilters, featuredFilterOrder, specNameToKey } from "@/app/lib/specialties";
 import { doctorAvatar } from "@/app/lib/doctor-avatar";
 import DoctorWatermark from "@/app/components/DoctorWatermark";
 import type { DoctorCard } from "@/app/lib/doctors";
@@ -69,17 +69,21 @@ export default function DoctorsCarousel({ specialty, showTabs = false, limit, in
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [specialty, limit, showTabs]);
 
-  // Canonical specialties first, then anything else the roster actually
-  // contains. The old version intersected with `doctorFilters` and dropped the
-  // rest, so a specialty typed in the dashboard that isn't on that hard-coded
-  // list left its doctors with no tab to appear under.
+  // Tab order: the clinic's promoted specialties first (featuredFilterOrder),
+  // then the remaining canonical ones, then anything else the roster actually
+  // contains. That last group matters — an earlier version intersected with
+  // `doctorFilters` and dropped the rest, so a specialty typed in the dashboard
+  // that isn't on that hard-coded list left its doctors with no tab at all.
   const tabs = useMemo(() => {
     if (!showTabs) return [];
     const counts = new Map<string, number>();
     for (const d of doctors) for (const s of d.specialties) counts.set(s, (counts.get(s) || 0) + 1);
-    const canonical = doctorFilters.filter((s) => counts.has(s));
-    const extra = [...counts.keys()].filter((s) => !doctorFilters.includes(s)).sort();
-    return [...canonical, ...extra].map((name) => ({ name, count: counts.get(name) || 0 }));
+    const featured = featuredFilterOrder.filter((s) => counts.has(s));
+    const seen = new Set(featured);
+    const rest = doctorFilters.filter((s) => counts.has(s) && !seen.has(s));
+    for (const s of rest) seen.add(s);
+    const extra = [...counts.keys()].filter((s) => !seen.has(s)).sort();
+    return [...featured, ...rest, ...extra].map((name) => ({ name, count: counts.get(name) || 0 }));
   }, [showTabs, doctors]);
 
   // Every doctor in the active tab — no cap. "All" keeps the shuffled

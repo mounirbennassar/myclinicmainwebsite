@@ -46,6 +46,34 @@ export const doctorFilters = [
   "Rheumatology", "Urology",
 ];
 
+/**
+ * The order the clinic wants specialties promoted in the home carousel's filter
+ * tabs — by patient demand, not alphabetically. Anything absent keeps its
+ * canonical position after this list, so a newly added specialty still appears.
+ *
+ * This is a SEPARATE list on purpose. `doctorFilters` is index-aligned with
+ * `specKeys` (see `keyToDoctorFilter` below and app/specialties/page.tsx), so
+ * reordering that array would silently point every specialty card at the wrong
+ * filter. Order presentation here; leave the canonical array alone.
+ */
+export const featuredFilterOrder = [
+  "Family Medicine",
+  "Obstetrics & Gynecology",
+  "Pediatrics",
+  "Dermatology & Cosmetics",
+  "Orthopedics",
+  "ENT",
+  "Endocrinology & Diabetes",
+  "Internal Medicine",
+  "Ophthalmology",
+  "Gastroenterology & Hepatology",
+  "Neurology",
+  "Cardiology",
+  "Urology",
+  "Psychiatry & Psychology",
+  "Pulmonology & Sleep Medicine",
+];
+
 // Map an English spec/filter name → its translation key (`spec.<key>` /
 // `specDesc.<key>`). Covers both the canonical names and the doctor-filter
 // variants that differ in wording.
