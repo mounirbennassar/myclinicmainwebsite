@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { useLang } from "@/app/i18n/context";
 import DoctorWatermark from "@/app/components/DoctorWatermark";
 import translations, { type TranslationKey } from "@/app/i18n/translations";
+import { doctorEducation, doctorLocation, doctorName } from "@/app/lib/doctor-display";
 import { specNameToKey } from "@/app/lib/specialties";
 import { trackWhatsAppClick } from "@/app/lib/tracking";
 import type { Doctor } from "@/app/lib/doctors";
@@ -21,10 +22,27 @@ export default function DoctorProfile({ doctor }: { doctor: Doctor }) {
     return key ? t[`spec.${key}` as TranslationKey] || name : name;
   };
 
-  const name = isRtl && doctor.name_ar ? doctor.name_ar : doctor.name_en;
-  const cityLabel = isRtl
-    ? doctor.cities.map((c) => (c === "Riyadh" ? "الرياض" : "جدة")).join("، ")
-    : doctor.cities.join(", ");
+  const name = doctorName(doctor, isRtl);
+
+  // Education and location go through the shared helpers the dental/pediatric
+  // strips use, so this page localizes a row exactly the way they do: Arabic
+  // qualifications when the doctor has them (one line each — they are stored
+  // newline-separated), Arabic city/branch names, and no branch that merely
+  // repeats its own city. Hand-rolling it here is what left the Arabic profile
+  // showing English qualifications and a "جدة — Jeddah" location.
+  const education = doctorEducation(doctor, isRtl);
+  const location = doctorLocation(doctor, isRtl);
+
+  // Arabic falls back through translated title → canonical specialty in Arabic
+  // → the English line, so English only surfaces when nothing Arabic exists.
+  const title = isRtl
+    ? doctor.title_ar || (doctor.specialties[0] ? tSpec(doctor.specialties[0]) : "") || doctor.specialty_raw
+    : doctor.specialty_raw || doctor.title;
+
+  // Arabic has no letter case, and the wide tracking pulls its joined script
+  // apart — the strips drop both for RTL, so match them.
+  const labelCase = isRtl ? "" : "uppercase tracking-widest";
+
   const wa = `https://wa.me/966920022811?text=${encodeURIComponent(
     isRtl ? `مرحباً، أود حجز موعد مع ${name}` : `Hello, I'd like to book an appointment with ${doctor.name_en}`
   )}`;
@@ -59,32 +77,32 @@ export default function DoctorProfile({ doctor }: { doctor: Doctor }) {
           </div>
 
           <h1 className="text-3xl md:text-5xl font-headline font-extrabold text-primary tracking-tight mb-2">{name}</h1>
-          {doctor.specialty_raw && (
-            <p className="text-on-surface-variant text-lg font-medium mb-6">
-              {isRtl && doctor.specialties[0] ? tSpec(doctor.specialties[0]) : doctor.specialty_raw}
-            </p>
+          {title && (
+            <p className="text-on-surface-variant text-lg font-medium mb-6">{title}</p>
           )}
 
           <div className="space-y-5 mb-8">
-            {doctor.qualification_en && (
+            {education.length > 0 && (
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center shrink-0 mt-0.5">
                   <span className="material-symbols-outlined text-primary text-xl">school</span>
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-1">{t.educationQualifications}</p>
-                  <p className="text-on-surface leading-relaxed">{doctor.qualification_en}</p>
+                  <p className={`text-xs font-bold text-on-surface-variant mb-1 ${labelCase}`}>{t.educationQualifications}</p>
+                  {education.map((line, i) => (
+                    <p key={i} className="text-on-surface leading-relaxed">{line}</p>
+                  ))}
                 </div>
               </div>
             )}
-            {doctor.branches.length > 0 && (
+            {location && (
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center shrink-0 mt-0.5">
                   <span className="material-symbols-outlined text-primary text-xl">location_on</span>
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-1">{t.location}</p>
-                  <p className="text-on-surface">{cityLabel}{doctor.branches.length ? ` — ${doctor.branches.join(isRtl ? "، " : ", ")}` : ""}</p>
+                  <p className={`text-xs font-bold text-on-surface-variant mb-1 ${labelCase}`}>{t.location}</p>
+                  <p className="text-on-surface">{location}</p>
                 </div>
               </div>
             )}

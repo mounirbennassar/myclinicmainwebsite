@@ -17,9 +17,20 @@ from ..security import DOCTOR_ROLES, CurrentUser, require_roles
 router = APIRouter(prefix="/api/doctors", tags=["doctors"])
 
 CARD_COLS = (
-    "id, slug, name_en, name_ar, image_url, qualification_en, specialty_raw,"
-    " specialties, title, branches, cities, is_active, sort_order"
+    "id, slug, name_en, name_ar, image_url, qualification_en, qualification_ar, specialty_raw,"
+    " specialties, title, title_ar, languages, gender, branches, cities, is_active, sort_order"
 )
+
+# Every writable column, kept as data so create and update cannot drift apart.
+# They did: the Arabic and profile columns added in sql/003 were missing here,
+# so an admin's Arabic qualifications were accepted and then silently dropped.
+# Mirrors DOCTOR_TEXT_COLS / DOCTOR_ARRAY_COLS in app/lib/doctors.ts — the two
+# API surfaces write the same table and must accept the same body.
+TEXT_COLS = (
+    "name_ar", "email", "image_url", "qualification_en", "qualification_ar",
+    "specialty_raw", "title", "title_ar", "languages", "gender",
+)
+ARRAY_COLS = ("specialties", "branches", "cities")
 
 _cache: dict[str, tuple[float, Any]] = {}
 _CACHE_TTL = 5 * 60
@@ -101,17 +112,18 @@ async def create_doctor(request: Request, _: CurrentUser = Depends(require_roles
     if not name_en:
         raise HTTPException(status_code=400, detail="English name is required")
 
-    slug = await _unique_slug(name_en)
-    doctor = await db.query_one(
-        "insert into doctors"
-        " (slug, name_en, name_ar, email, image_url, qualification_en, specialty_raw,"
-        "  specialties, title, branches, cities, is_active, sort_order)"
-        " values ($1,$2,$3,$4,$5,$6,$7,$8::text[],$9,$10::text[],$11::text[],$12,$13)"
-        " returning *",
-        slug, name_en, _str(b.get("name_ar")), _str(b.get("email")), _str(b.get("image_url")),
-        _str(b.get("qualification_en")), _str(b.get("specialty_raw")), _arr(b.get("specialties")),
-        _str(b.get("title")), _arr(b.get("branches")), _arr(b.get("cities")),
+    cols = ["slug", "name_en", *TEXT_COLS, *ARRAY_COLS, "is_active", "sort_order"]
+    vals = [
+        await _unique_slug(name_en), name_en,
+        *(_str(b.get(c)) for c in TEXT_COLS),
+        *(_arr(b.get(c)) for c in ARRAY_COLS),
         b.get("is_active") is not False, int(b.get("sort_order") or 0),
+    ]
+    placeholders = ", ".join(
+        f"${i}::text[]" if c in ARRAY_COLS else f"${i}" for i, c in enumerate(cols, 1)
+    )
+    doctor = await db.query_one(
+        f"insert into doctors ({', '.join(cols)}) values ({placeholders}) returning *", *vals
     )
     _cache.clear()
     return {"doctor": doctor}
@@ -132,14 +144,14 @@ async def update_doctor(doctor_id: str, request: Request, _: CurrentUser = Depen
         if not n:
             raise HTTPException(status_code=400, detail="Name cannot be empty")
         set_col("name_en", n)
-    for col in ("name_ar", "email", "image_url", "qualification_en", "specialty_raw", "title"):
+    for col in TEXT_COLS:
         if col in b:
             set_col(col, _str(b.get(col)))
     if "is_active" in b:
         set_col("is_active", bool(b["is_active"]))
     if "sort_order" in b:
         set_col("sort_order", int(b.get("sort_order") or 0))
-    for col in ("specialties", "branches", "cities"):
+    for col in ARRAY_COLS:
         if col in b:
             set_col(col, _arr(b.get(col)), "::text[]")
 

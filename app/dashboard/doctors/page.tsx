@@ -403,8 +403,10 @@ export default function DoctorsPage() {
                   <textarea value={form.qualification_en} onChange={(e) => setForm((f) => ({ ...f, qualification_en: e.target.value }))} rows={3} placeholder={"Doctorate of Endodontics - USA\nBoard Certified"} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-sm resize-y" />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">Qualifications (AR)</label>
-                  <textarea dir="rtl" value={form.qualification_ar} onChange={(e) => setForm((f) => ({ ...f, qualification_ar: e.target.value }))} rows={3} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-sm resize-y" />
+                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">
+                    Qualifications (AR) <span className="text-slate-400 normal-case font-medium">· one per line · shown on the Arabic site</span>
+                  </label>
+                  <textarea dir="rtl" value={form.qualification_ar} onChange={(e) => setForm((f) => ({ ...f, qualification_ar: e.target.value }))} rows={3} placeholder={"دكتوراه في علاج الجذور - الولايات المتحدة\nزمالة أمريكية في طب الأسنان التجميلي"} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-sm resize-y" />
                 </div>
               </div>
 
