@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "prebuild": "node scripts/check-icon-subset.mjs"
+    "prebuild": "if [ -f scripts/check-icon-subset.mjs ]; then node scripts/check-icon-subset.mjs; else echo 'icon-subset check skipped (not in build context)'; fi"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

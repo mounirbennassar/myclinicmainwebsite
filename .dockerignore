@@ -24,6 +24,10 @@ content
 clientsmodifications
 imagespreview
 scripts
+# …except the build-time guard, which `prebuild` runs inside the image.
+# Docker (unlike git) lets a later `!` rule re-include a file from an
+# excluded directory.
+!scripts/check-icon-subset.mjs
 *.pdf
 *.xlsx
 *.docx
