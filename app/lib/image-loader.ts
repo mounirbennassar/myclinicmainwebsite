@@ -55,9 +55,23 @@ const TRANSFORMATION_SEGMENT = /^[a-z]+_[^/,]+(?:,[a-z]+_[^/,]+)*$/;
  * Scoped to doctor portraits ONLY. Applied globally it would wreck every logo
  * and icon that is deliberately transparent.
  */
-function transformation(width: number, quality?: number, flattenWhite = false): string {
-  return `f_auto,${quality ? `q_${quality}` : "q_auto"},c_limit,w_${width}${flattenWhite ? ",b_white" : ""}`;
+function transformation(width: number, quality?: number, portrait = false): string {
+  const q = quality ? `q_${quality}` : "q_auto";
+  if (!portrait) return `f_auto,${q},c_limit,w_${width}`;
+  // Doctor portraits are full-length studio shots, so at card size the face ends
+  // up tiny. c_thumb + g_face crops to the detected face and z_0.4 pulls back to
+  // roughly chest-height — the framing a directory photo wants. ar_4:5 matches
+  // every card on the site, so the browser is not cropping a second time.
+  //
+  // Unlike c_limit, c_thumb DOES upscale past the source, so the width is capped:
+  // the crop region of a 2600px original is ~1500px tall, and asking for more
+  // than that buys a softer image, not a sharper one.
+  return `f_auto,${q},c_thumb,g_face,ar_4:5,z_${FRAMING},w_${Math.min(width, PORTRAIT_MAX_W)},b_white`;
 }
+
+/** Zoom for the face crop. Lower shows more body; 0.4 lands at about chest height. */
+const FRAMING = "0.4";
+const PORTRAIT_MAX_W = 1200;
 
 /** Doctor portraits: Cloudinary `doctors/…` public ids and the /public fallback avatars. */
 function isDoctorPortrait(src: string): boolean {
