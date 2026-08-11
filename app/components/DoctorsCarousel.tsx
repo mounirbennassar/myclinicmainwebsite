@@ -127,7 +127,9 @@ export default function DoctorsCarousel({ specialty, showTabs = false, limit, in
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-5 mb-8">
         <div>
           <p className="text-sm font-bold text-primary uppercase tracking-widest mb-2">{eyebrow}</p>
-          <h2 className="text-3xl md:text-5xl font-headline font-extrabold text-on-surface tracking-tight">{heading}</h2>
+          {/* Brand navy (--color-primary #004d99), matching the doctor names on
+              the cards below. text-on-surface rendered this near-black. */}
+          <h2 className="text-3xl md:text-5xl font-headline font-extrabold text-primary tracking-tight">{heading}</h2>
         </div>
         <div className="flex items-center gap-3">
           <Link href="/find-doctor" className="inline-flex items-center gap-2 bg-primary hover:bg-primary-container text-white px-5 py-3 rounded-full text-sm font-bold shadow-lg shadow-primary/20 active:scale-95 transition-all whitespace-nowrap">
@@ -140,14 +142,31 @@ export default function DoctorsCarousel({ specialty, showTabs = false, limit, in
       {/* Filter tabs (home) */}
       {showTabs && tabs.length > 0 && (
         <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-3 mb-6">
-          <button onClick={() => setActiveTab("")} className={`shrink-0 px-4 py-2 rounded-full text-sm font-bold transition-colors cursor-pointer ${activeTab === "" ? "bg-primary text-white" : "bg-surface-container text-on-surface-variant hover:text-primary"}`}>
-            {isRtl ? "الكل" : "All"} <span className="tabular-nums opacity-70">({doctors.length})</span>
-          </button>
-          {tabs.map(({ name, count }) => (
-            <button key={name} onClick={() => setActiveTab(name)} className={`shrink-0 px-4 py-2 rounded-full text-sm font-bold transition-colors cursor-pointer ${activeTab === name ? "bg-primary text-white" : "bg-surface-container text-on-surface-variant hover:text-primary"}`}>
-              {tSpec(name)} <span className="tabular-nums opacity-70">({count})</span>
-            </button>
-          ))}
+          {[{ name: "", label: isRtl ? "الكل" : "All", count: doctors.length }, ...tabs.map((t) => ({ ...t, label: tSpec(t.name) }))].map(
+            ({ name, label, count }) => {
+              const active = activeTab === name;
+              return (
+                <button
+                  key={name || "all"}
+                  onClick={() => setActiveTab(name)}
+                  aria-pressed={active}
+                  className={`shrink-0 inline-flex items-center gap-2 ps-4 pe-2.5 py-2 rounded-full text-sm font-bold transition-colors cursor-pointer ${active ? "bg-primary text-white" : "bg-surface-container text-on-surface-variant hover:text-primary"}`}
+                >
+                  {label}
+                  {/* A count badge, not "(9)". Parentheses are bidi-NEUTRAL: the
+                      Unicode algorithm mirrors them to face the surrounding
+                      paragraph, so an English label sitting in the Arabic-default
+                      RTL document rendered them reversed. A badge carries no
+                      neutral characters, so it cannot flip in either direction. */}
+                  <span
+                    className={`inline-flex items-center justify-center min-w-[1.375rem] h-[1.375rem] px-1.5 rounded-full text-[11px] font-extrabold tabular-nums ${active ? "bg-white/25 text-white" : "bg-primary/10 text-primary"}`}
+                  >
+                    {count}
+                  </span>
+                </button>
+              );
+            }
+          )}
         </div>
       )}
 
