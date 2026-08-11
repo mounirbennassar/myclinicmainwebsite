@@ -45,15 +45,30 @@ const TRANSFORMATION_SEGMENT = /^[a-z]+_[^/,]+(?:,[a-z]+_[^/,]+)*$/;
  * c_limit only ever scales down, so it cannot upscale a small original or crop
  * a face out of frame — the images keep the exact framing they have today.
  * q_auto lets Cloudinary pick the quality per image; it beats a fixed number.
+ *
+ * `flattenWhite` composites transparency onto white. Many doctor portraits are
+ * cut-outs saved with an alpha channel; f_auto keeps the alpha (it ships PNG or
+ * WebP), so whatever sits behind the <img> shows through — which is why some
+ * profiles read as a black or circular backdrop. Adding b_white makes
+ * Cloudinary flatten onto white and deliver JPEG instead.
+ *
+ * Scoped to doctor portraits ONLY. Applied globally it would wreck every logo
+ * and icon that is deliberately transparent.
  */
-function transformation(width: number, quality?: number): string {
-  return `f_auto,${quality ? `q_${quality}` : "q_auto"},c_limit,w_${width}`;
+function transformation(width: number, quality?: number, flattenWhite = false): string {
+  return `f_auto,${quality ? `q_${quality}` : "q_auto"},c_limit,w_${width}${flattenWhite ? ",b_white" : ""}`;
+}
+
+/** Doctor portraits: Cloudinary `doctors/…` public ids and the /public fallback avatars. */
+function isDoctorPortrait(src: string): boolean {
+  return /(^|\/)doctors\//.test(src) || /\/av-(man|woman)-mycliinic\.png$/.test(src);
 }
 
 function cloudinaryFetch(absoluteUrl: string, width: number, quality?: number): string {
   return `https://res.cloudinary.com/${CLOUD_NAME}/image/fetch/${transformation(
     width,
-    quality
+    quality,
+    isDoctorPortrait(absoluteUrl)
   )}/${encodeURIComponent(absoluteUrl)}`;
 }
 
@@ -80,7 +95,8 @@ export default function imageLoader({
     // Drop the existing "f_auto,q_auto" so we resize instead of chaining a
     // second transformation onto it.
     if (segments.length > 1 && TRANSFORMATION_SEGMENT.test(segments[0])) segments.shift();
-    return `${base}/image/upload/${transformation(width, quality)}/${segments.join("/")}`;
+    const publicId = segments.join("/");
+    return `${base}/image/upload/${transformation(width, quality, isDoctorPortrait(publicId))}/${publicId}`;
   }
 
   // Local /public assets. Cloudinary cannot reach localhost, so dev serves the
