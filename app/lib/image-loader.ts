@@ -69,8 +69,13 @@ function transformation(width: number, quality?: number, portrait = false): stri
   return `f_auto,${q},c_thumb,g_face,ar_4:5,z_${FRAMING},w_${Math.min(width, PORTRAIT_MAX_W)},b_white`;
 }
 
-/** Zoom for the face crop. Lower shows more body; 0.4 lands at about chest height. */
-const FRAMING = "0.4";
+/**
+ * Zoom for the face crop — the one number that controls how much body shows.
+ * Lower shows more: 0.4 reached the chest and left a lot of empty torso, 0.5
+ * trims that from the bottom and sits at head-and-upper-chest. Past ~0.55 the
+ * top of the head starts crowding the frame edge on the taller portraits.
+ */
+const FRAMING = "0.5";
 const PORTRAIT_MAX_W = 1200;
 
 /** Doctor portraits: Cloudinary `doctors/…` public ids and the /public fallback avatars. */
