@@ -184,26 +184,8 @@ export async function GET() {
     }
 
     const where = conds.length ? `where ${conds.join(" and ")}` : "";
-    // Explicit column list, not `select *` — the response carries every lead, so
-    // a column nobody reads is paid for thousands of times over. This is the
-    // UNION of what the two consumers need, and both must be checked before
-    // narrowing it further:
-    //   app/dashboard/page.tsx          the lead table + detail modal
-    //   app/dashboard/reports/page.tsx  campaign attribution, which needs the
-    //                                   utm_* columns the lead table ignores
-    // Omitted as unused by both: utm_term, utm_content, referrer (the last being
-    // the fattest column on the table at up to 500 chars a row).
-    // NB: there is no `branch` or `department` column, despite older client
-    // types having declared them — `select *` just returned nothing for those.
     return Response.json({
-      data: await query(
-        `select id, created_at, city, name, phone, status,
-                status_changed_by, status_changed_at, assigned_to, assigned_to_name,
-                channel, note, created_by, vertical, service,
-                utm_source, utm_medium, utm_campaign, utm_link_id
-           from appointments ${where} order by created_at desc`,
-        params
-      ),
+      data: await query(`select * from appointments ${where} order by created_at desc`, params),
     });
   } catch (err) {
     return errorResponse(err);

@@ -4,12 +4,11 @@ import { useUser, useVertical, VERTICAL_LABELS, VERTICAL_BADGE } from "./layout"
 import { dentalServiceCatalog } from "../dental/content/services";
 import { ADMIN_ROLES, LEAD_ALL_ROLES, hasRole } from "../lib/roles";
 
-// Mirrors the column list the leads API selects. `branch` and `department` used
-// to be declared here but have never existed on the table — `select *` simply
-// returned nothing for them, so they were always undefined at runtime.
 type Appointment = {
   id: string;
   city: string;
+  branch: string;
+  department: string;
   name: string;
   phone: string;
   status: string;
@@ -72,13 +71,6 @@ const STATUS_LABELS: Record<string, string> = {
 const statusLabel = (s: string) =>
   STATUS_LABELS[s] || (s ? s.charAt(0).toUpperCase() + s.slice(1) : "");
 
-// How many leads the table paints at once. 50 keeps the first render cheap;
-// the picker lets a user who is scanning or exporting widen it.
-const DEFAULT_PAGE_SIZE = 50;
-/** Sentinel for the "All" choice — render every matching row, no slicing. */
-const ALL_ROWS = -1;
-const PAGE_SIZE_OPTIONS = [25, 50, 100, 200, ALL_ROWS];
-
 const STATUS_COLORS: Record<string, string> = {
   new: "bg-blue-500/10 text-blue-700 ring-1 ring-blue-500/20",
   out_of_jeddah: "bg-slate-500/10 text-slate-600 ring-1 ring-slate-500/20",
@@ -125,8 +117,6 @@ export default function Dashboard() {
   const [createError, setCreateError] = useState("");
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState<number>(DEFAULT_PAGE_SIZE);
 
   const canExport = hasRole(user?.roles, ...ADMIN_ROLES) || user?.can_export;
   const canAssign = hasRole(user?.roles, ...ADMIN_ROLES);
@@ -153,26 +143,11 @@ export default function Dashboard() {
     const matchSearch =
       !search ||
       a.name?.toLowerCase().includes(search.toLowerCase()) ||
-      a.phone?.includes(search);
+      a.phone?.includes(search) ||
+      a.department?.toLowerCase().includes(search.toLowerCase());
     const matchStatus = !filterStatus || a.status === filterStatus;
     return matchSearch && matchStatus;
   });
-
-  // Only a page of rows is rendered. The lead table is the whole reason this
-  // page felt slow: every row carries a status <select>, an assignee <select>
-  // and action buttons, so painting the full result set meant tens of thousands
-  // of DOM nodes on one blocking render.
-  //
-  // Paging is deliberately client-side over `filtered`, so the stat cards,
-  // free-text search, select-all and export keep working across the ENTIRE
-  // matching set rather than whatever happens to be on screen — the thing that
-  // would silently break if the slice moved into SQL.
-  const pageCount = pageSize === ALL_ROWS ? 1 : Math.max(1, Math.ceil(filtered.length / pageSize));
-  // Clamped rather than stored: narrowing a filter while on page 12 must not
-  // strand the user on a blank table, and deriving it means no extra render.
-  const currentPage = Math.min(page, pageCount);
-  const rangeStart = pageSize === ALL_ROWS ? 0 : (currentPage - 1) * pageSize;
-  const paged = pageSize === ALL_ROWS ? filtered : filtered.slice(rangeStart, rangeStart + pageSize);
 
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) => {
@@ -290,12 +265,6 @@ export default function Dashboard() {
   useEffect(() => {
     if (vertical !== "dental" && vertical !== "all" && filterService) setFilterService("");
   }, [vertical, filterService]);
-
-  // Any change to what is being looked at starts again at the first page —
-  // staying on page 12 of a freshly narrowed search is never what was meant.
-  useEffect(() => {
-    setPage(1);
-  }, [search, filterCity, filterStatus, filterService, filterAgent, vertical, pageSize]);
 
   const updateStatus = async (id: string, newStatus: string) => {
     try {
@@ -597,7 +566,7 @@ export default function Dashboard() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
-                  {paged.map((a) => (
+                  {filtered.map((a) => (
                     <tr key={a.id} className={`hover:bg-slate-50/80 transition-colors group ${selectedIds.has(a.id) ? "bg-[#004d99]/5" : ""}`}>
                       {canExport && (
                         <td className="w-10 px-3 py-3.5">
@@ -661,7 +630,7 @@ export default function Dashboard() {
 
             {/* Mobile Cards */}
             <div className="md:hidden divide-y divide-slate-100/80">
-              {paged.map((a) => (
+              {filtered.map((a) => (
                 <div key={a.id} className="px-4 py-3.5 active:bg-slate-50 transition-colors cursor-pointer" onClick={() => setSelectedAppointment(a)}>
                   <div className="flex justify-between items-start mb-1.5">
                     <div>
@@ -685,71 +654,6 @@ export default function Dashboard() {
                 </div>
               ))}
             </div>
-
-            {/* Pager. Hidden when everything already fits on one page, so the
-                common "20 leads today" view stays uncluttered. */}
-            {(pageCount > 1 || filtered.length > PAGE_SIZE_OPTIONS[0]) && (
-              <div className="px-4 md:px-5 py-3 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
-                <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
-                  <label htmlFor="page-size">Show</label>
-                  <select
-                    id="page-size"
-                    value={pageSize}
-                    onChange={(e) => setPageSize(Number(e.target.value))}
-                    className="border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-semibold text-slate-700 cursor-pointer bg-white"
-                  >
-                    {PAGE_SIZE_OPTIONS.map((size) => (
-                      <option key={size} value={size}>{size === ALL_ROWS ? "All" : size}</option>
-                    ))}
-                  </select>
-                  <span className="hidden sm:inline">
-                    {filtered.length === 0
-                      ? "no leads"
-                      : `${rangeStart + 1}–${rangeStart + paged.length} of ${filtered.length}`}
-                  </span>
-                </div>
-
-                {pageCount > 1 && (
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => setPage(currentPage - 1)}
-                      disabled={currentPage === 1}
-                      className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-transparent disabled:cursor-not-allowed cursor-pointer"
-                    >
-                      Prev
-                    </button>
-                    {/* A window around the current page — 134 pages of numbers
-                        would wrap the toolbar on every screen size. */}
-                    {Array.from({ length: pageCount }, (_, i) => i + 1)
-                      .filter((n) => n === 1 || n === pageCount || Math.abs(n - currentPage) <= 1)
-                      .map((n, i, shown) => (
-                        <React.Fragment key={n}>
-                          {i > 0 && n - shown[i - 1] > 1 && (
-                            <span className="px-1 text-slate-300 text-xs">…</span>
-                          )}
-                          <button
-                            onClick={() => setPage(n)}
-                            className={`min-w-[1.9rem] px-2 py-1.5 rounded-lg text-xs font-semibold cursor-pointer ${
-                              n === currentPage
-                                ? "bg-[#004d99] text-white"
-                                : "text-slate-600 hover:bg-slate-100"
-                            }`}
-                          >
-                            {n}
-                          </button>
-                        </React.Fragment>
-                      ))}
-                    <button
-                      onClick={() => setPage(currentPage + 1)}
-                      disabled={currentPage === pageCount}
-                      className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-transparent disabled:cursor-not-allowed cursor-pointer"
-                    >
-                      Next
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
           </>
         )}
       </div>
