@@ -24,6 +24,20 @@ const ALLOWED_DENTAL_SERVICES = new Set([
 const clip = (v: unknown, n: number): string | null =>
   typeof v === "string" && v.trim() ? v.trim().slice(0, n) : null;
 
+/** Read one cookie off the raw header — no dynamic API, works when proxied. */
+const readCookie = (request: Request, name: string): string | null => {
+  const header = request.headers.get("cookie");
+  if (!header) return null;
+  const match = header.split(";").map((c) => c.trim()).find((c) => c.startsWith(`${name}=`));
+  if (!match) return null;
+  const raw = match.slice(name.length + 1);
+  try {
+    return decodeURIComponent(raw);
+  } catch {
+    return raw;
+  }
+};
+
 /**
  * Book an appointment. PUBLIC — this is what every booking form on the site
  * posts to (home, contact, dental, pediatric, women's care). It must never
@@ -92,6 +106,41 @@ export async function POST(request: Request) {
             vals
           );
           if (match) data.utm_link_id = match.id;
+        }
+      }
+
+      // Server-side backstop: /go/<slug> drops a 90-day `mc_ref` cookie, which
+      // the browser sends with this POST automatically. Even when every stored
+      // UTM is gone — in-app browser hop, new tab, cleared session — the lead
+      // still credits the link that earned it.
+      if (!data.utm_link_id) {
+        const cookieRef = readCookie(request, "mc_ref");
+        if (cookieRef) {
+          const link = await queryOne<{ id: string }>(
+            "select id from utm_links where slug = $1",
+            [cookieRef.slice(0, 40)]
+          );
+          if (link) data.utm_link_id = link.id;
+        }
+      }
+
+      // Keep the reporting columns consistent: when a link resolved but the raw
+      // utm_* fields never arrived, fill them from the link definition so the
+      // lead shows its source and campaign everywhere, not just via utm_link_id.
+      if (data.utm_link_id && !data.utm_source) {
+        const link = await queryOne<{
+          source: string; medium: string; campaign: string;
+          term: string | null; content: string | null;
+        }>(
+          "select source, medium, campaign, term, content from utm_links where id = $1::uuid",
+          [data.utm_link_id]
+        );
+        if (link) {
+          data.utm_source = link.source;
+          data.utm_medium = link.medium;
+          data.utm_campaign = link.campaign;
+          if (link.term) data.utm_term = link.term;
+          if (link.content) data.utm_content = link.content;
         }
       }
 
