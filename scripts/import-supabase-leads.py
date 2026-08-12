@@ -44,6 +44,7 @@ Options:
   --dry-run   Report source row counts and exit without emitting SQL.
 """
 
+import base64
 import json
 import os
 import sys
@@ -106,6 +107,30 @@ def env(name):
     return value
 
 
+def check_service_key():
+    """Refuse the anon key.
+
+    Both Supabase keys are JWTs that look alike, and the wrong one fails
+    *silently*: row-level security returns an empty list rather than an error,
+    so the import would report success and move nothing. Read the role out of
+    the token and stop here instead.
+    """
+    token = env("SUPABASE_SERVICE_KEY")
+    try:
+        payload = token.split(".")[1]
+        payload += "=" * (-len(payload) % 4)  # JWTs drop base64 padding
+        role = json.loads(base64.urlsafe_b64decode(payload)).get("role")
+    except Exception:
+        sys.exit("error: SUPABASE_SERVICE_KEY is not a readable JWT — copy it again")
+
+    if role != "service_role":
+        sys.exit(
+            f"error: that is the '{role}' key, which cannot read these tables.\n"
+            "       Use the value of SUPABASE_SERVICE_ROLE_KEY from the lp repo's\n"
+            "       .env.local — NOT NEXT_PUBLIC_SUPABASE_ANON_KEY."
+        )
+
+
 def request(path):
     # Read credentials at call time, not import time, so the SQL-building
     # helpers below can be exercised without them.
@@ -138,6 +163,18 @@ def fetch_all(table, order):
         if len(page) < PAGE:
             break
     sys.stderr.write("\n")
+
+    # A table that reads as empty means the request was refused, not that the
+    # source is empty — all three of these hold data. Stop before emitting the
+    # closing `commit;` so psql rolls back whatever already streamed, rather
+    # than committing a no-op import that looks like success.
+    if not rows:
+        sys.exit(
+            f"\nerror: {table} came back empty, which should be impossible.\n"
+            "       Almost always the key is wrong or lacks access — row-level\n"
+            "       security returns an empty list instead of an error.\n"
+            "       Nothing was committed."
+        )
     return rows
 
 
@@ -169,6 +206,8 @@ def literal(value):
 
 def main():
     dry_run = "--dry-run" in sys.argv[1:]
+
+    check_service_key()
 
     if dry_run:
         for table in TABLES:

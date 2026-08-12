@@ -45,6 +45,14 @@ ls -lh ~/db-before-lead-import-*.sql.gz
 
 ### Step 2 — check the source is reachable
 
+`SUPABASE_SERVICE_KEY` must be the **service-role** key (`SUPABASE_SERVICE_ROLE_KEY`
+in the lp repo's `.env.local`), not `NEXT_PUBLIC_SUPABASE_ANON_KEY`. The two are
+both JWTs and look alike, and the anon key fails *silently* — row-level security
+returns an empty list rather than an error. The script decodes the token's role
+and refuses anything but `service_role`, and aborts before `commit;` if any table
+reads as empty, so a wrong key cannot produce a no-op import that looks like
+success. Set it inside the SSH session so it stays out of your shell history.
+
 ```bash
 cd /opt/myclinic
 export SUPABASE_URL='https://sxqqbxhrbyrktynrnmtf.supabase.co'
