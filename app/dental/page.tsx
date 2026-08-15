@@ -1,717 +1,420 @@
 "use client";
 import Image from "next/image";
-import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { useRef } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
 import { useLang } from "@/app/i18n/context";
 import { trackPhoneClick, trackWhatsAppClick } from "@/app/lib/tracking";
 import SiteNav from "@/app/components/SiteNav";
-import { WhatsAppIcon } from "@/app/components/icons";
-import DentalHeroSlider from "./components/DentalHeroSlider";
+import DentalHeroV3 from "./components/DentalHeroV3";
 import DentalPromisesScroll from "./components/DentalPromisesScroll";
+import DentalVideos from "./components/DentalVideos";
+import DentalUnitsGrid from "./components/DentalUnitsGrid";
 import dynamic from "next/dynamic";
 
-// Below the fold, so still code-split. It used to be `ssr: false` because it
-// bundled the whole ~97KB static doctors dataset; it now reads the dentists from
-// the DB via context, so that chunk is just component code — and rendering it on
-// the server means the dentist names are in the HTML for search engines and the
-// browser can start fetching their photos from the initial response instead of
-// waiting for hydration.
+gsap.registerPlugin(ScrollTrigger, useGSAP);
+
+// Below the fold, so still code-split. Rendering on the server keeps the
+// dentist names in the HTML for search engines.
 const DentalDoctorsStrip = dynamic(() => import("./components/DentalDoctorsStrip"), {
   loading: () => <div className="min-h-[520px]" />,
 });
 import DentalTestimonials from "./components/DentalTestimonials";
 import DentalHoursAndBooking from "./components/DentalHoursAndBooking";
 import SiteFooter from "@/app/components/SiteFooter";
-import { dentalServiceCatalog } from "./content/services";
 
 const WHATSAPP_LINK = `https://wa.me/966920022811?text=${encodeURIComponent("مرحباً، أود حجز موعد في عيادة الأسنان بعيادتي")}`;
 
-const easeOut = [0.21, 0.47, 0.32, 0.98] as const;
+/*
+ * Dental hub, design-v2. The visual system comes from the My Clinic design
+ * tokens: navy #003868, action blue #004d99, midnight #0b1f3a, tint #F2F6FA,
+ * hairline #E3E6EA. Section reveals, counters and parallax are GSAP-driven —
+ * one ScrollTrigger.batch over `.dv-reveal` covers this page and the child
+ * sections that opt in with the same class.
+ */
 
-// Captions live in EN/AR below and are matched by index, so the order here is
-// load-bearing. `offset` drops a tile on the lg grid for an editorial rhythm.
 const GALLERY = [
-  { src: "/dental/dentalv2/treatment-loupes.webp", offset: false },
-  { src: "/dental/dentalv2/consult-desk.webp", offset: true },
-  { src: "/dental/dentalv2/handpiece.webp", offset: false },
-  { src: "/dental/dentalv2/chairside-prep.webp", offset: true },
+  { src: "/dental/dentalv2/smile-mirror.webp", ar: "ابتسامة تعكس الثقة", en: "A smile that reflects confidence" },
+  { src: "/dental/dentalv2/shade-match.webp", ar: "مطابقة اللون مع ملامح الوجه", en: "Shade-matched to your features" },
+  { src: "/dental/dentalv2/model-explain.webp", ar: "تصميم الابتسامة قبل البدء", en: "Smile design before treatment" },
+  { src: "/dental/dentalv2/treatment-loupes.webp", ar: "دقة تحت التكبير", en: "Precision under magnification" },
 ];
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 28 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: easeOut } },
-};
-
-const stagger = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.09, delayChildren: 0.05 } },
-};
-
-/* Count-up number that animates once when it scrolls into view. */
-function CountUp({
-  to,
-  decimals = 0,
-  prefix = "",
-  suffix = "",
-}: {
-  to: number;
-  decimals?: number;
-  prefix?: string;
-  suffix?: string;
-}) {
-  const ref = useRef<HTMLSpanElement>(null);
-  const [started, setStarted] = useState(false);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((e) => e.isIntersecting)) {
-          setStarted(true);
-          io.disconnect();
-        }
-      },
-      { threshold: 0.4 }
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
-
-  useEffect(() => {
-    if (!started) return;
-    const el = ref.current;
-    if (!el) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      el.textContent = `${prefix}${to.toFixed(decimals)}${suffix}`;
-      return;
-    }
-    const duration = 1400;
-    const t0 = performance.now();
-    let raf = 0;
-    const tick = (t: number) => {
-      const p = Math.min(1, (t - t0) / duration);
-      const eased = 1 - Math.pow(1 - p, 3);
-      el.textContent = `${prefix}${(to * eased).toFixed(decimals)}${suffix}`;
-      if (p < 1) raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [started, to, decimals, prefix, suffix]);
-
-  return (
-    <span ref={ref} dir="ltr" className="tabular-nums">
-      {prefix}0{suffix}
-    </span>
-  );
-}
 
 export default function DentalHub() {
   const { lang } = useLang();
   const isRtl = lang === "ar";
-
-  const storyRef = useRef<HTMLDivElement>(null);
-  const processRef = useRef<HTMLDivElement>(null);
-  const techRef = useRef<HTMLDivElement>(null);
-
-  const { scrollYProgress: storyProgress } = useScroll({
-    target: storyRef,
-    offset: ["start end", "end start"],
-  });
-  const storyImg1Y = useTransform(storyProgress, [0, 1], ["8%", "-10%"]);
-  const storyImg2Y = useTransform(storyProgress, [0, 1], ["-8%", "10%"]);
-
-  const { scrollYProgress: processProgress } = useScroll({
-    target: processRef,
-    offset: ["start end", "end start"],
-  });
-  const processImgY = useTransform(processProgress, [0, 1], ["12%", "-12%"]);
-
-  const { scrollYProgress: processLineProgress } = useScroll({
-    target: processRef,
-    offset: ["start 75%", "end 60%"],
-  });
-
-  const { scrollYProgress: techProgress } = useScroll({
-    target: techRef,
-    offset: ["start end", "end start"],
-  });
-  const techBlobY = useTransform(techProgress, [0, 1], ["0%", "-20%"]);
-  const techImgY = useTransform(techProgress, [0, 1], ["10%", "-10%"]);
+  const rootRef = useRef<HTMLDivElement>(null);
 
   const t = isRtl ? AR : EN;
 
   const scrollToBooking = () =>
     document.getElementById("dental-booking")?.scrollIntoView({ behavior: "smooth" });
 
+  useGSAP(
+    () => {
+      const mm = gsap.matchMedia();
+
+      mm.add("(prefers-reduced-motion: no-preference)", () => {
+        // ── Shared reveal system ─────────────────────────────
+        const els = gsap.utils.toArray<HTMLElement>(".dv-reveal");
+        if (els.length) {
+          gsap.set(els, { autoAlpha: 0, y: 28 });
+          ScrollTrigger.batch(els, {
+            start: "top 88%",
+            onEnter: (batch) =>
+              gsap.to(batch, { autoAlpha: 1, y: 0, duration: 0.8, ease: "power3.out", stagger: 0.09, overwrite: true }),
+          });
+        }
+
+        // ── Counters ─────────────────────────────────────────
+        gsap.utils.toArray<HTMLElement>(".dv-count").forEach((el) => {
+          const to = parseFloat(el.dataset.to || "0");
+          const decimals = parseInt(el.dataset.decimals || "0", 10);
+          const prefix = el.dataset.prefix || "";
+          const suffix = el.dataset.suffix || "";
+          const state = { v: 0 };
+          ScrollTrigger.create({
+            trigger: el,
+            start: "top 85%",
+            once: true,
+            onEnter: () =>
+              gsap.to(state, {
+                v: to,
+                duration: 1.4,
+                ease: "power3.out",
+                onUpdate: () => {
+                  el.textContent = `${prefix}${state.v.toFixed(decimals)}${suffix}`;
+                },
+              }),
+          });
+        });
+
+        // ── Parallax in the art section ──────────────────────
+        gsap.to(".dv-par-1", {
+          yPercent: -8,
+          ease: "none",
+          scrollTrigger: { trigger: ".dv-about", start: "top bottom", end: "bottom top", scrub: true },
+        });
+        gsap.to(".dv-par-2", {
+          yPercent: 8,
+          ease: "none",
+          scrollTrigger: { trigger: ".dv-about", start: "top bottom", end: "bottom top", scrub: true },
+        });
+
+        // ── Floating action buttons entrance ─────────────────
+        gsap.from(".dv-fab", { scale: 0, autoAlpha: 0, duration: 0.5, stagger: 0.15, delay: 1.2, ease: "back.out(1.7)" });
+      });
+
+      // Reduced motion: counters land on their final value, nothing hides.
+      mm.add("(prefers-reduced-motion: reduce)", () => {
+        gsap.utils.toArray<HTMLElement>(".dv-count").forEach((el) => {
+          const to = parseFloat(el.dataset.to || "0");
+          const decimals = parseInt(el.dataset.decimals || "0", 10);
+          el.textContent = `${el.dataset.prefix || ""}${to.toFixed(decimals)}${el.dataset.suffix || ""}`;
+        });
+      });
+    },
+    { scope: rootRef, dependencies: [lang], revertOnUpdate: true }
+  );
+
   return (
-    <div dir={isRtl ? "rtl" : "ltr"} className="min-h-screen bg-white">
+    <div ref={rootRef} dir={isRtl ? "rtl" : "ltr"} className="min-h-screen bg-white">
+      <style>{`
+        @keyframes dv-ring { 0%, 100% { transform: scale(1); opacity: .35; } 50% { transform: scale(1.08); opacity: .6; } }
+        @media (prefers-reduced-motion: reduce) { .dv-ring-anim { animation: none !important; } }
+      `}</style>
+
       <SiteNav />
 
-      {/* ── Hero (full-bleed modern slider) ─────────────── */}
-      <section className="relative">
-        <DentalHeroSlider
-          lang={lang}
-          onBookClick={scrollToBooking}
-          onWhatsAppClick={() => {
-            trackWhatsAppClick();
-            window.open(WHATSAPP_LINK, "_blank");
-          }}
-        />
+      {/* ── Hero (design-v2 light stage) ─────────────────── */}
+      <DentalHeroV3
+        lang={lang}
+        onBookClick={scrollToBooking}
+        onWhatsAppClick={() => {
+          trackWhatsAppClick();
+          window.open(WHATSAPP_LINK, "_blank");
+        }}
+      />
+
+      {/* ── Elevated stats strip bridging out of the hero ── */}
+      <section className="bg-white">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 -mt-14 md:-mt-[76px] relative z-10">
+          <div className="dv-reveal bg-white rounded-[20px] shadow-[0_30px_70px_-30px_rgba(0,31,61,0.35)] ring-1 ring-[#E3E6EA]/70 grid grid-cols-2 lg:grid-cols-4 py-3.5">
+            {t.stats.map((s, i) => (
+              <div
+                key={i}
+                className={`px-6 py-6 md:py-7 text-center ${i > 0 ? "border-s border-[#E3E6EA] max-lg:[&:nth-child(3)]:border-s-0" : ""}`}
+              >
+                <p className="text-[28px] md:text-[30px] font-extrabold text-[#003868] leading-tight" dir="ltr">
+                  <span
+                    className="dv-count"
+                    data-to={s.value}
+                    data-decimals={s.decimals ?? 0}
+                    data-prefix={s.prefix ?? ""}
+                    data-suffix={s.suffix ?? ""}
+                  >
+                    {s.prefix ?? ""}0{s.suffix ?? ""}
+                  </span>
+                </p>
+                <p className="mt-1 text-[13px] text-[#797C82] font-medium">{s.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
 
-      {/* ── Promises (scroll-pinned canvas tooth + cards) ──── */}
+      {/* ── Why My Clinic Dental (pinned 3D tooth) ────────── */}
       <DentalPromisesScroll lang={lang} />
 
-      {/* ── Story / About the dental experience ─────────── */}
-      <section ref={storyRef} className="pt-6 pb-16 md:py-28 bg-white overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 md:px-8 grid lg:grid-cols-12 gap-12 items-center">
-          <div className="lg:col-span-6 order-2 lg:order-1">
-            <div className="relative">
-              {/* Dot texture behind the collage */}
-              <div
-                className="absolute -inset-6 opacity-60 pointer-events-none"
-                style={{
-                  backgroundImage: "radial-gradient(rgba(0,103,125,0.14) 1px, transparent 1.4px)",
-                  backgroundSize: "22px 22px",
-                  maskImage: "radial-gradient(ellipse 70% 70% at 50% 50%, black 30%, transparent 75%)",
-                  WebkitMaskImage: "radial-gradient(ellipse 70% 70% at 50% 50%, black 30%, transparent 75%)",
-                }}
-                aria-hidden
-              />
-              <div className="relative grid grid-cols-2 gap-4 md:gap-5">
-                <motion.div
-                  style={{ y: storyImg1Y }}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true, margin: "-100px" }}
-                  transition={{ duration: 0.8, ease: easeOut }}
-                  className="relative aspect-[4/5] rounded-2xl overflow-hidden shadow-xl shadow-[#003867]/10 will-change-transform"
-                >
-                  <Image src="/dental/dentalv2/shade-match.webp" alt={t.story.imageAlt1} fill sizes="(max-width:1024px) 50vw, 25vw" quality={70} className="object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#003867]/20 to-transparent" />
-                </motion.div>
-                <motion.div
-                  style={{ y: storyImg2Y }}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true, margin: "-100px" }}
-                  transition={{ duration: 0.8, delay: 0.1, ease: easeOut }}
-                  className="relative aspect-[4/5] rounded-2xl overflow-hidden shadow-xl shadow-[#00677d]/15 mt-12 will-change-transform"
-                >
-                  <Image src="/dental/dentalv2/smile-mirror.webp" alt={t.story.imageAlt2} fill sizes="(max-width:1024px) 50vw, 25vw" quality={70} className="object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#003867]/20 to-transparent" />
-                </motion.div>
+      {/* ── Where science meets art ───────────────────────── */}
+      <section className="dv-about py-20 md:py-28 bg-white overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 grid lg:grid-cols-2 gap-12 lg:gap-[70px] items-center">
+          <div className="dv-reveal relative order-2 lg:order-1">
+            {/* Dot texture behind the collage */}
+            <div
+              className="absolute -inset-6 opacity-60 pointer-events-none"
+              style={{
+                backgroundImage: "radial-gradient(rgba(0,77,153,0.14) 1px, transparent 1.4px)",
+                backgroundSize: "22px 22px",
+                maskImage: "radial-gradient(ellipse 70% 70% at 50% 50%, black 30%, transparent 75%)",
+                WebkitMaskImage: "radial-gradient(ellipse 70% 70% at 50% 50%, black 30%, transparent 75%)",
+              }}
+              aria-hidden
+            />
+            <div className="relative grid grid-cols-2 gap-4 md:gap-5">
+              <div className="dv-par-1 relative aspect-[4/5] rounded-[24px] overflow-hidden shadow-xl shadow-[#003868]/10 will-change-transform">
+                <Image src="/dental/dentalv2/consult-desk.webp" alt={t.about.imageAlt1} fill sizes="(max-width:1024px) 50vw, 25vw" quality={70} className="object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#003868]/20 to-transparent" />
               </div>
-
-              {/* Floating location chip bridging the two arches */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.6 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 0.55, delay: 0.45, ease: easeOut }}
-                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white/95 backdrop-blur rounded-full px-4 py-2.5 flex items-center gap-2 shadow-xl ring-1 ring-[#00677d]/15"
-              >
-                <span className="material-symbols-outlined text-[#00677d] text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>
-                  location_on
-                </span>
-                <span className="text-xs font-extrabold text-slate-900 whitespace-nowrap">{t.story.locationChip}</span>
-              </motion.div>
+              <div className="dv-par-2 relative aspect-[4/5] rounded-[24px] overflow-hidden shadow-xl shadow-[#004d99]/15 mt-12 will-change-transform">
+                <Image src="/dental/dentalv2/chairside-prep.webp" alt={t.about.imageAlt2} fill sizes="(max-width:1024px) 50vw, 25vw" quality={70} className="object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#003868]/20 to-transparent" />
+              </div>
+            </div>
+            {/* Floating chip bridging the two photos */}
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white/94 backdrop-blur rounded-full px-5 py-3 flex items-center gap-2.5 shadow-xl ring-1 ring-[#E3E6EA]">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#004d99" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <path d="M12 4l1.5 3.9 3.9 1.5-3.9 1.5L12 14.8l-1.5-3.9L6.6 9.4l3.9-1.5L12 4ZM19 15l.7 1.8 1.8.7-1.8.7L19 20l-.7-1.8-1.8-.7 1.8-.7L19 15Z" />
+              </svg>
+              <span className="text-[12.5px] font-bold text-[#003868] whitespace-nowrap">{t.about.chip}</span>
             </div>
           </div>
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={stagger}
-            className="lg:col-span-6 order-1 lg:order-2"
-          >
-            <motion.span variants={fadeUp} className="text-[11px] font-bold uppercase tracking-widest text-[#00677d]">{t.story.eyebrow}</motion.span>
-            <motion.h2 variants={fadeUp} className="mt-3 text-2xl md:text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
-              {t.story.title}
-            </motion.h2>
-            <motion.div variants={fadeUp} className="mt-4 h-1 w-20 rounded-full bg-gradient-to-r from-[#003867] to-[#00677d]" />
-            <motion.div variants={fadeUp} className="mt-6 space-y-4 text-[15px] text-slate-600 leading-relaxed">
-              {t.story.paragraphs.map((p, i) => (
+
+          <div className="dv-reveal order-1 lg:order-2">
+            <span className="flex items-center gap-3 text-[#004d99] font-bold text-[13px] md:text-sm tracking-[0.05em] mb-4">
+              <span className="w-[30px] h-[2px] bg-[#004d99]" aria-hidden />
+              {t.about.eyebrow}
+            </span>
+            <h2 className="text-3xl md:text-4xl lg:text-[40px] font-extrabold text-[#003868] tracking-tight leading-[1.4]">
+              {t.about.titlePlain} <span className="text-[#004d99]">{t.about.titleAccent}</span>
+            </h2>
+            <div className="mt-6 space-y-4 text-base md:text-[17px] text-[#3D434D] leading-[2]">
+              {t.about.paragraphs.map((p, i) => (
                 <p key={i}>{p}</p>
               ))}
-            </motion.div>
-            <motion.div variants={fadeUp} className="mt-7 grid sm:grid-cols-2 gap-3">
-              {t.story.bullets.map((b, i) => (
-                <div key={i} className="flex items-start gap-3">
-                  <span className="material-symbols-outlined text-[#00677d] mt-0.5 text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
-                  <p className="text-[13px] text-slate-700 font-medium leading-relaxed">{b}</p>
-                </div>
-              ))}
-            </motion.div>
-
-            {/* Animated stats band */}
-            <motion.div
-              variants={fadeUp}
-              className="mt-9 grid grid-cols-2 sm:grid-cols-4 divide-x divide-[#00677d]/10 rtl:divide-x-reverse rounded-2xl border border-[#00677d]/15 bg-gradient-to-br from-white to-[#bfe7ee]/[0.18] shadow-sm overflow-hidden"
-            >
-              {t.story.stats.map((s, i) => (
-                <div key={i} className="px-3 py-4 md:py-5 text-center">
-                  <p className="text-xl md:text-2xl font-extrabold bg-gradient-to-r from-[#003867] to-[#00677d] bg-clip-text text-transparent">
-                    <CountUp to={s.value} decimals={s.decimals ?? 0} prefix={s.prefix ?? ""} suffix={s.suffix ?? ""} />
-                  </p>
-                  <p className="mt-1 text-[10px] md:text-[11px] font-bold text-slate-500 leading-tight">{s.label}</p>
-                </div>
-              ))}
-            </motion.div>
-
-            <motion.div variants={fadeUp} className="mt-8">
-              <button
-                onClick={scrollToBooking}
-                className="group inline-flex items-center gap-2 bg-gradient-to-r from-[#003867] to-[#00677d] hover:from-[#002a4d] hover:to-[#005164] text-white px-7 py-3.5 rounded-full font-bold shadow-lg shadow-[#003867]/30 active:scale-95 transition-all hover:-translate-y-0.5"
-              >
-                {t.story.cta}
-                <span className={`material-symbols-outlined text-[18px] transition-transform ${isRtl ? "group-hover:-translate-x-1 rotate-180" : "group-hover:translate-x-1"}`}>arrow_forward</span>
-              </button>
-            </motion.div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ── What you'll find under one roof ─────────────── */}
-      <section className="py-20 md:py-28 bg-gradient-to-b from-[#00677d]/[0.05] via-white to-white">
-        {/* CSS-driven marquee: zero per-frame JS, pauses on hover */}
-        <style>{`
-          @keyframes dsv-marquee-x { to { transform: translateX(-50%); } }
-          .dsv-track { animation: dsv-marquee-x 70s linear infinite; }
-          .dsv-track-reverse { animation-direction: reverse; }
-          .dsv-shell:hover .dsv-track { animation-play-state: paused; }
-          @media (prefers-reduced-motion: reduce) { .dsv-track { animation: none; } }
-        `}</style>
-        <div className="max-w-7xl mx-auto px-4 md:px-8">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-80px" }}
-            variants={stagger}
-            className="text-center max-w-3xl mx-auto mb-14"
-          >
-            <motion.span variants={fadeUp} className="text-[11px] font-bold uppercase tracking-widest text-[#00677d]">{t.offering.eyebrow}</motion.span>
-            <motion.h2 variants={fadeUp} className="mt-3 text-3xl md:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
-              {t.offering.title}
-            </motion.h2>
-            <motion.div variants={fadeUp} className="mt-5 mx-auto h-1 w-24 rounded-full bg-gradient-to-r from-[#003867] via-[#00677d] to-[#00677d]/40" />
-            <motion.p variants={fadeUp} className="mt-5 text-lg text-slate-600 leading-relaxed">
-              {t.offering.subtitle}
-            </motion.p>
-          </motion.div>
-
-          <div
-            className="dsv-shell relative -mx-4 md:-mx-8 overflow-hidden"
-            style={{
-              maskImage: "linear-gradient(to right, transparent 0, black 5%, black 95%, transparent 100%)",
-              WebkitMaskImage: "linear-gradient(to right, transparent 0, black 5%, black 95%, transparent 100%)",
-            }}
-            dir="ltr"
-          >
-            <div className={`dsv-track flex gap-5 w-max will-change-transform ${isRtl ? "dsv-track-reverse" : ""}`}>
-              {[0, 1].map((dup) => (
-                <div key={dup} className="flex gap-5 shrink-0" aria-hidden={dup === 1}>
-                  {dentalServiceCatalog.map((s, i) => (
-                    <Link
-                      key={i}
-                      href={`/dental/${s.slug}`}
-                      tabIndex={dup === 1 ? -1 : undefined}
-                      className="group/card relative shrink-0 w-[78vw] sm:w-[300px] md:w-[320px] bg-white rounded-2xl p-6 md:p-7 border border-[#003867]/10 hover:border-[#00677d]/40 hover:shadow-xl hover:shadow-[#00677d]/10 hover:-translate-y-1 transition-all duration-300 overflow-hidden"
-                      dir={isRtl ? "rtl" : "ltr"}
-                    >
-                      <span className="absolute inset-x-0 top-0 h-[2.5px] bg-gradient-to-r from-[#003867]/0 via-[#00677d] to-[#003867]/0 scale-x-50 opacity-40 group-hover/card:scale-x-100 group-hover/card:opacity-100 transition-all duration-500" />
-                      {/* Oversized index watermark */}
-                      <span className={`absolute -top-3 ${isRtl ? "left-3" : "right-3"} text-[64px] font-extrabold leading-none text-[#003867]/[0.05] select-none pointer-events-none`} aria-hidden>
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
-                      <div className="flex items-start justify-between">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#003867] to-[#00677d] text-white flex items-center justify-center shadow-md shadow-[#00677d]/25 group-hover/card:scale-110 transition-transform duration-300">
-                          <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>{s.icon}</span>
-                        </div>
-                        <span className={`material-symbols-outlined text-[#00677d] opacity-0 ${isRtl ? "translate-x-2 rotate-180" : "-translate-x-2"} group-hover/card:opacity-100 group-hover/card:translate-x-0 transition-all duration-300`}>
-                          arrow_forward
-                        </span>
-                      </div>
-                      <h3 className="mt-5 text-lg font-extrabold text-slate-900">{isRtl ? s.ar : s.en}</h3>
-                      <p className="mt-2 text-sm text-slate-600 leading-relaxed">{isRtl ? s.blurb.ar : s.blurb.en}</p>
-                    </Link>
-                  ))}
-                </div>
-              ))}
             </div>
+            <ul className="mt-7 space-y-3.5">
+              {t.about.bullets.map((b, i) => (
+                <li key={i} className="flex items-center gap-3 text-[15.5px] text-[#3D434D]">
+                  <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#004d99" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0" aria-hidden>
+                    <path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM8.5 12l2.5 2.5 4.5-5" />
+                  </svg>
+                  {b}
+                </li>
+              ))}
+            </ul>
+            <a
+              href="#dental-doctors"
+              className="mt-9 inline-flex items-center gap-2 px-8 py-4 rounded-full font-bold bg-white text-[#003868] border border-[#E3E6EA] shadow-sm hover:border-[#004d99]/40 hover:text-[#004d99] active:scale-95 transition-all"
+            >
+              {t.about.cta}
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={isRtl ? "" : "rotate-180"} aria-hidden>
+                <path d="m15 6-6 6 6 6" />
+              </svg>
+            </a>
           </div>
         </div>
       </section>
 
-      {/* ── Patient experience / process ─────────────────── */}
-      <section ref={processRef} className="py-20 md:py-28 bg-white overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 md:px-8 grid lg:grid-cols-12 gap-12 items-center">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-80px" }}
-            variants={stagger}
-            className="lg:col-span-6"
-          >
-            <motion.span variants={fadeUp} className="text-[11px] font-bold uppercase tracking-widest text-[#00677d]">{t.process.eyebrow}</motion.span>
-            <motion.h2 variants={fadeUp} className="mt-3 text-3xl md:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
-              {t.process.title}
-            </motion.h2>
-            <motion.div variants={fadeUp} className="mt-4 h-1 w-20 rounded-full bg-gradient-to-r from-[#003867] to-[#00677d]" />
-            <motion.p variants={fadeUp} className="mt-5 text-lg text-slate-600 leading-relaxed max-w-xl">
-              {t.process.subtitle}
-            </motion.p>
+      {/* ── Patient experience videos ─────────────────────── */}
+      <DentalVideos />
 
-            {/* Timeline: a gradient spine that draws itself as you scroll */}
-            <div className="relative mt-10">
-              <div className={`absolute top-2 bottom-2 ${isRtl ? "right-[23px]" : "left-[23px]"} w-[3px] rounded-full bg-[#00677d]/10`} aria-hidden />
-              <motion.div
-                style={{ scaleY: processLineProgress }}
-                className={`absolute top-2 bottom-2 ${isRtl ? "right-[23px]" : "left-[23px]"} w-[3px] rounded-full bg-gradient-to-b from-[#003867] to-[#00677d] origin-top will-change-transform`}
-                aria-hidden
-              />
-              <motion.div variants={stagger} className="space-y-6">
-                {t.process.steps.map((s, i) => (
-                  <motion.div
-                    key={i}
-                    variants={fadeUp}
-                    whileHover={{ x: isRtl ? -4 : 4 }}
-                    transition={{ type: "spring", stiffness: 260, damping: 24 }}
-                    className={`relative flex gap-5 ${isRtl ? "pr-0" : "pl-0"}`}
-                  >
-                    <div className="relative shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-[#003867] to-[#00677d] text-white font-extrabold flex items-center justify-center shadow-md shadow-[#00677d]/30 ring-4 ring-white z-10">
-                      {i + 1}
-                    </div>
-                    <div className="flex-1 bg-gradient-to-br from-white to-[#00677d]/[0.05] rounded-2xl p-6 border border-[#00677d]/15 hover:border-[#00677d]/40 hover:shadow-lg hover:shadow-[#00677d]/10 transition-all">
-                      <h3 className="text-lg font-bold text-slate-900">{s.title}</h3>
-                      <p className="mt-1.5 text-sm text-slate-600 leading-relaxed">{s.body}</p>
-                    </div>
-                  </motion.div>
-                ))}
-              </motion.div>
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.9, ease: easeOut }}
-            className="lg:col-span-6"
-          >
-            <div className="relative">
-              <div className="relative aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl shadow-[#00677d]/20">
-                <motion.div style={{ y: processImgY }} className="absolute inset-0 will-change-transform">
-                  <Image src="/dental/dentalv2/model-explain.webp" alt={t.process.imageAlt} fill sizes="(max-width:1024px) 100vw, 50vw" quality={70} className="object-cover scale-110" />
-                </motion.div>
-                <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-[#003867]/45 via-[#00677d]/15 to-transparent" />
-              </div>
-              {/* Floating same-day chip */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.6 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 0.55, delay: 0.4, ease: easeOut }}
-                className={`absolute bottom-8 ${isRtl ? "right-0 md:-right-5" : "left-0 md:-left-5"} bg-white/95 backdrop-blur rounded-2xl px-4 py-3 flex items-center gap-3 shadow-xl ring-1 ring-[#00677d]/15`}
-              >
-                <span className="w-10 h-10 rounded-full bg-gradient-to-br from-[#003867] to-[#00677d] flex items-center justify-center text-white">
-                  <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>schedule</span>
-                </span>
-                <span className="leading-tight">
-                  <span className="block text-sm font-extrabold text-slate-900">{t.process.chipTitle}</span>
-                  <span className="block text-[11px] text-slate-500 font-medium">{t.process.chipSub}</span>
-                </span>
-              </motion.div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ── Technology ───────────────────────────────────── */}
-      <section ref={techRef} className="py-20 md:py-28 bg-gradient-to-br from-[#003867] via-[#003867] to-[#00677d] text-white relative overflow-hidden">
-        <motion.div style={{ y: techBlobY }} className="absolute inset-0 pointer-events-none will-change-transform">
-          <div className="absolute -top-24 -right-24 w-[28rem] h-[28rem] rounded-full bg-[#00677d]/30 blur-3xl" />
-          <div className="absolute -bottom-24 -left-24 w-[28rem] h-[28rem] rounded-full bg-white/5 blur-3xl" />
-        </motion.div>
-        {/* Aurora sweep + dot texture */}
-        <motion.div
-          animate={{ x: [0, 60, 0], y: [0, -30, 0] }}
-          transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-1/4 left-1/3 w-[34rem] h-[20rem] rounded-full bg-[#bfe7ee]/[0.07] blur-3xl pointer-events-none will-change-transform"
-          aria-hidden
-        />
-        <div
-          className="absolute inset-0 opacity-[0.35] pointer-events-none"
-          style={{
-            backgroundImage: "radial-gradient(rgba(191,231,238,0.35) 1px, transparent 1.4px)",
-            backgroundSize: "30px 30px",
-            maskImage: "radial-gradient(ellipse 70% 60% at 50% 40%, black 20%, transparent 75%)",
-            WebkitMaskImage: "radial-gradient(ellipse 70% 60% at 50% 40%, black 20%, transparent 75%)",
-          }}
-          aria-hidden
-        />
-        <div className="relative max-w-7xl mx-auto px-4 md:px-8">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-80px" }}
-            variants={stagger}
-            className="text-center max-w-3xl mx-auto mb-14"
-          >
-            <motion.span variants={fadeUp} className="text-[11px] font-bold uppercase tracking-widest text-[#bfe7ee]">{t.tech.eyebrow}</motion.span>
-            <motion.h2 variants={fadeUp} className="mt-3 text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight">
-              {t.tech.title}
-            </motion.h2>
-            <motion.div variants={fadeUp} className="mt-5 mx-auto h-1 w-24 rounded-full bg-gradient-to-r from-white/40 via-[#bfe7ee] to-white/10" />
-            <motion.p variants={fadeUp} className="mt-5 text-lg text-white/85 leading-relaxed">
-              {t.tech.subtitle}
-            </motion.p>
-          </motion.div>
-
-          <div className="grid lg:grid-cols-12 gap-10 lg:gap-14 items-center max-w-6xl mx-auto">
-            {/* Proof shot: the intraoral scanner the first item talks about */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 0.9, ease: easeOut }}
-              className="lg:col-span-5"
-            >
-              <div className="relative">
-                <div className="relative aspect-[4/5] rounded-3xl overflow-hidden ring-1 ring-white/20 shadow-2xl shadow-black/40">
-                  <motion.div style={{ y: techImgY }} className="absolute inset-0 will-change-transform">
-                    <Image
-                      src="/dental/dentalv2/scan-3d.webp"
-                      alt={t.tech.imageAlt}
-                      fill
-                      sizes="(max-width:1024px) 100vw, 40vw"
-                      quality={72}
-                      className="object-cover scale-110"
-                    />
-                  </motion.div>
-                  {/* Tie the photo into the navy band instead of letting it sit on top of it */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#003867]/70 via-transparent to-transparent" aria-hidden />
-                </div>
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.6 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true, margin: "-100px" }}
-                  transition={{ duration: 0.55, delay: 0.4, ease: easeOut }}
-                  className={`absolute bottom-6 ${isRtl ? "right-0 md:-right-5" : "left-0 md:-left-5"} bg-white/95 backdrop-blur rounded-2xl px-4 py-3 flex items-center gap-3 shadow-xl ring-1 ring-[#00677d]/15`}
-                >
-                  <span className="w-10 h-10 rounded-full bg-gradient-to-br from-[#003867] to-[#00677d] flex items-center justify-center text-white shrink-0">
-                    <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>3d_rotation</span>
-                  </span>
-                  <span className="leading-tight">
-                    <span className="block text-sm font-extrabold text-slate-900">{t.tech.chipTitle}</span>
-                    <span className="block text-[11px] text-slate-500 font-medium">{t.tech.chipSub}</span>
-                  </span>
-                </motion.div>
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-60px" }}
-              variants={stagger}
-              className="lg:col-span-7 space-y-4"
-            >
-              {t.tech.items.map((item, i) => (
-                <motion.div
-                  key={i}
-                  variants={fadeUp}
-                  whileHover={{ x: isRtl ? -6 : 6 }}
-                  transition={{ type: "spring", stiffness: 280, damping: 22 }}
-                  className="group relative rounded-2xl p-[1.5px] bg-gradient-to-br from-white/30 via-white/10 to-[#bfe7ee]/20 overflow-hidden"
-                >
-                  <div className="relative h-full bg-[#0a3a5f]/70 backdrop-blur rounded-[calc(1rem-1.5px)] p-5 md:p-6 flex items-start gap-4 md:gap-5 overflow-hidden">
-                    {/* Shine sweep on hover */}
-                    <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none" aria-hidden />
-                    <div className="relative shrink-0 w-14 h-14 rounded-2xl bg-gradient-to-br from-white/20 to-[#bfe7ee]/20 ring-1 ring-white/20 flex items-center justify-center text-white group-hover:scale-110 transition-transform duration-300">
-                      <span className="material-symbols-outlined text-[26px]" style={{ fontVariationSettings: "'FILL' 1" }}>{item.icon}</span>
-                    </div>
-                    <div className="relative">
-                      <h3 className="text-lg font-extrabold">{item.title}</h3>
-                      <p className="mt-1.5 text-sm text-white/85 leading-relaxed">{item.body}</p>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Inside the clinic (editorial photo grid) ─────── */}
-      <section className="py-20 md:py-28 bg-gradient-to-b from-white via-[#00677d]/[0.04] to-white overflow-hidden">
+      {/* ── Clinical units ────────────────────────────────── */}
+      <section id="dental-units" className="py-20 md:py-28 bg-[#F2F6FA] scroll-mt-24">
         <div className="max-w-7xl mx-auto px-4 md:px-8">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-80px" }}
-            variants={stagger}
-            className="text-center max-w-3xl mx-auto mb-14"
-          >
-            <motion.span variants={fadeUp} className="text-[11px] font-bold uppercase tracking-widest text-[#00677d]">{t.gallery.eyebrow}</motion.span>
-            <motion.h2 variants={fadeUp} className="mt-3 text-3xl md:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
-              {t.gallery.title}
-            </motion.h2>
-            <motion.div variants={fadeUp} className="mt-5 mx-auto h-1 w-24 rounded-full bg-gradient-to-r from-[#003867] via-[#00677d] to-[#00677d]/40" />
-            <motion.p variants={fadeUp} className="mt-5 text-lg text-slate-600 leading-relaxed">
-              {t.gallery.subtitle}
-            </motion.p>
-          </motion.div>
+          <div className="dv-reveal text-center max-w-[680px] mx-auto mb-12 md:mb-14">
+            <span className="inline-flex items-center justify-center gap-3 text-[#004d99] font-bold text-[13px] md:text-sm tracking-[0.05em]">
+              <span className="w-[26px] h-[2px] bg-[#004d99]" aria-hidden />
+              {t.units.eyebrow}
+              <span className="w-[26px] h-[2px] bg-[#004d99]" aria-hidden />
+            </span>
+            <h2 className="mt-4 text-3xl md:text-4xl lg:text-[40px] font-extrabold text-[#003868] tracking-tight leading-[1.4]">
+              {t.units.titlePlain} <span className="text-[#004d99]">{t.units.titleAccent}</span>
+            </h2>
+            <p className="mt-4 text-base md:text-[16.5px] text-[#3D434D] leading-[1.9]">{t.units.subtitle}</p>
+          </div>
 
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-60px" }}
-            variants={stagger}
-            className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5"
-          >
+          <DentalUnitsGrid onBookConsult={scrollToBooking} />
+        </div>
+      </section>
+
+      {/* ── Doctors (live from the DB) ────────────────────── */}
+      <DentalDoctorsStrip />
+
+      {/* ── Smiles designed to fit you ────────────────────── */}
+      <section className="py-20 md:py-28 bg-white overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 md:px-8">
+          <div className="dv-reveal text-center max-w-[680px] mx-auto mb-12 md:mb-14">
+            <span className="inline-flex items-center justify-center gap-3 text-[#004d99] font-bold text-[13px] md:text-sm tracking-[0.05em]">
+              <span className="w-[26px] h-[2px] bg-[#004d99]" aria-hidden />
+              {t.gallery.eyebrow}
+              <span className="w-[26px] h-[2px] bg-[#004d99]" aria-hidden />
+            </span>
+            <h2 className="mt-4 text-3xl md:text-4xl lg:text-[40px] font-extrabold text-[#003868] tracking-tight leading-[1.4]">
+              {t.gallery.titlePlain} <span className="text-[#004d99]">{t.gallery.titleAccent}</span>
+            </h2>
+            <p className="mt-4 text-base md:text-[16.5px] text-[#3D434D] leading-[1.9]">{t.gallery.subtitle}</p>
+          </div>
+
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
             {GALLERY.map((g, i) => (
-              <motion.figure
+              <figure
                 key={g.src}
-                variants={fadeUp}
-                // Staggered drop echoes the mt-12 offset in the story collage
-                // above, so the row reads as a composition rather than a strip.
-                className={`group relative aspect-[4/5] rounded-2xl overflow-hidden shadow-lg shadow-[#003867]/10 ring-1 ring-[#003867]/10 ${g.offset ? "lg:mt-10" : ""}`}
+                className={`dv-reveal group relative aspect-[4/5] rounded-[20px] overflow-hidden shadow-lg shadow-[#003868]/10 ring-1 ring-[#003868]/10 ${i % 2 === 1 ? "lg:mt-10" : ""}`}
               >
                 <Image
                   src={g.src}
-                  alt={t.gallery.captions[i]}
+                  alt={isRtl ? g.ar : g.en}
                   fill
                   sizes="(max-width:640px) 50vw, (max-width:1024px) 33vw, 25vw"
                   quality={70}
                   className="object-cover transition-transform duration-700 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#003867]/85 via-[#003867]/20 to-transparent" aria-hidden />
-                <span className="absolute inset-x-0 top-0 h-[2.5px] bg-gradient-to-r from-[#003867]/0 via-[#bfe7ee] to-[#003867]/0 scale-x-50 opacity-0 group-hover:scale-x-100 group-hover:opacity-100 transition-all duration-500" aria-hidden />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#003868]/85 via-[#003868]/15 to-transparent" aria-hidden />
                 <figcaption className="absolute inset-x-0 bottom-0 p-4 md:p-5">
                   <span className="block text-[13px] md:text-sm font-bold text-white leading-snug drop-shadow">
-                    {t.gallery.captions[i]}
+                    {isRtl ? g.ar : g.en}
                   </span>
                 </figcaption>
-              </motion.figure>
+              </figure>
             ))}
-          </motion.div>
+          </div>
         </div>
       </section>
 
-      {/* ── CTA banner before doctors ────────────────────── */}
-      <section className="py-16 md:py-20 bg-white">
-        <div className="max-w-5xl mx-auto px-4 md:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.8, ease: easeOut }}
-            className="rounded-[2rem] bg-gradient-to-br from-[#003867] via-[#003867] to-[#00677d] text-white p-10 md:p-14 text-center relative overflow-hidden"
-          >
-            <motion.div
-              animate={{ x: [0, 30, 0], y: [0, -20, 0] }}
-              transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute -top-20 -right-20 w-72 h-72 rounded-full bg-[#00677d]/40 blur-3xl pointer-events-none will-change-transform"
-            />
-            <motion.div
-              animate={{ x: [0, -25, 0], y: [0, 15, 0] }}
-              transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute -bottom-24 -left-24 w-80 h-80 rounded-full bg-white/10 blur-3xl pointer-events-none will-change-transform"
-            />
-            {/* Concentric rings echoing the hero */}
-            <svg className="absolute -bottom-24 left-1/2 -translate-x-1/2 w-[560px] text-white pointer-events-none" viewBox="0 0 560 280" fill="none" aria-hidden>
-              {[270, 210, 150].map((r, i) => (
-                <circle key={r} cx="280" cy="280" r={r} stroke="currentColor" strokeOpacity={0.08 - i * 0.015} strokeWidth="1.2" />
-              ))}
-            </svg>
-            <div className="relative">
-              <h3 className="text-3xl md:text-4xl font-extrabold leading-tight">
-                {t.cta.title}
-              </h3>
-              <div className="mt-4 mx-auto h-1 w-20 rounded-full bg-gradient-to-r from-white/30 via-[#bfe7ee] to-white/10" />
-              <p className="mt-5 text-white/90 text-lg max-w-2xl mx-auto">
-                {t.cta.subtitle}
-              </p>
-              <div className="mt-8 flex flex-wrap justify-center gap-3">
-                <button
-                  onClick={scrollToBooking}
-                  className="group relative overflow-hidden bg-white text-[#003867] hover:bg-[#bfe7ee] px-8 py-4 rounded-full font-extrabold shadow-lg active:scale-95 transition-colors"
-                >
-                  <span className="relative z-10">{t.cta.primary}</span>
-                  <span className="absolute inset-0 bg-gradient-to-r from-transparent via-[#00677d]/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" aria-hidden />
-                </button>
-                <button
-                  onClick={() => { trackWhatsAppClick(); window.open(WHATSAPP_LINK, "_blank"); }}
-                  className="px-8 py-4 rounded-full font-bold bg-[#25D366] text-white border-2 border-[#25D366] hover:bg-[#1da851] hover:border-[#1da851] transition-colors inline-flex items-center gap-2"
-                >
-                  <WhatsAppIcon className="pointer-events-none text-[20px]" />
-                  {t.cta.whatsapp}
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ── Doctors / Testimonials / Hours+Form / Footer ─ */}
-      <DentalDoctorsStrip />
+      {/* ── Google reviews marquee ────────────────────────── */}
       <DentalTestimonials />
+
+      {/* ── Accreditations & insurance ────────────────────── */}
+      <section className="py-20 md:py-28 bg-white">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 grid lg:grid-cols-2 gap-6 md:gap-8">
+          {/* Accreditations */}
+          <div className="dv-reveal relative rounded-[24px] bg-[#F2F6FA] p-8 md:p-12 overflow-hidden">
+            <div className="relative w-[88px] h-[88px] flex items-center justify-center mb-7">
+              <span className="dv-ring-anim absolute inset-0 border-[1.5px] border-[#004d99]/35 rounded-full" style={{ animation: "dv-ring 4s ease-in-out infinite" }} aria-hidden />
+              <span className="absolute inset-3 border border-[#004d99]/25 rounded-full" aria-hidden />
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#004d99" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6l7-3ZM9 11.5l2 2 4-4" />
+              </svg>
+            </div>
+            <span className="flex items-center gap-3 text-[#004d99] font-bold text-[13px] tracking-[0.05em] mb-3">
+              <span className="w-[26px] h-[2px] bg-[#004d99]" aria-hidden />
+              {t.accred.eyebrow}
+            </span>
+            <h3 className="text-2xl md:text-[28px] font-extrabold text-[#003868] leading-[1.5]">{t.accred.title}</h3>
+            <p className="mt-4 text-[15.5px] md:text-base text-[#3D434D] leading-[1.95]">{t.accred.body}</p>
+          </div>
+
+          {/* Insurance */}
+          <div className="dv-reveal relative rounded-[24px] bg-[#003868] p-8 md:p-12 overflow-hidden text-white">
+            <img src="/dental/flower-white.png" alt="" className={`absolute -top-8 ${isRtl ? "-left-8" : "-right-8"} w-36 opacity-[0.08] pointer-events-none select-none`} aria-hidden />
+            <div className="relative w-[88px] h-[88px] flex items-center justify-center mb-7">
+              <span className="dv-ring-anim absolute inset-0 border-[1.5px] border-white/35 rounded-full" style={{ animation: "dv-ring 4s ease-in-out infinite" }} aria-hidden />
+              <span className="absolute inset-3 border border-white/25 rounded-full" aria-hidden />
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <path d="M3 7h18v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7ZM3 7l2.5-3h13L21 7M12 11v6M9 14h6" />
+              </svg>
+            </div>
+            <span className="flex items-center gap-3 text-[#9ec5ff] font-bold text-[13px] tracking-[0.05em] mb-3">
+              <span className="w-[26px] h-[2px] bg-[#9ec5ff]" aria-hidden />
+              {t.insurance.eyebrow}
+            </span>
+            <h3 className="text-2xl md:text-[28px] font-extrabold leading-[1.5]">{t.insurance.title}</h3>
+            <p className="mt-4 text-[15.5px] md:text-base text-white/75 leading-[1.95]">{t.insurance.body}</p>
+            <a
+              href={WHATSAPP_LINK}
+              onClick={trackWhatsAppClick}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-7 inline-flex items-center gap-2.5 px-7 py-3.5 rounded-full font-bold bg-white text-[#003868] hover:bg-[#E9F1F8] active:scale-95 transition-all"
+            >
+              {t.insurance.cta}
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5c-1.6 0-3.1-.4-4.4-1.2L3 20l1.2-5.1A8.5 8.5 0 1 1 21 11.5ZM8.8 10.5c.6 1.9 2 3.3 3.9 3.9l1.2-1.2 2.1 1" />
+              </svg>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* ── CTA band ──────────────────────────────────────── */}
+      <section className="relative bg-[#003868] overflow-hidden">
+        <img src="/dental/flower-white.png" alt="" className="absolute -left-10 -top-10 w-48 opacity-[0.09] pointer-events-none select-none" aria-hidden />
+        <img src="/dental/flower-white.png" alt="" className="absolute -right-12 -bottom-14 w-44 opacity-[0.06] pointer-events-none select-none" aria-hidden />
+        <div className="relative max-w-7xl mx-auto px-4 md:px-8 py-[74px] flex items-center gap-9 flex-wrap">
+          <div className="relative w-[104px] h-[104px] shrink-0 hidden sm:flex items-center justify-center">
+            <span className="dv-ring-anim absolute inset-0 border-[1.5px] border-white/35 rounded-full" style={{ animation: "dv-ring 4s ease-in-out infinite" }} aria-hidden />
+            <span className="absolute inset-[14px] border border-white/25 rounded-full" aria-hidden />
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="M12 5.5c-1.5-1.5-4-2.3-5.8-.9C4.3 6 3.8 8.6 4.6 11c.9 2.7 1.6 5.6 2.1 8.2.2 1 1.5 1.2 2 .3l2.3-4.2c.4-.8 1.6-.8 2 0l2.3 4.2c.5.9 1.8.7 2-.3.5-2.6 1.2-5.5 2.1-8.2.8-2.4.3-5-1.6-6.4C16 3.2 13.5 4 12 5.5Z" />
+            </svg>
+          </div>
+          <div className="dv-reveal flex-1 min-w-[280px]">
+            <h2 className="text-[26px] md:text-[32px] font-extrabold text-white leading-[1.5] mb-2.5">{t.cta.title}</h2>
+            <p className="text-base md:text-[16.5px] text-white/70">{t.cta.subtitle}</p>
+          </div>
+          <button
+            onClick={scrollToBooking}
+            className="px-8 py-4 rounded-full font-bold bg-white text-[#003868] hover:bg-[#E9F1F8] shadow-lg active:scale-95 transition-all cursor-pointer"
+          >
+            {t.cta.button}
+          </button>
+        </div>
+      </section>
+
+      {/* ── Booking + branches + social ───────────────────── */}
       <DentalHoursAndBooking service="general" />
+
       <SiteFooter />
 
-      {/* ── Sticky Floating Buttons ──────────────────────── */}
+      {/* ── Sticky floating buttons ───────────────────────── */}
       <div className={`fixed bottom-6 ${isRtl ? "left-6" : "right-6"} z-50 flex flex-col items-end gap-3`}>
-        <motion.a
+        <a
           href="tel:920022811"
           onClick={trackPhoneClick}
-          initial={{ opacity: 0, scale: 0, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 1.2, ease: easeOut }}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.95 }}
-          className="w-14 h-14 bg-[#003867] rounded-full flex items-center justify-center shadow-lg shadow-[#003867]/30 hover:shadow-xl transition-shadow"
-          aria-label="Call us"
+          className="dv-fab w-14 h-14 bg-[#003868] rounded-full flex items-center justify-center shadow-lg shadow-[#003868]/30 hover:shadow-xl hover:scale-110 active:scale-95 transition-all"
+          aria-label={isRtl ? "اتصل بنا" : "Call us"}
         >
           <span className="material-symbols-outlined text-white text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>call</span>
-        </motion.a>
+        </a>
         <div className={`flex items-center gap-2 ${isRtl ? "flex-row-reverse" : "flex-row"}`}>
-          <motion.span
-            initial={{ opacity: 0, x: isRtl ? -10 : 10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 1.6, ease: easeOut }}
-            className="bg-white text-[#25D366] text-xs font-bold px-3 py-1.5 rounded-full shadow-md border border-[#25D366]/20 whitespace-nowrap"
-          >
+          <span className="dv-fab bg-white text-[#25D366] text-xs font-bold px-3 py-1.5 rounded-full shadow-md border border-[#25D366]/20 whitespace-nowrap">
             {isRtl ? "احجز الآن عبر واتساب" : "Chat now on WhatsApp"}
-          </motion.span>
-          <motion.a
+          </span>
+          <a
             href={WHATSAPP_LINK}
             onClick={trackWhatsAppClick}
             target="_blank"
             rel="noopener noreferrer"
-            initial={{ opacity: 0, scale: 0, y: 20 }}
-            animate={{
-              opacity: 1,
-              scale: 1,
-              y: [0, -6, 0],
-            }}
-            transition={{
-              opacity: { duration: 0.5, delay: 1.4 },
-              scale: { duration: 0.5, delay: 1.4, ease: easeOut },
-              y: { duration: 2, delay: 2, repeat: Infinity, ease: "easeInOut" },
-            }}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-            className="relative w-14 h-14 bg-[#25D366] rounded-full flex items-center justify-center shadow-lg shadow-[#25D366]/40 hover:shadow-xl hover:shadow-[#25D366]/50 transition-shadow"
+            className="dv-fab relative w-14 h-14 bg-[#25D366] rounded-full flex items-center justify-center shadow-lg shadow-[#25D366]/40 hover:shadow-xl hover:scale-110 active:scale-95 transition-all"
             aria-label="Chat on WhatsApp"
           >
             <span className="absolute inset-0 rounded-full bg-[#25D366] animate-ping opacity-30" />
             <svg viewBox="0 0 32 32" className="relative w-7 h-7 fill-white">
               <path d="M16.004 0C7.165 0 .004 7.161.004 16c0 2.822.737 5.561 2.137 7.978L.003 32l8.207-2.108A15.926 15.926 0 0 0 16.004 32C24.843 32 32 24.839 32 16S24.843 0 16.004 0zm0 29.09a13.05 13.05 0 0 1-6.64-1.813l-.476-.283-4.933 1.267 1.313-4.79-.31-.494A13.008 13.008 0 0 1 2.914 16c0-7.221 5.869-13.09 13.09-13.09S29.094 8.779 29.094 16s-5.869 13.09-13.09 13.09zm7.175-9.803c-.393-.197-2.326-1.148-2.687-1.279-.362-.131-.625-.197-.888.197s-1.02 1.279-1.25 1.542-.462.296-.855.099c-.393-.197-1.66-.612-3.163-1.95-1.17-1.043-1.96-2.33-2.19-2.723-.229-.393-.024-.605.172-.8.177-.177.393-.462.59-.693.197-.23.262-.394.393-.656.131-.262.066-.492-.033-.689-.099-.197-.888-2.14-1.217-2.93-.32-.769-.646-.665-.888-.677-.229-.011-.492-.014-.755-.014s-.69.099-1.05.492c-.362.394-1.381 1.35-1.381 3.293s1.414 3.82 1.611 4.083c.197.262 2.783 4.248 6.743 5.957.942.407 1.677.65 2.25.832.946.3 1.806.258 2.486.157.758-.113 2.326-.951 2.655-1.869.328-.918.328-1.705.23-1.869-.099-.164-.362-.262-.755-.46z" />
             </svg>
-          </motion.a>
+          </a>
         </div>
       </div>
     </div>
@@ -719,160 +422,121 @@ export default function DentalHub() {
 }
 
 // ───────────────────────────────────────────────────────
-// Bilingual sales-grade copy lives here so JSX stays clean.
+// Bilingual copy — the Arabic is the client's provided content; the English
+// mirrors it.
 
-type StoryStat = { value: number; label: string; prefix?: string; suffix?: string; decimals?: number };
+type Stat = { value: number; label: string; prefix?: string; suffix?: string; decimals?: number };
 
-const EN = {
-  story: {
-    eyebrow: "About Our Clinic",
-    title: "Dentistry the way it should be.",
+const AR = {
+  stats: [
+    { value: 70, prefix: "+", label: "استشاري وأخصائي أسنان" },
+    { value: 11, label: "وحدة علاجية متخصصة" },
+    { value: 5, label: "فروع في الرياض وجدة" },
+    { value: 4.8, decimals: 1, label: "تقييم Google" },
+  ] as Stat[],
+  about: {
+    eyebrow: "عن عيادتي الأسنان",
+    titlePlain: "كل ابتسامة",
+    titleAccent: "عملٌ فني.",
     paragraphs: [
-      "At My Clinic, we believe a dental visit should feel comfortable from the very first moment. That's why we built a calm environment, brought in modern technology, and trained a team that pays attention to every detail of your experience — before, during, and after treatment.",
+      "نؤمن بأن طب الأسنان لا يتوقف فقط على العلاج، لذلك نتعامل مع كل ابتسامة كعملٍ فني يجمع بين العلم والفن، لنرسم ابتسامة تعكس الثقة والجمال.",
+      "من التشخيص الأولي إلى أدق التخصصات، نوفر تجربة علاجية متكاملة تجمع بين الخبرة، والتقنيات المتقدمة، والشعور بالراحة والطمأنينة.",
     ],
     bullets: [
-      "Clear explanation before any procedure",
-      "Treatment plans built around your needs",
-      "Easy appointment scheduling",
-      "Comfortable treatment options with modern technology",
-      "Digital records and reports available when you need them",
-      "Branches available: Riyadh — Jeddah",
+      "تصوير ثلاثي الأبعاد وتشخيص رقمي دقيق",
+      "خطط علاج واضحة وأسعار شفافة من الزيارة الأولى",
+      "متابعة مستمرة بعد العلاج عبر واتساب",
     ],
-    stats: [
-      { value: 70, prefix: "+", label: "Specialists & consultants" },
-      { value: 2, label: "Cities: Riyadh & Jeddah" },
-      { value: 4.8, decimals: 1, label: "Google rating" },
-      { value: dentalServiceCatalog.length, prefix: "+", label: "Dental services" },
-    ] as StoryStat[],
-    locationChip: "Riyadh & Jeddah",
-    imageAlt1: "A My Clinic dentist matching a shade guide against a patient's smile",
-    imageAlt2: "A My Clinic patient checking their new smile in a hand mirror",
-    cta: "Book your visit",
+    chip: "حيث يلتقي العلم بالفن",
+    cta: "تعرّف على أطبائنا",
+    imageAlt1: "استشارة أسنان في عيادتي",
+    imageAlt2: "تحضير دقيق لجلسة علاج في عيادتي",
   },
-  offering: {
-    eyebrow: "What We Do",
-    title: "Your dental health, in safe hands.",
+  units: {
+    eyebrow: "أقسام عيادتي الأسنان",
+    titlePlain: "ابتسامتكم",
+    titleAccent: "تبدأ هنا.",
     subtitle:
-      "We offer a complete suite of dental and pediatric services, led by a hand-picked team of specialists and consultants.",
-  },
-  process: {
-    eyebrow: "Your First Visit",
-    title: "Your dental visit experience.",
-    subtitle: "We've made it simple, comfortable, and straightforward.",
-    steps: [
-      { title: "Listening to your needs", body: "We take time to understand your case, your questions, and your treatment goals with full attention." },
-      { title: "A clear diagnosis", body: "Using digital imaging and modern tools to explain your case simply and clearly." },
-      { title: "The right treatment plan", body: "We walk you through the options and the expected cost before we begin." },
-    ],
-    chipTitle: "Flexible appointments",
-    chipSub: "Times that suit your schedule",
-    imageAlt: "A My Clinic dentist explaining a treatment on a dental model",
-  },
-  tech: {
-    eyebrow: "Modern & Comfortable",
-    title: "The latest technology for a more comfortable experience.",
-    subtitle: "We rely on advanced techniques that help us diagnose accurately and keep you comfortable throughout treatment.",
-    items: [
-      { icon: "monitor_heart", title: "3D imaging & advanced digital X-rays", body: "Precise, low-dose scans for an accurate diagnosis." },
-      { icon: "precision_manufacturing", title: "Same-day restorations", body: "Select crowns and restorations completed in a single visit." },
-      { icon: "spa", title: "Comfortable sedation & treatment options", body: "Sedation available for those who prefer to sleep through it." },
-    ],
-    imageAlt: "A My Clinic dentist reviewing a patient's 3D dental scan on screen",
-    chipTitle: "Digital 3D scan",
-    chipSub: "No putty impressions",
+      "لم نكتفِ بتوفير جميع تخصصات طب الأسنان، بل عززناها بتخصصات دقيقة وخبرات متقدمة لنقدم حلولاً شاملة تلبي احتياجات جميع أفراد المجتمع.",
   },
   gallery: {
-    eyebrow: "Inside The Clinic",
-    title: "A look inside My Clinic.",
-    subtitle: "Our team, our rooms, and the everyday care behind every appointment.",
-    captions: [
-      "Precision under magnification",
-      "Time to talk it through",
-      "Attention to every detail",
-      "Careful preparation, every session",
-    ],
+    eyebrow: "حالات قبل وبعد",
+    titlePlain: "ابتسامات صُممت",
+    titleAccent: "لتليق بكم.",
+    subtitle:
+      "لا نصمم ابتسامة جميلة فحسب، بل نحرص على أن تكون متناغمة مع ملامح الوجه ولون البشرة، ومتوازنة وظيفياً، لتمنحكم مظهراً طبيعياً وثقة في كل ابتسامة.",
+  },
+  accred: {
+    eyebrow: "قسم الاعتمادات",
+    title: "اعتمادات تعكس التزامنا بالجودة",
+    body: "نفخر بحصولنا على اعتمادات تؤكد التزامنا بأعلى معايير الجودة والسلامة، لتمنحكم تجربة علاجية ترتكز على الثقة والتميز.",
+  },
+  insurance: {
+    eyebrow: "قسم التأمين",
+    title: "تأمينكم... ضمن أولوياتنا",
+    body: "لأن راحتكم تبدأ من سهولة الإجراءات، نتعاون مع العديد من شركات التأمين المعتمدة لتقديم تجربة أكثر سلاسة منذ لحظة وصولكم.",
+    cta: "استفسر عن تغطية تأمينك",
   },
   cta: {
-    title: "Your smile deserves care you can trust.",
-    subtitle: "Book your appointment today.",
-    primary: "Book now",
-    whatsapp: "WhatsApp us",
+    title: "جاهز لابتسامة أكثر صحة وإشراقاً؟",
+    subtitle: "احجز موعدك اليوم وعش تجربة مستقبل طب الأسنان.",
+    button: "احجز موعدك",
   },
 };
 
-const AR = {
-  story: {
-    eyebrow: "عن عيادتنا",
-    title: "طب أسنان كما ينبغي أن يكون.",
+const EN: typeof AR = {
+  stats: [
+    { value: 70, prefix: "+", label: "Dental consultants & specialists" },
+    { value: 11, label: "Specialized clinical units" },
+    { value: 5, label: "Branches in Riyadh & Jeddah" },
+    { value: 4.8, decimals: 1, label: "Google rating" },
+  ] as Stat[],
+  about: {
+    eyebrow: "About My Clinic Dental",
+    titlePlain: "Every smile is",
+    titleAccent: "a work of art.",
     paragraphs: [
-      "نؤمن في عيادتي أن زيارة الأسنان لابد أن تكون تجربة مريحة من بدايتها. لذا حرصنا على توفير بيئة هادئة، وتقنيات حديثة، وفريق يهتم بتفاصيل تجربتك قبل العلاج وأثناءه وبعده.",
+      "We believe dentistry is about more than treatment. We approach every smile as a work of art where science meets craft — drawing a smile that reflects confidence and beauty.",
+      "From the first diagnosis to the most precise subspecialties, we deliver a complete treatment experience combining expertise, advanced technology, and genuine comfort.",
     ],
     bullets: [
-      "شرح واضح قبل أي إجراء",
-      "خطط علاجية تناسب احتياجك",
-      "تنسيق مواعيد بسهولة",
-      "خيارات علاج مريحة وتقنيات حديثة",
-      "ملفات وتقارير رقمية متاحة عند الحاجة",
-      "الفروع المتاحة: الرياض - جدة",
+      "3D imaging and precise digital diagnosis",
+      "Clear treatment plans and transparent pricing from the first visit",
+      "Continuous follow-up after treatment via WhatsApp",
     ],
-    stats: [
-      { value: 70, prefix: "+", label: "طبيب واستشاري أسنان" },
-      { value: 2, label: "مدينتان: الرياض وجدة" },
-      { value: 4.8, decimals: 1, label: "تقييم Google" },
-      { value: dentalServiceCatalog.length, prefix: "+", label: "خدمة علاجية" },
-    ] as StoryStat[],
-    locationChip: "الرياض وجدة",
-    imageAlt1: "طبيب أسنان في عيادتي يطابق درجة لون الأسنان مع ابتسامة المريض",
-    imageAlt2: "مريض في عيادتي ينظر إلى ابتسامته الجديدة في المرآة",
-    cta: "احجز موعدك",
+    chip: "Where science meets art",
+    cta: "Meet our doctors",
+    imageAlt1: "A dental consultation at My Clinic",
+    imageAlt2: "Careful chairside preparation at My Clinic",
   },
-  offering: {
-    eyebrow: "ما نقدمه",
-    title: "صحة أسنانك بأيدٍ أمينة.",
+  units: {
+    eyebrow: "My Clinic Dental units",
+    titlePlain: "Your smile",
+    titleAccent: "starts here.",
     subtitle:
-      "نقدّم في عيادتي مجموعة متكاملة من خدمات طب الأسنان والأطفال، بإشراف نخبة من الأطباء والاستشاريين.",
-  },
-  process: {
-    eyebrow: "زيارتك الأولى",
-    title: "تجربتك في عيادة طب الأسنان.",
-    subtitle: "بسيط وآمن وصريح.",
-    steps: [
-      { title: "الاستماع لاحتياجك", body: "نتعرف على حالتك، استفساراتك، وأهدافك العلاجية بكل اهتمام." },
-      { title: "تشخيص واضح", body: "باستخدام الأشعة والتقنيات الرقمية لشرح الحالة بصورة بسيطة وواضحة." },
-      { title: "خطة علاج مناسبة", body: "نوضح لك الخيارات العلاجية والتكلفة المتوقعة قبل البدء." },
-    ],
-    chipTitle: "مواعيد مرنة",
-    chipSub: "أوقات تناسب جدولك",
-    imageAlt: "طبيب أسنان في عيادتي يشرح خطة العلاج على مجسم أسنان",
-  },
-  tech: {
-    eyebrow: "حديث ومريح",
-    title: "نستعمل أحدث التقنيات لتجربة أكثر راحة.",
-    subtitle: "نعتمد على تقنيات متقدمة تساعد على دقة التشخيص وراحة المريض خلال العلاج.",
-    items: [
-      { icon: "monitor_heart", title: "تصوير 3D وأشعة رقمية متقدمة", body: "صور دقيقة وجرعة منخفضة لتشخيص أوضح." },
-      { icon: "precision_manufacturing", title: "إجراء بعض التركيبات في نفس اليوم", body: "تيجان وتركيبات مختارة تنتهي في زيارة واحدة." },
-      { icon: "spa", title: "خيارات تخدير وعلاج مريحة", body: "خيارات تخدير لمن يفضّل النوم خلال الجلسة." },
-    ],
-    imageAlt: "طبيب أسنان في عيادتي يستعرض صورة ثلاثية الأبعاد لأسنان المريض على الشاشة",
-    chipTitle: "مسح رقمي ثلاثي الأبعاد",
-    chipSub: "بدون طبعات معجون",
+      "We didn't stop at offering every dental specialty — we reinforced them with precise subspecialties and advanced expertise to serve every member of the community.",
   },
   gallery: {
-    eyebrow: "داخل العيادة",
-    title: "جولة داخل عيادتي.",
-    subtitle: "فريقنا، وغرفنا، والرعاية اليومية خلف كل موعد.",
-    captions: [
-      "دقة تحت التكبير",
-      "وقت للنقاش والاستشارة",
-      "اهتمام بكل تفصيل",
-      "تحضير دقيق لكل جلسة",
-    ],
+    eyebrow: "Before & after",
+    titlePlain: "Smiles designed",
+    titleAccent: "to fit you.",
+    subtitle:
+      "We don't just design a beautiful smile — we make sure it harmonizes with your features and skin tone, and stays functionally balanced, for a natural look and confidence in every smile.",
+  },
+  accred: {
+    eyebrow: "Accreditations",
+    title: "Accreditations that reflect our commitment to quality",
+    body: "We're proud to hold accreditations that confirm our commitment to the highest standards of quality and safety — a treatment experience built on trust and excellence.",
+  },
+  insurance: {
+    eyebrow: "Insurance",
+    title: "Your insurance is our priority",
+    body: "Because your comfort starts with easy paperwork, we work with a wide network of approved insurance providers for a smoother experience from the moment you arrive.",
+    cta: "Ask about your coverage",
   },
   cta: {
-    title: "ابتسامتك تستحق رعاية تثق بها.",
-    subtitle: "احجز موعدك الآن.",
-    primary: "احجز الآن",
-    whatsapp: "تواصل واتساب",
+    title: "Ready for a healthier, brighter smile?",
+    subtitle: "Book your appointment today and experience the future of dentistry.",
+    button: "Book your visit",
   },
 };

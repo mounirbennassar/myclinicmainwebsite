@@ -31,25 +31,25 @@ type Copy = {
 
 const COPY: { en: Copy; ar: Copy } = {
   en: {
-    eyebrow: "Why families choose us",
-    title: "Our promises to you.",
+    eyebrow: "An exceptional experience",
+    title: "Why My Clinic Dental?",
     canvasAlt: "3D rotating dental tooth",
     promises: [
-      { icon: "verified_user", title: "+70 specialists & consultants", body: "A hand-picked team of board-certified specialists." },
-      { icon: "sanitizer", title: "Sterilization at the highest standard", body: "Hospital-level sterilization, every visit." },
-      { icon: "schedule", title: "Flexible appointments", body: "Times that suit your schedule and needs." },
-      { icon: "support_agent", title: "Simplified insurance process", body: "We handle the paperwork for you." },
+      { icon: "spa", title: "Comfort that starts before treatment", body: "Calm surroundings and carefully considered details put you at ease from the moment you arrive." },
+      { icon: "clinical_notes", title: "A treatment plan designed for you", body: "Elite consultants build a plan around your needs, with every option clearly explained." },
+      { icon: "precision_manufacturing", title: "Technology that sharpens precision", body: "The latest digital tools for more accurate diagnosis and more efficient treatment." },
+      { icon: "support_agent", title: "A patient-happiness team by your side", body: "From booking to follow-up after treatment, one team accompanies your whole journey." },
     ],
   },
   ar: {
-    eyebrow: "لماذا تختارنا العائلات",
-    title: "وعودنا لك.",
+    eyebrow: "تجربة استثنائية",
+    title: "لماذا عيادتي الأسنان؟",
     canvasAlt: "ضرس ثلاثي الأبعاد يدور",
     promises: [
-      { icon: "verified_user", title: "+70 طبيب واستشاري أسنان", body: "نخبة من الأطباء والاستشاريين." },
-      { icon: "sanitizer", title: "نظافة على أعلى المستويات", body: "تعقيم بمعايير المستشفيات." },
-      { icon: "schedule", title: "مواعيد مرنة", body: "تناسب جدولك ومتطلباتك." },
-      { icon: "support_agent", title: "إجراءات تأمين مبسطة", body: "نتولى الإجراءات بدلاً عنك." },
+      { icon: "spa", title: "راحة تبدأ قبل العلاج", body: "أجواء هادئة وتفاصيل مدروسة بعناية تمنحك شعوراً بالاسترخاء والطمأنينة منذ لحظة وصولك." },
+      { icon: "clinical_notes", title: "خطة علاجية مصممة لك", body: "نخبة من الاستشاريين والأخصائيين يضعون خطة تناسب احتياجك مع شرح واضح لجميع الخيارات." },
+      { icon: "precision_manufacturing", title: "تقنيات تعزز دقة العلاج", body: "أحدث التقنيات الرقمية لتشخيص أكثر دقة وعلاج أكثر كفاءة ونتائج يمكنكم الوثوق بها." },
+      { icon: "support_agent", title: "فريق سعادة المراجعين لأجلك", body: "يرافقكم في كل خطوة، من تنسيق المواعيد إلى متابعة رحلتكم العلاجية حتى بعد انتهائها." },
     ],
   },
 };
@@ -176,6 +176,9 @@ export default function DentalPromisesScroll({ lang }: { lang: "en" | "ar" }) {
       };
 
       let reducedMotion = false;
+      // Once the auto choreography has drawn the lines, a ScrollTrigger
+      // refresh (resize, late images) must not re-hide them.
+      let linesRevealed = false;
 
       const layoutLines = () => {
         const stage = stageRef.current;
@@ -210,12 +213,12 @@ export default function DentalPromisesScroll({ lang }: { lang: "en" | "ar" }) {
             line.setAttribute("x2", String(edge.x));
             line.setAttribute("y2", String(edge.y));
             const len = Math.hypot(edge.x - tcx, edge.y - tcy);
-            gsap.set(line, { strokeDasharray: `${len} ${len}`, strokeDashoffset: reducedMotion ? 0 : len });
+            gsap.set(line, { strokeDasharray: `${len} ${len}`, strokeDashoffset: reducedMotion || linesRevealed ? 0 : len });
           }
           if (dot) {
             dot.setAttribute("cx", String(edge.x));
             dot.setAttribute("cy", String(edge.y));
-            gsap.set(dot, { autoAlpha: reducedMotion ? 1 : 0 });
+            gsap.set(dot, { autoAlpha: reducedMotion || linesRevealed ? 1 : 0 });
           }
         });
       };
@@ -233,7 +236,12 @@ export default function DentalPromisesScroll({ lang }: { lang: "en" | "ar" }) {
         layoutLines();
       });
 
-      /* ── Desktop: pinned, scrubbed choreography ───────────── */
+      /* ── Desktop: short pin + auto choreography ───────────────
+         The old version scrubbed the whole choreography over 1800px of
+         scroll, so the cards only appeared after a lot of wheel work. Now the
+         scroll only drives the tooth rotation across a short ~700px pin
+         (about two flicks in and out), while the cards, lines and dots play
+         on their own the moment the section arrives. */
       mm.add("(min-width: 768px) and (prefers-reduced-motion: no-preference)", () => {
         const corner = [
           { x: -180, y: -90, rotation: -5 },
@@ -241,45 +249,59 @@ export default function DentalPromisesScroll({ lang }: { lang: "en" | "ar" }) {
           { x: -180, y: 90, rotation: 5 },
           { x: 180, y: 90, rotation: -5 },
         ];
-        corner.forEach((s, i) => {
-          gsap.set(`.dps-card-${i + 1}`, {
-            autoAlpha: 0,
-            x: isRtl ? -s.x : s.x,
-            y: s.y,
-            rotation: isRtl ? -s.rotation : s.rotation,
-            scale: 0.9,
+        const setCards = () =>
+          corner.forEach((s, i) => {
+            gsap.set(`.dps-card-${i + 1}`, {
+              autoAlpha: 0,
+              x: isRtl ? -s.x : s.x,
+              y: s.y,
+              rotation: isRtl ? -s.rotation : s.rotation,
+              scale: 0.9,
+            });
           });
+        setCards();
+
+        // Scroll only turns the tooth (and holds the stage briefly).
+        ScrollTrigger.create({
+          trigger: sectionRef.current,
+          start: "top top",
+          end: "+=700",
+          pin: true,
+          scrub: 1,
+          anticipatePin: 1,
+          onUpdate: (self) => setFrame(Math.round(self.progress * (FRAME_COUNT - 1))),
         });
 
-        const tl = gsap.timeline({
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: "top top",
-            end: "+=1800",
-            pin: true,
-            scrub: 1,
-            anticipatePin: 1,
-            onUpdate: (self) => setFrame(Math.round(self.progress * (FRAME_COUNT - 1))),
-          },
-          defaults: { ease: "power2.out" },
-        });
-
-        tl.fromTo(".dps-canvas-wrap", { scale: 0.9 }, { scale: 1.04, ease: "none", duration: 0.5 }, 0)
-          .to(".dps-canvas-wrap", { scale: 1, ease: "none", duration: 0.5 }, 0.5);
-
+        // Time-based choreography: plays once the section is on screen —
+        // no scrolling needed to reveal the cards.
+        const auto = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+        auto.fromTo(".dps-canvas-wrap", { scale: 0.92 }, { scale: 1, duration: 0.9, ease: "power2.out" }, 0);
         [".dps-card-1", ".dps-card-2", ".dps-card-3", ".dps-card-4"].forEach((sel, i) => {
-          tl.to(sel, { autoAlpha: 1, x: 0, y: 0, rotation: 0, scale: 1, duration: 0.2, ease: "power3.out" }, 0.06 + i * 0.14);
+          auto.to(sel, { autoAlpha: 1, x: 0, y: 0, rotation: 0, scale: 1, duration: 0.55 }, 0.15 + i * 0.12);
         });
-
         [".dps-line-1", ".dps-line-2", ".dps-line-3", ".dps-line-4"].forEach((sel, i) => {
-          tl.to(sel, { strokeDashoffset: 0, duration: 0.16, ease: "power2.inOut" }, 0.64 + i * 0.05);
+          auto.to(sel, { strokeDashoffset: 0, duration: 0.45, ease: "power2.inOut" }, 0.55 + i * 0.08);
         });
-
         [".dps-dot-1", ".dps-dot-2", ".dps-dot-3", ".dps-dot-4"].forEach((sel, i) => {
-          tl.to(sel, { autoAlpha: 1, duration: 0.1, ease: "power2.out" }, 0.78 + i * 0.05);
+          auto.to(sel, { autoAlpha: 1, duration: 0.25 }, 0.8 + i * 0.08);
         });
+        auto.to(".dps-headline", { autoAlpha: 0.5, duration: 0.4 }, 0.9);
 
-        tl.to(".dps-headline", { autoAlpha: 0.45, duration: 0.2 }, 0.6);
+        ScrollTrigger.create({
+          trigger: sectionRef.current,
+          start: "top 65%",
+          onEnter: () => {
+            linesRevealed = true;
+            auto.play();
+          },
+          // Scrolling back above the section resets it so re-entering replays.
+          onLeaveBack: () => {
+            linesRevealed = false;
+            auto.pause(0);
+            setCards();
+            layoutLines();
+          },
+        });
 
         const pulse = gsap.to(".dps-dot", {
           scale: 1.6,
@@ -294,29 +316,38 @@ export default function DentalPromisesScroll({ lang }: { lang: "en" | "ar" }) {
         return () => pulse.kill();
       });
 
-      /* ── Mobile: light scrub, no pin ──────────────────────── */
+      /* ── Mobile: auto cards + light frame scrub, no pin ───── */
       mm.add("(max-width: 767px) and (prefers-reduced-motion: no-preference)", () => {
         const offset = 140;
-        [-offset, offset, -offset, offset].forEach((x, i) => {
-          gsap.set(`.dps-card-${i + 1}`, { autoAlpha: 0, x: isRtl ? -x : x, scale: 0.9 });
+        const setCards = () =>
+          [-offset, offset, -offset, offset].forEach((x, i) => {
+            gsap.set(`.dps-card-${i + 1}`, { autoAlpha: 0, x: isRtl ? -x : x, scale: 0.9 });
+          });
+        setCards();
+
+        // Scroll drives only the tooth frames.
+        ScrollTrigger.create({
+          trigger: sectionRef.current,
+          start: "top 70%",
+          end: "bottom 40%",
+          scrub: 1,
+          onUpdate: (self) => setFrame(Math.round(self.progress * (FRAME_COUNT - 1))),
         });
 
-        const tl = gsap.timeline({
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: "top 70%",
-            end: "bottom 25%",
-            scrub: 1,
-            onUpdate: (self) => setFrame(Math.round(self.progress * (FRAME_COUNT - 1))),
-          },
-          defaults: { ease: "power2.out" },
-        });
-
-        tl.fromTo(".dps-canvas-wrap", { scale: 0.94 }, { scale: 1.02, ease: "none", duration: 0.5 }, 0)
-          .to(".dps-canvas-wrap", { scale: 1, ease: "none", duration: 0.5 }, 0.5);
-
+        const auto = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+        auto.fromTo(".dps-canvas-wrap", { scale: 0.94 }, { scale: 1, duration: 0.8, ease: "power2.out" }, 0);
         [".dps-card-1", ".dps-card-2", ".dps-card-3", ".dps-card-4"].forEach((sel, i) => {
-          tl.to(sel, { autoAlpha: 1, x: 0, scale: 1, duration: 0.2, ease: "power3.out" }, 0.1 + i * 0.13);
+          auto.to(sel, { autoAlpha: 1, x: 0, scale: 1, duration: 0.5 }, 0.1 + i * 0.12);
+        });
+
+        ScrollTrigger.create({
+          trigger: sectionRef.current,
+          start: "top 75%",
+          onEnter: () => auto.play(),
+          onLeaveBack: () => {
+            auto.pause(0);
+            setCards();
+          },
         });
       });
 
@@ -342,15 +373,14 @@ export default function DentalPromisesScroll({ lang }: { lang: "en" | "ar" }) {
   return (
     <section ref={sectionRef} className="relative bg-white overflow-hidden" dir={isRtl ? "rtl" : "ltr"}>
       <div className="relative h-[560px] min-h-0 md:h-screen md:min-h-[680px] max-w-7xl mx-auto px-4 md:px-8 flex flex-col">
-        {/* Headline */}
+        {/* Headline — design-v2 eyebrow: bold label between two accent dashes */}
         <div className="dps-headline pt-0 md:pt-14 text-center">
-          <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#003867]/[0.06] text-[#00677d] text-[11px] font-bold uppercase tracking-[0.18em] ring-1 ring-[#00677d]/15">
-            <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>
-              auto_awesome
-            </span>
+          <span className="inline-flex items-center justify-center gap-3 text-[#004d99] font-bold text-[13px] md:text-sm tracking-[0.05em]">
+            <span className="w-[26px] h-[2px] bg-[#004d99]" aria-hidden />
             {c.eyebrow}
+            <span className="w-[26px] h-[2px] bg-[#004d99]" aria-hidden />
           </span>
-          <h2 className="mt-2 md:mt-5 text-2xl sm:text-3xl md:text-5xl font-extrabold text-slate-900 tracking-tight">{c.title}</h2>
+          <h2 className="mt-2 md:mt-4 text-2xl sm:text-3xl md:text-5xl font-extrabold text-[#003868] tracking-tight">{c.title}</h2>
         </div>
 
         {/* Stage: 2x2 grid, tooth canvas centered behind, cards in the corners */}
@@ -367,8 +397,8 @@ export default function DentalPromisesScroll({ lang }: { lang: "en" | "ar" }) {
           >
             <defs>
               <linearGradient id="dps-line-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#003867" stopOpacity="0.55" />
-                <stop offset="100%" stopColor="#00677d" stopOpacity="0.95" />
+                <stop offset="0%" stopColor="#003868" stopOpacity="0.5" />
+                <stop offset="100%" stopColor="#004d99" stopOpacity="0.95" />
               </linearGradient>
             </defs>
             {[0, 1, 2, 3].map((i) => (
@@ -388,7 +418,7 @@ export default function DentalPromisesScroll({ lang }: { lang: "en" | "ar" }) {
                   }}
                   className={`dps-dot dps-dot-${i + 1}`}
                   r="4"
-                  fill="#00677d"
+                  fill="#004d99"
                 />
               </g>
             ))}
@@ -416,18 +446,18 @@ export default function DentalPromisesScroll({ lang }: { lang: "en" | "ar" }) {
               }}
               className={`dps-card-${i + 1} group relative z-30 md:z-10 ${cardPositions[i]} w-[97%] sm:w-[92%] md:w-[38%] max-w-none sm:max-w-none md:max-w-[340px] will-change-transform`}
             >
-              <div className="relative bg-white/95 backdrop-blur rounded-2xl p-2.5 md:p-6 border border-slate-200/80 shadow-[0_18px_42px_-18px_rgba(0,56,103,0.38)] md:shadow-[0_28px_60px_-20px_rgba(0,56,103,0.30)] flex flex-row items-center gap-2.5 md:gap-0 md:flex-col md:items-start overflow-hidden">
-                <span className="absolute inset-x-0 top-0 h-[2.5px] bg-gradient-to-r from-[#003867]/0 via-[#00677d] to-[#003867]/0 opacity-70" aria-hidden />
-                <div className="shrink-0 w-9 h-9 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-gradient-to-br from-[#003867] to-[#00677d] text-white flex items-center justify-center">
+              <div className="relative bg-white/95 backdrop-blur rounded-[20px] p-2.5 md:p-6 border border-[#E3E6EA] shadow-[0_18px_42px_-18px_rgba(0,56,104,0.38)] md:shadow-[0_28px_60px_-20px_rgba(0,56,104,0.30)] flex flex-row items-center gap-2.5 md:gap-0 md:flex-col md:items-start overflow-hidden">
+                <span className="absolute inset-x-0 top-0 h-[2.5px] bg-gradient-to-r from-[#003868]/0 via-[#004d99] to-[#003868]/0 opacity-70" aria-hidden />
+                <div className="shrink-0 w-9 h-9 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-gradient-to-br from-[#003868] to-[#004d99] text-white flex items-center justify-center">
                   <span className="material-symbols-outlined text-[19px] md:text-[26px]" style={{ fontVariationSettings: "'FILL' 1" }}>
                     {p.icon}
                   </span>
                 </div>
                 <div className="min-w-0 flex-1 md:mt-4">
-                  <h3 className="text-[13px] md:text-base font-extrabold text-slate-900 leading-[1.2] md:leading-snug break-words">
+                  <h3 className="text-[13px] md:text-base font-extrabold text-[#003868] leading-[1.2] md:leading-snug break-words">
                     {p.title}
                   </h3>
-                  <p className="hidden md:block md:mt-2 md:text-[13px] md:text-slate-600 md:leading-relaxed">{p.body}</p>
+                  <p className="hidden md:block md:mt-2 md:text-[13px] md:text-[#3D434D] md:leading-relaxed">{p.body}</p>
                 </div>
               </div>
             </div>

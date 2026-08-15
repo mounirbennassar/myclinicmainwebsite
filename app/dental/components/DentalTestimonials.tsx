@@ -1,6 +1,13 @@
 "use client";
 import { useLang } from "@/app/i18n/context";
 
+/*
+ * Google reviews as a design-v2 marquee: header row with an eyebrow + the
+ * aggregate rating card, then an auto-scrolling track of review cards. The
+ * track is CSS-driven (zero per-frame JS), pauses on hover, and is duplicated
+ * once so the -50% keyframe loops seamlessly. Reviews are the clinic's real
+ * Google reviews.
+ */
 const REVIEWS = [
   {
     initials: "MA",
@@ -33,88 +40,118 @@ function GoogleG({ className }: { className?: string }) {
   );
 }
 
+function Stars({ size = 15 }: { size?: number }) {
+  return (
+    <span className="inline-flex gap-0.5" aria-hidden>
+      {[1, 2, 3, 4, 5].map((s) => (
+        <svg key={s} width={size} height={size} viewBox="0 0 24 24" fill="#F8B037">
+          <path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9 2.9-6Z" />
+        </svg>
+      ))}
+    </span>
+  );
+}
+
 export default function DentalTestimonials() {
   const { lang } = useLang();
   const isRtl = lang === "ar";
 
   return (
-    <section className="relative py-16 md:py-24 bg-gradient-to-b from-white via-[#bfe7ee]/[0.12] to-white px-4 md:px-0 overflow-hidden">
-      {/* Faint dot texture */}
-      <div
-        className="absolute inset-0 opacity-50 pointer-events-none"
-        style={{
-          backgroundImage: "radial-gradient(rgba(0,103,125,0.12) 1px, transparent 1.4px)",
-          backgroundSize: "26px 26px",
-          maskImage: "radial-gradient(ellipse 60% 55% at 50% 45%, black 20%, transparent 75%)",
-          WebkitMaskImage: "radial-gradient(ellipse 60% 55% at 50% 45%, black 20%, transparent 75%)",
-        }}
-        aria-hidden
-      />
-      <div className="relative max-w-7xl mx-auto md:px-8">
-        <div className="text-center mb-12 md:mb-16">
-          <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#003867]/[0.06] text-[#00677d] text-[11px] font-bold uppercase tracking-[0.18em] ring-1 ring-[#00677d]/15">
-            <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>favorite</span>
-            {isRtl ? "آراء مرضانا" : "Testimonials"}
-          </span>
-          <h2 className="mt-4 text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
-            {isRtl ? "ماذا يقول مرضانا عنّا" : "What our patients say"}
-          </h2>
-          <div className="mt-4 mx-auto h-1 w-20 rounded-full bg-gradient-to-r from-[#003867] to-[#00677d]" />
-          <p className="mt-4 text-slate-500 max-w-xl mx-auto font-medium">
-            {isRtl
-              ? "تجارب حقيقية تعكس جودة الرعاية والاهتمام الذي نقدمه لمرضانا."
-              : "Real experiences that reflect the quality of care and attention we provide to our patients."}
-          </p>
-        </div>
+    <section className="relative py-20 md:py-28 bg-[#F2F6FA] overflow-hidden">
+      <style>{`
+        @keyframes dtm-marquee-ltr { to { transform: translateX(-50%); } }
+        @keyframes dtm-marquee-rtl { to { transform: translateX(50%); } }
+        .dtm-track { animation: dtm-marquee-ltr 80s linear infinite; }
+        .dtm-shell[dir="rtl"] .dtm-track { animation-name: dtm-marquee-rtl; }
+        .dtm-shell:hover .dtm-track { animation-play-state: paused; }
+        @media (prefers-reduced-motion: reduce) { .dtm-track { animation: none; } }
+      `}</style>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mb-12">
-          {REVIEWS.map((r, i) => (
-            <div
-              key={i}
-              className={`group relative bg-white rounded-2xl p-7 md:p-8 border border-[#003867]/10 shadow-lg shadow-[#003867]/5 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-[#003867]/10 hover:border-[#00677d]/30 transition-all duration-300 overflow-hidden ${
-                i === 1 ? "md:-translate-y-3 md:hover:-translate-y-4" : ""
-              }`}
-            >
-              <span className="absolute inset-x-0 top-0 h-[2.5px] bg-gradient-to-r from-[#003867]/0 via-[#00677d] to-[#003867]/0 opacity-50 group-hover:opacity-100 transition-opacity" aria-hidden />
-              {/* Oversized quote watermark */}
-              <span
-                className={`absolute -top-4 ${isRtl ? "left-4" : "right-4"} text-[110px] leading-none font-serif text-[#003867]/[0.06] select-none pointer-events-none`}
-                aria-hidden
-              >
-                &ldquo;
+      <div className="max-w-7xl mx-auto px-4 md:px-8">
+        <div className="flex items-end justify-between gap-6 flex-wrap mb-4 md:mb-6">
+          <div className="dv-reveal max-w-[560px]">
+            <span className="flex items-center gap-3 text-[#004d99] font-bold text-[13px] md:text-sm tracking-[0.05em] mb-4">
+              <span className="w-[30px] h-[2px] bg-[#004d99]" aria-hidden />
+              {isRtl ? "تقييمات قوقل" : "Google reviews"}
+            </span>
+            <h2 className="text-3xl md:text-4xl lg:text-[40px] font-extrabold text-[#003868] tracking-tight leading-[1.4]">
+              {isRtl ? (
+                <>ثقتكم... <span className="text-[#004d99]">أعظم إنجازاتنا</span></>
+              ) : (
+                <>Your trust is <span className="text-[#004d99]">our greatest achievement</span></>
+              )}
+            </h2>
+            <p className="mt-4 text-base md:text-[16.5px] text-[#3D434D] leading-[1.9]">
+              {isRtl
+                ? "نفخر بكل ابتسامة غادرت عيادتي بثقة أكبر، وبكل كلمة شاركها مراجعونا عن تجربتهم معنا."
+                : "We're proud of every smile that left My Clinic more confident, and of every word our patients share about their experience."}
+            </p>
+          </div>
+
+          <div className="dv-reveal flex items-center gap-4 bg-white rounded-[18px] shadow-[0_10px_30px_-12px_rgba(0,56,104,0.25)] px-6 py-4">
+            <span className="text-[42px] font-extrabold text-[#003868] leading-none" dir="ltr">4.8</span>
+            <span>
+              <Stars />
+              <span className="block text-[12.5px] text-[#797C82] mt-1">
+                {isRtl ? "من واقع تقييمات المرضى على Google" : "Based on patient reviews on Google"}
               </span>
-              <div className="relative inline-flex items-center gap-1.5 bg-amber-50 rounded-full px-3 py-1.5 mb-4">
-                {[1, 2, 3, 4, 5].map((s) => (
-                  <span key={s} className="material-symbols-outlined text-amber-400 text-[15px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                ))}
-              </div>
-              <p className="relative text-slate-600 italic mb-6 font-medium leading-relaxed">
-                {isRtl ? r.ar : r.en}
-              </p>
-              <div className="relative flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#003867] to-[#00677d] flex items-center justify-center text-white font-bold text-sm">
-                  {r.initials}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Marquee — follows the page direction so the first review is the first
+          thing readers see. Each half repeats the reviews 3× so the track is
+          wider than any viewport (no blank region), and the inter-half gap
+          lives INSIDE each half (margin-inline-end) so the 50% loop point is
+          pixel-exact — no jump, no seam. */}
+      <div
+        className="dtm-shell overflow-hidden pt-6 pb-2"
+        style={{
+          maskImage: "linear-gradient(to right, transparent 0, black 32px, black calc(100% - 32px), transparent 100%)",
+          WebkitMaskImage: "linear-gradient(to right, transparent 0, black 32px, black calc(100% - 32px), transparent 100%)",
+        }}
+        dir={isRtl ? "rtl" : "ltr"}
+      >
+        <div className="dtm-track flex w-max will-change-transform">
+          {[0, 1].map((dup) => (
+            <div key={dup} className="flex gap-5 shrink-0 me-5" aria-hidden={dup === 1}>
+              {[...REVIEWS, ...REVIEWS, ...REVIEWS].map((r, i) => (
+                <div
+                  key={i}
+                  dir={isRtl ? "rtl" : "ltr"}
+                  className="w-[320px] md:w-[360px] shrink-0 bg-white rounded-[20px] p-6 md:p-7 shadow-[0_10px_30px_-14px_rgba(0,56,104,0.28)]"
+                >
+                  <div className="flex justify-between items-center mb-4">
+                    <Stars />
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="#F2F6FA" stroke="#004d99" strokeWidth="1.4" aria-hidden>
+                      <path d="M10 8c-3 .5-5 2.5-5 5.5V19h6v-6H8c0-2 1-3 3-3.5V8h-1ZM19 8c-3 .5-5 2.5-5 5.5V19h6v-6h-3c0-2 1-3 3-3.5V8h-1Z" />
+                    </svg>
+                  </div>
+                  <p className="text-[15px] leading-[1.95] text-[#3D434D] mb-4 min-h-[86px]">{isRtl ? r.ar : r.en}</p>
+                  <div className="flex items-center gap-3 border-t border-[#E3E6EA] pt-4">
+                    <span className="w-[42px] h-[42px] rounded-full bg-[#F2F6FA] text-[#003868] font-bold inline-flex items-center justify-center">
+                      {r.initials}
+                    </span>
+                    <span className="flex-1 min-w-0">
+                      <span className="block text-[14.5px] font-bold text-[#003868]">{r.name}</span>
+                      <span className="block text-[12.5px] text-[#797C82]">{isRtl ? "مراجعة Google" : "Google review"}</span>
+                    </span>
+                    <GoogleG className="w-5 h-5 shrink-0 opacity-80" />
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-bold text-slate-900">{r.name}</p>
-                  <p className="text-xs text-slate-400">{isRtl ? "مراجعة Google" : "Google Review"}</p>
-                </div>
-                <GoogleG className="w-5 h-5 shrink-0 opacity-80" />
-              </div>
+              ))}
             </div>
           ))}
         </div>
+      </div>
 
-        <div className="text-center">
-          <button
-            type="button"
-            onClick={() => document.getElementById("dental-booking")?.scrollIntoView({ behavior: "smooth" })}
-            className="group inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-[#003867] to-[#00677d] hover:from-[#002a4d] hover:to-[#005164] rounded-full font-bold text-white transition-all shadow-lg shadow-[#003867]/20 hover:-translate-y-0.5 active:scale-95"
-          >
-            <span className="material-symbols-outlined text-xl">calendar_month</span>
-            {isRtl ? "احجز موعدك الآن" : "Book your appointment"}
-          </button>
-        </div>
+      <div className="dv-reveal max-w-7xl mx-auto px-4 md:px-8 mt-8 text-center">
+        <p className="text-[15px] text-[#797C82] leading-relaxed max-w-2xl mx-auto">
+          {isRtl
+            ? "نفخر بثقة مراجعينا، ونسعد بأن تكون تجاربهم انعكاساً لما نؤمن به من جودة واهتمام ورعاية استثنائية."
+            : "We take pride in our patients' trust, and we're glad their experiences reflect what we believe in: quality, attention, and exceptional care."}
+        </p>
       </div>
     </section>
   );
