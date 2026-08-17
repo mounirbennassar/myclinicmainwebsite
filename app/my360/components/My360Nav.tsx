@@ -73,20 +73,35 @@ export default function My360Nav({ onJump }: { onJump: (id: string) => void }) {
   };
 
   /**
-   * On phones the language switch lands via a FRESH page load, not an in-place
-   * flip. Flipping live means the old tree, the new tree, a full RTL relayout
-   * and the Arabic font load all peak together — in-app webviews (Snapchat /
-   * Instagram, tight memory caps) were dying on exactly that moment. setLang
-   * persists to localStorage first and the root layout's pre-paint script reads
-   * it, so the reload comes back already in the right language — and it also
-   * flushes any stale page the webview cached. Desktop keeps the instant flip.
+   * On phones the language switch lands via a FRESH navigation, not an in-place
+   * flip — and the dying page must do NO work first.
+   *
+   * Do not "setLang() then reload": setLang flips dir= on <html> synchronously,
+   * which forces a full-page RTL relayout, and its setState starts re-rendering
+   * the whole tree — the exact spike that kills constrained in-app webviews —
+   * and all of it wasted, because the page is about to be torn down anyway.
+   * The mobile path is therefore just: persist the choice, navigate. The root
+   * layout's pre-paint script reads localStorage and applies lang/dir before
+   * first paint, so the fresh load arrives already in the right language.
+   *
+   * location.replace(path), not location.reload(): identical result, but no
+   * reload semantics (some in-app browsers mishandle programmatic reload) and
+   * no extra history entry for the user to back through.
    */
   const switchLang = (l: "en" | "ar") => {
     if (l === lang) return;
-    setLang(l);
     if (window.matchMedia("(max-width: 767px)").matches) {
-      window.location.reload();
+      try {
+        window.localStorage.setItem("lang", l);
+      } catch {
+        /* private mode — fall through; the navigation still lands on the default */
+      }
+      window.location.replace(
+        window.location.pathname + window.location.search + window.location.hash
+      );
+      return;
     }
+    setLang(l);
   };
 
   const bookLabel = isRtl ? "احجز الآن" : "Book now";

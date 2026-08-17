@@ -326,10 +326,23 @@ export default function My360Client() {
                   inherits the page alignment; the bdi only fixes digit order. */}
               <div className="text-[26px] font-extrabold leading-none text-white md:text-[34px]">
                 {/* Real value in the markup — mobile runs no GSAP, and desktop's
-                    counter resets this to 0 pre-paint before counting up. */}
-                <bdi dir="ltr" className="m3-count" data-to={s.value} data-suffix={s.suffix}>
-                  {s.value.toLocaleString("en-US")}
-                  {s.suffix}
+                    counter resets this to 0 pre-paint before counting up.
+
+                    TWO things here are load-bearing, both because the GSAP
+                    counter writes el.textContent, which destroys the text nodes
+                    React rendered. React tolerates that until a re-render must
+                    DELETE one of them — the suffix changes shape between
+                    languages (" yrs" → "") — then removeChild throws
+                    NotFoundError and React unmounts the whole page to Next's
+                    error shell. That was the "This page couldn't load" crash on
+                    the language switch.
+                    1. key={lang}: the flip replaces the entire element instead
+                       of reconciling inside it — deleting the bdi itself is
+                       always valid, its own parent is untouched.
+                    2. one template-literal child: a single text node, so React
+                       never manages a multi-child structure in here at all. */}
+                <bdi dir="ltr" key={lang} className="m3-count" data-to={s.value} data-suffix={s.suffix}>
+                  {`${s.value.toLocaleString("en-US")}${s.suffix}`}
                 </bdi>
               </div>
               <div className="mt-1.5 text-[12px] text-white/70 md:mt-2 md:text-[13px]">{s.label}</div>

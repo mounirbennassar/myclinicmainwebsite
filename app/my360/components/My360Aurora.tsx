@@ -141,6 +141,17 @@ export default function My360Aurora({ className = "" }: { className?: string }) 
     };
     const onVisibility = () => (document.hidden ? stop() : start());
 
+    // The moment the page starts navigating away, release the canvas backing
+    // store (width=0 frees it immediately rather than at GC time). During a
+    // same-page navigation the old and new documents briefly coexist, and on
+    // memory-capped in-app webviews that overlap is the tightest moment.
+    const onPageHide = () => {
+      stop();
+      canvas.width = 0;
+      canvas.height = 0;
+    };
+    window.addEventListener("pagehide", onPageHide);
+
     resize();
 
     const ro = new ResizeObserver(resize);
@@ -164,6 +175,7 @@ export default function My360Aurora({ className = "" }: { className?: string }) 
       io.disconnect();
       window.removeEventListener("pointermove", onPointer);
       document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("pagehide", onPageHide);
     };
   }, []);
 
