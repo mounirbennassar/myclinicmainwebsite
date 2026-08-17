@@ -1,0 +1,60 @@
+# On-demand health snapshot of the NourNet VM, run via the same self-hosted
+# runner that deploys (the VM has no inbound SSH from outside — this workflow
+# IS the remote shell). Read-only: it changes nothing.
+#
+# Trigger: gh workflow run diagnose-vm.yml   (or the Actions tab → Run workflow)
+
+name: Diagnose VM (read-only)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  diagnose:
+    runs-on: [self-hosted, myclinic-vm]
+    timeout-minutes: 10
+    steps:
+      - name: Host resources
+        run: |
+          set +e
+          echo "── uptime / load ──"; uptime
+          echo "── memory ──"; free -h
+          echo "── disk ──"; df -h / /var/lib/docker 2>/dev/null | sort -u
+          echo "── container status ──"; cd "${DEPLOY_PATH:-/opt/myclinic}" && docker compose ps
+          echo "── container resources (snapshot) ──"; docker stats --no-stream
+          echo "── recent container restarts / OOM kills ──"
+          docker ps -a --format '{{.Names}}\t{{.Status}}'
+          for c in $(docker ps -q); do
+            docker inspect -f '{{.Name}}  OOMKilled={{.State.OOMKilled}}  Restarts={{.RestartCount}}  StartedAt={{.State.StartedAt}}' "$c"
+          done
+          echo "── kernel OOM events (last 50) ──"
+          sudo -n dmesg -T 2>/dev/null | grep -iE "oom|killed process" | tail -50 || echo "(dmesg not readable without sudo — skipped)"
+          true
+
+      - name: Web container health
+        run: |
+          set +e
+          cd "${DEPLOY_PATH:-/opt/myclinic}"
+          echo "── web log tail (errors only, last 80) ──"
+          docker compose logs --tail=400 web 2>&1 | grep -iE "error|fatal|unhandled|ECONN|EPIPE|heap" | tail -80 || echo "(no error lines in recent web log)"
+          echo "── /my360 served locally, five hits in a row ──"
+          for i in 1 2 3 4 5; do
+            curl -s -o /dev/null -w "web:3000 /my360  HTTP %{http_code}  %{time_total}s\n" http://127.0.0.1:3000/my360
+          done
+          true
+
+      - name: Nginx state
+        run: |
+          set +e
+          echo "── nginx error log (last 60) ──"
+          sudo -n tail -60 /var/log/nginx/error.log 2>/dev/null || tail -60 /var/log/nginx/error.log 2>/dev/null || echo "(error.log not readable)"
+          echo "── /my360 access: status-code histogram (whole log) ──"
+          { sudo -n cat /var/log/nginx/access.log 2>/dev/null || cat /var/log/nginx/access.log 2>/dev/null; } \
+            | awk '$7 ~ /^\/my360/ {print $9}' | sort | uniq -c | sort -rn || echo "(access.log not readable)"
+          echo "── most recent non-200s on /my360 (last 30) ──"
+          { sudo -n cat /var/log/nginx/access.log 2>/dev/null || cat /var/log/nginx/access.log 2>/dev/null; } \
+            | awk '$7 ~ /^\/my360/ && $9 != 200' | tail -30 || true
+          echo "── all 5xx across the site (last 30) ──"
+          { sudo -n cat /var/log/nginx/access.log 2>/dev/null || cat /var/log/nginx/access.log 2>/dev/null; } \
+            | awk '$9 ~ /^5/' | tail -30 || true
+          true
