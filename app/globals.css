@@ -181,3 +181,137 @@ html[dir="rtl"] .tracking-label {
 @media (prefers-reduced-motion: reduce) {
   [class*="animate-[ff-"] { animation: none !important; }
 }
+
+/* ── My360 landing page (namespaced my360-*) ─────────────────────────────
+   The hero's colour wash. Three large, heavily blurred radial blobs on long
+   offset cycles — the canvas in My360Aurora only paints dots and lines, so all
+   the colour comes from here where the compositor can handle it on the GPU. */
+.my360-blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(80px);
+  will-change: transform;
+}
+.my360-blob-a {
+  top: -18%;
+  inset-inline-start: -10%;
+  width: 52vw;
+  max-width: 720px;
+  aspect-ratio: 1;
+  background: radial-gradient(circle, rgba(0, 77, 153, 0.20), transparent 68%);
+  animation: my360-drift-a 26s ease-in-out infinite;
+}
+.my360-blob-b {
+  top: 8%;
+  inset-inline-end: -14%;
+  width: 46vw;
+  max-width: 640px;
+  aspect-ratio: 1;
+  background: radial-gradient(circle, rgba(2, 174, 173, 0.17), transparent 68%);
+  animation: my360-drift-b 32s ease-in-out infinite;
+}
+.my360-blob-c {
+  bottom: -26%;
+  inset-inline-start: 28%;
+  width: 44vw;
+  max-width: 600px;
+  aspect-ratio: 1;
+  background: radial-gradient(circle, rgba(104, 64, 143, 0.13), transparent 70%);
+  animation: my360-drift-c 38s ease-in-out infinite;
+}
+@keyframes my360-drift-a {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(6%, 8%, 0) scale(1.12); }
+}
+@keyframes my360-drift-b {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(-7%, 6%, 0) scale(0.9); }
+}
+@keyframes my360-drift-c {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(4%, -9%, 0) scale(1.1); }
+}
+
+/* The hairline sweep that travels along the stats bar and the CTA panel. */
+@keyframes my360-sheen {
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(220%); }
+}
+
+/* Hero background photo: a very slow Ken Burns drift so the still feels alive
+   without ever pulling attention off the headline. */
+.my360-hero-photo {
+  animation: my360-kenburns 34s ease-in-out infinite alternate;
+  will-change: transform;
+  /* Lifted and slightly desaturated so it stays a backdrop, not a subject. */
+  filter: brightness(1.05) saturate(0.88);
+}
+@keyframes my360-kenburns {
+  0% { transform: scale(1.06) translate3d(0, 0, 0); }
+  100% { transform: scale(1.16) translate3d(-2.2%, -1.6%, 0); }
+}
+
+/* Scrim over the hero photo.
+ *
+ * The photo is feathered out across the middle rather than dimmed evenly: it
+ * stays a real, legible photograph on the far side and is effectively absent
+ * behind the text column, where navy type needs the contrast. A flat wash over
+ * a bright clinic interior just turns the whole hero into pale mush.
+ *
+ * This is a gradient OVERLAY rather than a mask on the photo. mask-image was
+ * the obvious tool and does not survive here — Tailwind v4 ships its own
+ * mask-* layer/composite handling, and a hand-written mask-image ends up
+ * composited away, hiding the photo completely (white stops or black).
+ *
+ * Two layers, because one cannot do both jobs. This interior is bright: above
+ * roughly 0.35 its mid-tones blend into the page background and it stops
+ * reading as a photograph at all, but navy body copy needs far more cover than
+ * that to be legible. So a flat 0.08 wash sits the photo back, and an ellipse
+ * of near-solid page background gives the text column its own clean ground.
+ *
+ * The ellipse is anchored to whichever side the text is on, which flips with
+ * document direction — hence the two rules. */
+.my360-hero-scrim {
+  background:
+    radial-gradient(
+      88% 108% at 0% 46%,
+      rgba(242, 246, 250, 0.995) 0%,
+      rgba(242, 246, 250, 0.975) 34%,
+      rgba(242, 246, 250, 0.82) 52%,
+      rgba(242, 246, 250, 0.34) 68%,
+      rgba(242, 246, 250, 0) 82%
+    ),
+    rgba(242, 246, 250, 0.08);
+}
+[dir="rtl"] .my360-hero-scrim {
+  background:
+    radial-gradient(
+      88% 108% at 100% 46%,
+      rgba(242, 246, 250, 0.995) 0%,
+      rgba(242, 246, 250, 0.975) 34%,
+      rgba(242, 246, 250, 0.82) 52%,
+      rgba(242, 246, 250, 0.34) 68%,
+      rgba(242, 246, 250, 0) 82%
+    ),
+    rgba(242, 246, 250, 0.08);
+}
+
+/* On phones the text spans the full width, so there is no far side to give the
+   photo — it goes behind everything as a faint texture, legibility first. */
+@media (max-width: 767px) {
+  .my360-hero-scrim,
+  [dir="rtl"] .my360-hero-scrim {
+    background: linear-gradient(
+      to bottom,
+      rgba(242, 246, 250, 0.93) 0%,
+      rgba(242, 246, 250, 0.95) 60%,
+      rgba(242, 246, 250, 0.99) 100%
+    );
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .my360-blob,
+  .my360-hero-photo { animation: none !important; }
+  [class*="animate-[my360-"] { animation: none !important; }
+}

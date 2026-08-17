@@ -17,6 +17,7 @@ const STATIC_ROUTES = [
   "/dental",
   "/pediatric",
   "/women-care",
+  "/my360",
   "/health-homecare",
   "/about-us",
   "/contact",

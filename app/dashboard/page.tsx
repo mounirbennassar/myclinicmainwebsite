@@ -1,7 +1,8 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
-import { useUser, useVertical, VERTICAL_LABELS, VERTICAL_BADGE } from "./layout";
+import { useUser, useVertical, VERTICAL_LABELS, VERTICAL_BADGE, type Vertical } from "./layout";
 import { dentalServiceCatalog } from "../dental/content/services";
+import { my360ProgramCatalog } from "../my360/programs";
 import { ADMIN_ROLES, LEAD_ALL_ROLES, hasRole } from "../lib/roles";
 
 type Appointment = {
@@ -48,6 +49,14 @@ const STATUS_OPTIONS: { value: string; label: string }[] = [
   { value: "dental", label: "Dental" },
   { value: "booked", label: "Booked" },
 ];
+
+// Placeholder on the service dropdown — it lists dental pages, My360 programs,
+// or both, depending on the active vertical.
+const SERVICE_FILTER_LABEL: Partial<Record<Vertical, string>> = {
+  all: "All Pages & Programs",
+  dental: "All Dental Pages",
+  my360: "All My360 Programs",
+};
 
 const STATUS_LABELS: Record<string, string> = {
   new: "Inquiry",
@@ -258,12 +267,17 @@ export default function Dashboard() {
     return () => clearInterval(interval);
   }, [fetchAppointments, fetchAgents]);
 
-  // If the user filters to a dental page, then flips the vertical toggle to a
-  // vertical without a service dropdown (Medical or Pediatric), the filter
-  // stays active and the list goes empty. Clear it when no longer relevant.
-  // ("all" and "dental" keep the dropdown, so the filter stays meaningful.)
+  // A service filter that isn't offered by the newly selected vertical would
+  // stay active and silently empty the list — e.g. picking a dental page, then
+  // flipping to My360, or to Medical (which has no service dropdown at all).
+  // Drop the filter whenever it stops being selectable.
   useEffect(() => {
-    if (vertical !== "dental" && vertical !== "all" && filterService) setFilterService("");
+    if (!filterService) return;
+    const stillOffered =
+      vertical === "all" ||
+      (vertical === "dental" && dentalServiceCatalog.some((s) => s.slug === filterService)) ||
+      (vertical === "my360" && my360ProgramCatalog.some((s) => s.slug === filterService));
+    if (!stillOffered) setFilterService("");
   }, [vertical, filterService]);
 
   const updateStatus = async (id: string, newStatus: string) => {
@@ -379,8 +393,10 @@ export default function Dashboard() {
   };
 
   // Human-readable label for the active scope, shown beside the page title.
+  // `service` is shared by the dental pages and the My360 programs, so look in both.
   const scopeServiceName = filterService
-    ? dentalServiceCatalog.find((s) => s.slug === filterService)?.en
+    ? dentalServiceCatalog.find((s) => s.slug === filterService)?.en ??
+      my360ProgramCatalog.find((s) => s.slug === filterService)?.en
     : null;
   const scopeLabel = scopeServiceName
     ? `${VERTICAL_LABELS[vertical]} · ${scopeServiceName}`
@@ -465,12 +481,23 @@ export default function Dashboard() {
               <option key={s.value} value={s.value}>{s.label}</option>
             ))}
           </select>
-          {(vertical === "dental" || vertical === "all") && (
+          {(vertical === "dental" || vertical === "my360" || vertical === "all") && (
             <select value={filterService} onChange={(e) => setFilterService(e.target.value)} className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-[#004d99]/20 focus:border-[#004d99] text-slate-600">
-              <option value="">All Dental Pages</option>
-              {dentalServiceCatalog.map((s) => (
-                <option key={s.slug} value={s.slug}>{s.en}</option>
-              ))}
+              <option value="">{SERVICE_FILTER_LABEL[vertical] ?? "All Pages"}</option>
+              {vertical !== "my360" && (
+                <optgroup label="Dental pages">
+                  {dentalServiceCatalog.map((s) => (
+                    <option key={s.slug} value={s.slug}>{s.en}</option>
+                  ))}
+                </optgroup>
+              )}
+              {vertical !== "dental" && (
+                <optgroup label="My360 programs">
+                  {my360ProgramCatalog.map((s) => (
+                    <option key={s.slug} value={s.slug}>{s.en}</option>
+                  ))}
+                </optgroup>
+              )}
             </select>
           )}
           {canAssign && (

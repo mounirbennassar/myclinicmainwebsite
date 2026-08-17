@@ -14,12 +14,15 @@ import { query, queryOne } from "@/app/lib/db";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const ALLOWED_VERTICALS = new Set(["medical", "dental", "pediatric"]);
+const ALLOWED_VERTICALS = new Set(["medical", "dental", "pediatric", "my360"]);
 const ALLOWED_DENTAL_SERVICES = new Set([
   "general", "implants", "orthodontics", "veneers", "oral-surgery",
   "pediatric", "root-canal", "whitening", "crowns-bridges", "gums",
   "emergency", "laser", "special-needs", "seniors", "holistic", "gbt-cleaning",
 ]);
+// My360 leads carry the program the visitor picked, in the same `service`
+// column the dental pages use.
+const ALLOWED_MY360_PROGRAMS = new Set(["grow", "live", "thrive", "diabetes"]);
 
 const clip = (v: unknown, n: number): string | null =>
   typeof v === "string" && v.trim() ? v.trim().slice(0, n) : null;
@@ -57,6 +60,9 @@ export async function POST(request: Request) {
     const vertical = ALLOWED_VERTICALS.has(body.vertical) ? body.vertical : "medical";
     data.vertical = vertical;
     if (vertical === "dental" && ALLOWED_DENTAL_SERVICES.has(body.service)) {
+      data.service = body.service;
+    }
+    if (vertical === "my360" && ALLOWED_MY360_PROGRAMS.has(body.service)) {
       data.service = body.service;
     }
 

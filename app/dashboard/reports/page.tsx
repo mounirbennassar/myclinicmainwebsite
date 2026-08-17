@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useUser, useVertical, VERTICAL_LABELS, VERTICAL_BADGE } from "../layout";
 import { useRouter } from "next/navigation";
 import { dentalServiceCatalog } from "../../dental/content/services";
+import { my360ProgramCatalog } from "../../my360/programs";
 import { ADMIN_ROLES, MARKETING_ROLES, hasRole } from "../../lib/roles";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -358,6 +359,37 @@ export default function ReportsPage() {
   const getDentalPageExportData = () =>
     dentalPagePerformance.map((r) => ({
       Page: r.name, Slug: `/dental/${r.slug}`,
+      Leads: r.leads, Inquiry: r.inquiry, "No Answer": r.noAnswer,
+      Booked: r.booked, "Not Eligible": r.lost, "Conversion %": r.conv,
+    }));
+
+  // ── My360 Program Performance ──
+  // Same shape as the dental table above: /my360 leads carry the program the
+  // visitor selected in the same `service` column.
+  const my360ProgramPerformance = useMemo(() => {
+    const counts = new Map<string, { leads: number; booked: number; noAnswer: number; lost: number; inquiry: number }>();
+    filtered.forEach((a) => {
+      if (a.vertical !== "my360" || !a.service) return;
+      if (!counts.has(a.service)) {
+        counts.set(a.service, { leads: 0, booked: 0, noAnswer: 0, lost: 0, inquiry: 0 });
+      }
+      const row = counts.get(a.service)!;
+      row.leads++;
+      if (a.status === "new") row.inquiry++;
+      if (a.status === "no_answer") row.noAnswer++;
+      if (isBooked(a.status)) row.booked++;
+      if (isNotEligible(a.status)) row.lost++;
+    });
+    return my360ProgramCatalog.map((s) => {
+      const c = counts.get(s.slug) || { leads: 0, booked: 0, noAnswer: 0, lost: 0, inquiry: 0 };
+      const conv = c.leads > 0 ? Math.round((c.booked / c.leads) * 100) : 0;
+      return { slug: s.slug, name: s.en, ...c, conv };
+    }).sort((a, b) => b.leads - a.leads);
+  }, [filtered]);
+
+  const getMy360ProgramExportData = () =>
+    my360ProgramPerformance.map((r) => ({
+      Program: r.name, Slug: r.slug,
       Leads: r.leads, Inquiry: r.inquiry, "No Answer": r.noAnswer,
       Booked: r.booked, "Not Eligible": r.lost, "Conversion %": r.conv,
     }));
@@ -781,6 +813,62 @@ export default function ReportsPage() {
                             <div>
                               <p className="text-sm font-medium text-slate-700">{r.name}</p>
                               <p className="text-[10px] text-slate-400 font-mono">/dental/{r.slug}</p>
+                            </div>
+                          </td>
+                          <td className="text-center px-3 py-3 text-sm font-semibold text-slate-800">{r.leads}</td>
+                          <td className="text-center px-3 py-3 text-sm text-blue-600">{r.inquiry}</td>
+                          <td className="text-center px-3 py-3 text-sm text-amber-600">{r.noAnswer}</td>
+                          <td className="text-center px-3 py-3 text-sm text-emerald-600">{r.booked}</td>
+                          <td className="text-center px-3 py-3 text-sm text-red-500">{r.lost}</td>
+                          <td className="text-center px-3 py-3">
+                            {r.leads > 0 ? (
+                              <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${r.conv >= 50 ? "bg-emerald-50 text-emerald-700" : r.conv >= 25 ? "bg-amber-50 text-amber-700" : "bg-slate-50 text-slate-500"}`}>
+                                {r.conv}%
+                              </span>
+                            ) : <span className="text-xs text-slate-300">—</span>}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* My360 Programs Performance — only when filtering to my360 (or all) */}
+          {(vertical === "my360" || vertical === "all") && (
+            <div className="bg-white rounded-xl border border-slate-200/80 overflow-hidden mb-6">
+              <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+                <div>
+                  <h2 className="text-sm font-bold text-slate-800">My360 Programs Performance</h2>
+                  <p className="text-[10px] text-slate-400 mt-0.5">Leads attributed to each My360 program on /my360</p>
+                </div>
+                <ExportButton id="my360Programs" getData={getMy360ProgramExportData} filename={`my360-programs-${new Date().toISOString().slice(0, 10)}`} />
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-slate-100">
+                      <th className="text-left px-5 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Program</th>
+                      <th className="text-center px-3 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Leads</th>
+                      <th className="text-center px-3 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Inquiry</th>
+                      <th className="text-center px-3 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">No Answer</th>
+                      <th className="text-center px-3 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Booked</th>
+                      <th className="text-center px-3 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Not Eligible</th>
+                      <th className="text-center px-3 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Conversion</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                    {my360ProgramPerformance.every((r) => r.leads === 0) ? (
+                      <tr><td colSpan={7} className="text-center py-8 text-sm text-slate-300">No My360 leads in this period</td></tr>
+                    ) : (
+                      my360ProgramPerformance.map((r) => (
+                        <tr key={r.slug} className={`hover:bg-slate-50/50 ${r.leads === 0 ? "opacity-50" : ""}`}>
+                          <td className="px-5 py-3">
+                            <div>
+                              <p className="text-sm font-medium text-slate-700">{r.name}</p>
+                              <p className="text-[10px] text-slate-400 font-mono">{r.slug}</p>
                             </div>
                           </td>
                           <td className="text-center px-3 py-3 text-sm font-semibold text-slate-800">{r.leads}</td>

@@ -27,13 +27,15 @@ type User = {
 const UserContext = createContext<User | null>(null);
 export const useUser = () => useContext(UserContext);
 
-export type Vertical = "all" | "medical" | "dental" | "pediatric";
+export type Vertical = "all" | "medical" | "dental" | "pediatric" | "my360";
+
+const VERTICALS: Vertical[] = ["medical", "dental", "pediatric", "my360"];
 
 // Reads the ?vertical= query param. "all" means no filter.
 export function useVertical(): Vertical {
   const params = useSearchParams();
-  const v = params.get("vertical");
-  return v === "medical" || v === "dental" || v === "pediatric" ? v : "all";
+  const v = params.get("vertical") as Vertical | null;
+  return v && VERTICALS.includes(v) ? v : "all";
 }
 
 // Shared display metadata so the dashboard, reports, and any future
@@ -43,6 +45,7 @@ export const VERTICAL_LABELS: Record<Vertical, string> = {
   medical: "Medical",
   dental: "Dental",
   pediatric: "Pediatric",
+  my360: "My360",
 };
 
 export const VERTICAL_BADGE: Record<Vertical, string> = {
@@ -50,6 +53,7 @@ export const VERTICAL_BADGE: Record<Vertical, string> = {
   medical: "bg-[#004d99]/10 text-[#004d99]",
   dental: "bg-teal-500/10 text-teal-700",
   pediatric: "bg-amber-500/10 text-amber-700",
+  my360: "bg-violet-500/10 text-violet-700",
 };
 
 function VerticalToggle() {
@@ -71,6 +75,7 @@ function VerticalToggle() {
     { value: "medical", label: "Medical" },
     { value: "dental", label: "Dental" },
     { value: "pediatric", label: "Pediatric" },
+    { value: "my360", label: "My360" },
   ];
 
   return (
