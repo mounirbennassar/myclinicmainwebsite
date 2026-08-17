@@ -183,13 +183,18 @@ html[dir="rtl"] .tracking-label {
 }
 
 /* ── My360 landing page (namespaced my360-*) ─────────────────────────────
-   The hero's colour wash. Three large, heavily blurred radial blobs on long
-   offset cycles — the canvas in My360Aurora only paints dots and lines, so all
-   the colour comes from here where the compositor can handle it on the GPU. */
+   The hero's colour wash. Three large radial blobs drifting on long offset
+   cycles — the canvas in My360Aurora only paints dots and lines, so all the
+   colour comes from here where the compositor can handle it on the GPU. */
+/* NO `filter: blur()` here, deliberately. These are radial gradients that
+   already fade to transparent at 68-70% — the blur added nothing visible but
+   forced a ~700px offscreen buffer per blob, and because the animation also
+   scaled them the blurred surface could never be raster-cached. Three of those
+   compositing every frame alongside the hero image was enough to OOM the
+   renderer on mid-range phones ("This page couldn't load"). */
 .my360-blob {
   position: absolute;
   border-radius: 9999px;
-  filter: blur(80px);
   will-change: transform;
 }
 .my360-blob-a {
@@ -219,17 +224,35 @@ html[dir="rtl"] .tracking-label {
   background: radial-gradient(circle, rgba(104, 64, 143, 0.13), transparent 70%);
   animation: my360-drift-c 38s ease-in-out infinite;
 }
+/* Translate only — no scale. Scaling a composited layer re-rasterizes it every
+   frame; translation is handled by the compositor for free. */
 @keyframes my360-drift-a {
-  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-  50% { transform: translate3d(6%, 8%, 0) scale(1.12); }
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(6%, 8%, 0); }
 }
 @keyframes my360-drift-b {
-  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-  50% { transform: translate3d(-7%, 6%, 0) scale(0.9); }
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(-7%, 6%, 0); }
 }
 @keyframes my360-drift-c {
-  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-  50% { transform: translate3d(4%, -9%, 0) scale(1.1); }
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(4%, -9%, 0); }
+}
+
+/* Sticky nav backing. backdrop-filter makes the compositor re-copy whatever is
+   behind the bar on every scroll frame; on phones that is a real cost for an
+   effect nobody notices, so there it becomes a plain opaque background. */
+.my360-nav-glass {
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+@media (max-width: 767px) {
+  .my360-nav-glass {
+    background: rgba(255, 255, 255, 0.97);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
 }
 
 /* The hairline sweep that travels along the stats bar and the CTA panel. */
@@ -240,11 +263,12 @@ html[dir="rtl"] .tracking-label {
 
 /* Hero background photo: a very slow Ken Burns drift so the still feels alive
    without ever pulling attention off the headline. */
+/* No CSS `filter` on this element: it also runs an infinite transform, and a
+   filtered layer that moves has to be re-rasterized every frame at full-viewport
+   size. The tonal lift it used to provide now comes from the scrim instead. */
 .my360-hero-photo {
   animation: my360-kenburns 34s ease-in-out infinite alternate;
   will-change: transform;
-  /* Lifted and slightly desaturated so it stays a backdrop, not a subject. */
-  filter: brightness(1.05) saturate(0.88);
 }
 @keyframes my360-kenburns {
   0% { transform: scale(1.06) translate3d(0, 0, 0); }
@@ -310,8 +334,23 @@ html[dir="rtl"] .tracking-label {
   }
 }
 
+/* Phones get the same composition, held still. Continuously animating the
+   blobs, the hero image and the sheen on a small GPU buys very little and costs
+   battery and stability — and this is where the renderer was crashing. */
+@media (max-width: 767px) {
+  .my360-blob,
+  .my360-hero-photo {
+    animation: none !important;
+    will-change: auto;
+  }
+  [class*="animate-[my360-"] { animation: none !important; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .my360-blob,
-  .my360-hero-photo { animation: none !important; }
+  .my360-hero-photo {
+    animation: none !important;
+    will-change: auto;
+  }
   [class*="animate-[my360-"] { animation: none !important; }
 }

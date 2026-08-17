@@ -73,7 +73,13 @@ export default function My360Client() {
         });
 
         // ── Section reveals ──────────────────────────────────
-        const els = gsap.utils.toArray<HTMLElement>(".m3-reveal");
+        // Only pre-hide what starts BELOW the fold. Hiding every .m3-reveal made
+        // the page's first paint depend on JS having run — a bad LCP, and a
+        // blank page entirely if the bundle is slow or fails. Anything already
+        // on screen just stays visible; it has nothing to animate in from.
+        const els = gsap.utils
+          .toArray<HTMLElement>(".m3-reveal")
+          .filter((el) => el.getBoundingClientRect().top > window.innerHeight * 0.9);
         if (els.length) {
           gsap.set(els, { autoAlpha: 0, y: 30 });
           ScrollTrigger.batch(els, {

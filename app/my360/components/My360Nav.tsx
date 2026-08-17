@@ -76,10 +76,9 @@ export default function My360Nav({ onJump }: { onJump: (id: string) => void }) {
 
   return (
     <header
-      className={`sticky top-0 z-50 border-b transition-shadow duration-300 ${
+      className={`my360-nav-glass sticky top-0 z-50 border-b transition-shadow duration-300 ${
         scrolled ? "border-[#E3E6EA] shadow-[0_6px_24px_-12px_rgba(0,56,104,0.28)]" : "border-transparent"
       }`}
-      style={{ background: "rgba(255,255,255,0.82)", backdropFilter: "blur(16px)" }}
     >
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4 md:px-8">
         {/* Brand lockup — My Clinic home, then the My360 sub-brand */}

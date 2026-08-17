@@ -11,7 +11,7 @@ import { useEffect, useRef } from "react";
  *  - the canvas only draws dots and short lines, no shadows or blurs;
  *  - the RAF loop stops when the hero scrolls out of view or the tab is hidden,
  *    so it never burns battery behind the rest of the page;
- *  - `prefers-reduced-motion` paints one static frame and never animates.
+ *  - phones and `prefers-reduced-motion` paint one static frame, no rAF at all.
  *
  * Node count scales with area, capped, so a phone does far less work than a
  * desktop rather than the same work on fewer pixels.
@@ -31,7 +31,12 @@ export default function My360Aurora({ className = "" }: { className?: string }) 
     const ctx = canvas.getContext("2d", { alpha: true });
     if (!ctx) return;
 
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // Hold the field still on phones and under reduced motion — a single
+    // painted frame, no rAF loop. Phones are where the compositor was already
+    // under pressure, and a drifting constellation is not worth the battery.
+    const still =
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+      window.matchMedia("(max-width: 767px)").matches;
 
     let nodes: Node[] = [];
     let width = 0;
@@ -66,8 +71,8 @@ export default function My360Aurora({ className = "" }: { className?: string }) 
       ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
       seed();
       // Paint immediately rather than waiting on the first rAF — otherwise the
-      // field is blank for a frame, and stays blank entirely under reduced
-      // motion or whenever rAF is throttled (backgrounded tab).
+      // field is blank for a frame, and stays blank entirely on phones, under
+      // reduced motion, or whenever rAF is throttled (backgrounded tab).
       draw();
     };
 
@@ -118,7 +123,7 @@ export default function My360Aurora({ className = "" }: { className?: string }) 
     };
 
     const start = () => {
-      if (running || reduced) return;
+      if (running || still) return;
       running = true;
       raf = requestAnimationFrame(tick);
     };
@@ -146,7 +151,7 @@ export default function My360Aurora({ className = "" }: { className?: string }) 
     );
     io.observe(canvas);
 
-    if (!reduced) {
+    if (!still) {
       window.addEventListener("pointermove", onPointer, { passive: true });
       document.addEventListener("visibilitychange", onVisibility);
     }
@@ -162,7 +167,7 @@ export default function My360Aurora({ className = "" }: { className?: string }) 
 
   return (
     <div className={`pointer-events-none absolute inset-0 overflow-hidden ${className}`} aria-hidden>
-      {/* Colour wash — three soft blobs that breathe on a long, offset cycle.
+      {/* Colour wash — three soft radial blobs drifting on long, offset cycles.
           CSS-driven so the canvas stays a cheap dots-and-lines pass. */}
       <div className="my360-blob my360-blob-a" />
       <div className="my360-blob my360-blob-b" />
