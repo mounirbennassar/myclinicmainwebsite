@@ -293,8 +293,10 @@ export default function My360Client() {
               className="m3-hero-card min-w-0 flex-1 rounded-2xl bg-white px-3.5 py-3 shadow-[0_10px_34px_rgba(0,56,104,0.16)] sm:px-6 sm:py-4 lg:absolute lg:bottom-[24%] lg:end-10 lg:flex-none"
               style={{ border: `1px solid ${HAIRLINE}` }}
             >
-              <div className="text-[21px] font-extrabold leading-none sm:text-[27px]" style={{ color: NAVY }} dir="ltr">
-                {t.meta.heroStatValue}
+              {/* Same bdi-not-block rule as the stats bar: dir on the block
+                  would left-align "90%" while its Arabic label aligns right. */}
+              <div className="text-[21px] font-extrabold leading-none sm:text-[27px]" style={{ color: NAVY }}>
+                <bdi dir="ltr">{t.meta.heroStatValue}</bdi>
               </div>
               <div className="mt-1 truncate text-[10.5px] sm:text-[12px]" style={{ color: MUTED }}>
                 {t.meta.heroStatLabel}
@@ -318,13 +320,17 @@ export default function My360Client() {
           />
           {t.stats.map((s, i) => (
             <div key={i} className="relative">
-              <div className="text-[26px] font-extrabold leading-none text-white md:text-[34px]" dir="ltr">
+              {/* dir sits on an inline <bdi>, NOT the block: on the block it
+                  also flips text-align, so in Arabic the number hugged the left
+                  edge while its label sat right — misaligned pairs. The block
+                  inherits the page alignment; the bdi only fixes digit order. */}
+              <div className="text-[26px] font-extrabold leading-none text-white md:text-[34px]">
                 {/* Real value in the markup — mobile runs no GSAP, and desktop's
                     counter resets this to 0 pre-paint before counting up. */}
-                <span className="m3-count" data-to={s.value} data-suffix={s.suffix}>
+                <bdi dir="ltr" className="m3-count" data-to={s.value} data-suffix={s.suffix}>
                   {s.value.toLocaleString("en-US")}
                   {s.suffix}
-                </span>
+                </bdi>
               </div>
               <div className="mt-1.5 text-[12px] text-white/70 md:mt-2 md:text-[13px]">{s.label}</div>
             </div>
