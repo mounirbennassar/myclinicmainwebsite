@@ -46,7 +46,9 @@ export default function My360Aurora({ className = "" }: { className?: string }) 
     // Pointer parallax, in CSS px, eased toward the real cursor each frame.
     let px = 0, py = 0, tx = 0, ty = 0;
 
-    const dpr = () => Math.min(window.devicePixelRatio || 1, 2);
+    // A still canvas doesn't need retina — DPR 1 quarters the buffer on phones,
+    // where the single static frame is decoration behind a scrim anyway.
+    const dpr = () => (still ? 1 : Math.min(window.devicePixelRatio || 1, 2));
 
     const seed = () => {
       // ~1 node per 13k CSS px², clamped so neither extreme gets silly.

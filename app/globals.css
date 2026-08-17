@@ -255,6 +255,58 @@ html[dir="rtl"] .tracking-label {
   }
 }
 
+/* Program pills as a marquee on phones. Four pills wrap to three cramped rows
+   on a 375px screen; scrolling them keeps the hero compact and still shows all
+   four. The track holds two identical copies and travels exactly -50%, so the
+   loop is seamless. Direction follows the document so it never reads backwards
+   in Arabic, and it pauses on touch/hover so a pill can actually be tapped.
+
+   The responsive switch lives here rather than in `sm:` utilities: this class
+   is defined after the Tailwind import, so at equal specificity it would beat
+   `sm:w-auto` / `sm:animate-none` and the marquee would never turn off. */
+.my360-marquee {
+  display: flex;
+  flex-wrap: wrap;
+}
+@media (max-width: 639px) {
+  .my360-marquee {
+    flex-wrap: nowrap;
+    width: max-content;
+    animation: my360-marquee 22s linear infinite;
+    will-change: transform;
+  }
+  [dir="rtl"] .my360-marquee {
+    animation-name: my360-marquee-rtl;
+  }
+  .my360-marquee:hover,
+  .my360-marquee:active {
+    animation-play-state: paused;
+  }
+}
+@keyframes my360-marquee {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-50%, 0, 0); }
+}
+@keyframes my360-marquee-rtl {
+  from { transform: translate3d(-50%, 0, 0); }
+  to { transform: translate3d(0, 0, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .my360-marquee { animation: none !important; }
+}
+
+/* On phones, below-fold sections aren't laid out or painted until they
+   approach the viewport — a large first-paint and memory saving on a long
+   page. Mobile-only: desktop runs ScrollTrigger, whose measurements this
+   would skew. The intrinsic size is a rough placeholder so the scrollbar
+   doesn't jump wildly as sections materialise. */
+@media (max-width: 767px) {
+  .my360-cv {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 720px;
+  }
+}
+
 /* The hairline sweep that travels along the stats bar and the CTA panel. */
 @keyframes my360-sheen {
   0% { transform: translateX(-120%); }
