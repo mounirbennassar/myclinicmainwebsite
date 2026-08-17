@@ -72,6 +72,23 @@ export default function My360Nav({ onJump }: { onJump: (id: string) => void }) {
     onJump(href.slice(1));
   };
 
+  /**
+   * On phones the language switch lands via a FRESH page load, not an in-place
+   * flip. Flipping live means the old tree, the new tree, a full RTL relayout
+   * and the Arabic font load all peak together — in-app webviews (Snapchat /
+   * Instagram, tight memory caps) were dying on exactly that moment. setLang
+   * persists to localStorage first and the root layout's pre-paint script reads
+   * it, so the reload comes back already in the right language — and it also
+   * flushes any stale page the webview cached. Desktop keeps the instant flip.
+   */
+  const switchLang = (l: "en" | "ar") => {
+    if (l === lang) return;
+    setLang(l);
+    if (window.matchMedia("(max-width: 767px)").matches) {
+      window.location.reload();
+    }
+  };
+
   const bookLabel = isRtl ? "احجز الآن" : "Book now";
 
   return (
@@ -135,7 +152,7 @@ export default function My360Nav({ onJump }: { onJump: (id: string) => void }) {
         <div className="ms-auto flex items-center gap-2 lg:ms-3 lg:gap-2.5">
           <div className="flex items-center overflow-hidden rounded-full border border-[#E3E6EA] bg-[#F6F7F8] text-[11px] font-bold">
             <button
-              onClick={() => setLang("en")}
+              onClick={() => switchLang("en")}
               className={`cursor-pointer px-2.5 py-1.5 transition-colors ${
                 lang === "en" ? "bg-[#003868] text-white" : "text-[#797C82] hover:text-[#003868]"
               }`}
@@ -143,7 +160,7 @@ export default function My360Nav({ onJump }: { onJump: (id: string) => void }) {
               EN
             </button>
             <button
-              onClick={() => setLang("ar")}
+              onClick={() => switchLang("ar")}
               className={`cursor-pointer px-2.5 py-1.5 transition-colors ${
                 lang === "ar" ? "bg-[#003868] text-white" : "text-[#797C82] hover:text-[#003868]"
               }`}
