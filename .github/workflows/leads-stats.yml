@@ -1,0 +1,307 @@
+# Aggregate-only statistics export from the NourNet VM's Postgres.
+#
+# Why a workflow: the VM has a private IP and no inbound SSH, so the
+# self-hosted runner that already lives on it is the only way to reach the
+# database. Read-only — it runs SELECTs and writes nothing.
+#
+# Privacy: every query is a GROUP BY / count. No name, phone, note, email or
+# any other row-level lead field is selected, so nothing that identifies a
+# patient can leave the VM. The output is a single JSON blob of counts,
+# uploaded as a run artifact.
+#
+# Trigger: gh workflow run leads-stats.yml
+
+name: Leads statistics (read-only)
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: vm-leads-stats
+  cancel-in-progress: false
+
+jobs:
+  stats:
+    runs-on: [self-hosted, myclinic-vm]
+    timeout-minutes: 15
+    steps:
+      - name: Aggregate leads, campaigns and geo
+        run: |
+          set -euo pipefail
+          APP_DIR="${{ vars.DEPLOY_PATH }}"
+          APP_DIR="${APP_DIR:-/opt/myclinic}"
+          cd "$APP_DIR"
+
+          OUT="$RUNNER_TEMP/leads-stats"
+          mkdir -p "$OUT"
+
+          cat > "$OUT/stats.sql" <<'SQL'
+          \pset pager off
+          select json_build_object(
+            'generated_at', now(),
+            'tz', 'Asia/Riyadh',
+
+            'totals', (select json_build_object(
+                'leads',            count(*),
+                'first_lead',       min(created_at),
+                'last_lead',        max(created_at),
+                'distinct_cities',  count(distinct nullif(btrim(city), '')),
+                'with_any_utm',     count(*) filter (where utm_source is not null or utm_link_id is not null),
+                'link_attributed',  count(*) filter (where utm_link_id is not null),
+                'assigned',         count(*) filter (where assigned_to is not null),
+                'touched',          count(*) filter (where status_changed_at is not null),
+                'manual_entry',     count(*) filter (where created_by is not null),
+                'with_referrer',    count(*) filter (where referrer is not null)
+              ) from appointments),
+
+            'link_totals', (select json_build_object(
+                'links',      count(*),
+                'campaigns',  count(distinct campaign),
+                'sources',    count(distinct source),
+                'first_link', min(created_at),
+                'last_link',  max(created_at)
+              ) from utm_links),
+
+            'click_totals', (select json_build_object(
+                'clicks',           count(*),
+                'first_click',      min(clicked_at),
+                'last_click',       max(clicked_at),
+                'countries',        count(distinct nullif(btrim(country), '')),
+                'distinct_ips',     count(distinct ip_hash),
+                'links_with_click', count(distinct link_id)
+              ) from utm_clicks),
+
+            'leads_by_month', (select json_agg(t) from (
+                select to_char(date_trunc('month', created_at at time zone 'Asia/Riyadh'), 'YYYY-MM') as k,
+                       count(*) as n
+                from appointments group by 1 order by 1) t),
+
+            'leads_by_month_vertical', (select json_agg(t) from (
+                select to_char(date_trunc('month', created_at at time zone 'Asia/Riyadh'), 'YYYY-MM') as k,
+                       coalesce(nullif(btrim(vertical), ''), 'unknown') as v,
+                       count(*) as n
+                from appointments group by 1, 2 order by 1, 2) t),
+
+            'leads_by_dow', (select json_agg(t) from (
+                select extract(isodow from created_at at time zone 'Asia/Riyadh')::int as k, count(*) as n
+                from appointments group by 1 order by 1) t),
+
+            'leads_by_hour', (select json_agg(t) from (
+                select extract(hour from created_at at time zone 'Asia/Riyadh')::int as k, count(*) as n
+                from appointments group by 1 order by 1) t),
+
+            'leads_by_city', (select json_agg(t) from (
+                select coalesce(nullif(btrim(city), ''), '(unknown)') as k, count(*) as n
+                from appointments group by 1 order by n desc, k) t),
+
+            'leads_by_vertical', (select json_agg(t) from (
+                select coalesce(nullif(btrim(vertical), ''), 'unknown') as k, count(*) as n
+                from appointments group by 1 order by n desc) t),
+
+            'leads_by_service', (select json_agg(t) from (
+                select coalesce(nullif(btrim(service), ''), '(none)') as k, count(*) as n
+                from appointments where service is not null group by 1 order by n desc) t),
+
+            'leads_by_channel', (select json_agg(t) from (
+                select coalesce(nullif(btrim(channel), ''), '(unspecified)') as k, count(*) as n
+                from appointments group by 1 order by n desc) t),
+
+            'leads_by_status', (select json_agg(t) from (
+                select coalesce(nullif(btrim(status), ''), '(none)') as k, count(*) as n
+                from appointments group by 1 order by n desc) t),
+
+            'leads_by_source', (select json_agg(t) from (
+                select coalesce(nullif(btrim(utm_source), ''), '(direct)') as k, count(*) as n
+                from appointments group by 1 order by n desc) t),
+
+            'leads_by_medium', (select json_agg(t) from (
+                select coalesce(nullif(btrim(utm_medium), ''), '(none)') as k, count(*) as n
+                from appointments group by 1 order by n desc) t),
+
+            'leads_by_campaign', (select json_agg(t) from (
+                select coalesce(nullif(btrim(utm_campaign), ''), '(none)') as k, count(*) as n
+                from appointments group by 1 order by n desc limit 30) t),
+
+            'leads_by_referrer_host', (select json_agg(t) from (
+                select lower(coalesce(nullif(split_part(split_part(regexp_replace(referrer, '^https?://(www\.)?', ''), '/', 1), '?', 1), ''), '(unknown)')) as k,
+                       count(*) as n
+                from appointments where referrer is not null group by 1 order by n desc limit 25) t),
+
+            'leads_by_agent', (select json_agg(t) from (
+                select coalesce(nullif(btrim(assigned_to_name), ''), '(unassigned)') as k, count(*) as n
+                from appointments group by 1 order by n desc) t),
+
+            'city_by_vertical', (select json_agg(t) from (
+                select coalesce(nullif(btrim(city), ''), '(unknown)') as k,
+                       coalesce(nullif(btrim(vertical), ''), 'unknown') as v,
+                       count(*) as n
+                from appointments group by 1, 2 order by 1, 2) t),
+
+            'city_by_status', (select json_agg(t) from (
+                select coalesce(nullif(btrim(city), ''), '(unknown)') as k,
+                       coalesce(nullif(btrim(status), ''), '(none)') as v,
+                       count(*) as n
+                from appointments group by 1, 2 order by 1, 2) t),
+
+            'city_by_month', (select json_agg(t) from (
+                select to_char(date_trunc('month', created_at at time zone 'Asia/Riyadh'), 'YYYY-MM') as k,
+                       coalesce(nullif(btrim(city), ''), '(unknown)') as v,
+                       count(*) as n
+                from appointments group by 1, 2 order by 1, 2) t),
+
+            'status_by_month', (select json_agg(t) from (
+                select to_char(date_trunc('month', created_at at time zone 'Asia/Riyadh'), 'YYYY-MM') as k,
+                       coalesce(nullif(btrim(status), ''), '(none)') as v,
+                       count(*) as n
+                from appointments group by 1, 2 order by 1, 2) t),
+
+            'handling_time_hours', (select json_build_object(
+                'n',      count(*) filter (where status_changed_at is not null and status_changed_at >= created_at),
+                'avg',    avg(extract(epoch from (status_changed_at - created_at)) / 3600.0) filter (where status_changed_at is not null and status_changed_at >= created_at),
+                'median', percentile_cont(0.5) within group (order by extract(epoch from (status_changed_at - created_at)) / 3600.0) filter (where status_changed_at is not null and status_changed_at >= created_at),
+                'p90',    percentile_cont(0.9) within group (order by extract(epoch from (status_changed_at - created_at)) / 3600.0) filter (where status_changed_at is not null and status_changed_at >= created_at),
+                'under_1h',  count(*) filter (where status_changed_at is not null and status_changed_at >= created_at and status_changed_at - created_at <= interval '1 hour'),
+                'under_24h', count(*) filter (where status_changed_at is not null and status_changed_at >= created_at and status_changed_at - created_at <= interval '24 hours')
+              ) from appointments),
+
+            'clicks_by_country', (select json_agg(t) from (
+                select coalesce(nullif(btrim(country), ''), '(unknown)') as k, count(*) as n
+                from utm_clicks group by 1 order by n desc) t),
+
+            'clicks_by_month', (select json_agg(t) from (
+                select to_char(date_trunc('month', clicked_at at time zone 'Asia/Riyadh'), 'YYYY-MM') as k, count(*) as n
+                from utm_clicks group by 1 order by 1) t),
+
+            'clicks_by_dow', (select json_agg(t) from (
+                select extract(isodow from clicked_at at time zone 'Asia/Riyadh')::int as k, count(*) as n
+                from utm_clicks group by 1 order by 1) t),
+
+            'clicks_by_hour', (select json_agg(t) from (
+                select extract(hour from clicked_at at time zone 'Asia/Riyadh')::int as k, count(*) as n
+                from utm_clicks group by 1 order by 1) t),
+
+            'clicks_by_os', (select json_agg(t) from (
+                select case
+                         when user_agent ~* 'iPhone|iPad|iPod|CPU OS' then 'iOS'
+                         when user_agent ~* 'Android'                 then 'Android'
+                         when user_agent ~* 'Windows'                 then 'Windows'
+                         when user_agent ~* 'Mac OS X|Macintosh'      then 'macOS'
+                         when user_agent ~* 'Linux|X11'               then 'Linux'
+                         when user_agent is null                      then '(unknown)'
+                         else 'Other' end as k,
+                       count(*) as n
+                from utm_clicks group by 1 order by n desc) t),
+
+            'clicks_by_browser', (select json_agg(t) from (
+                select case
+                         when user_agent ~* 'FBAN|FBAV|FB_IAB'        then 'Facebook in-app'
+                         when user_agent ~* 'Instagram'               then 'Instagram in-app'
+                         when user_agent ~* 'Snapchat'                then 'Snapchat in-app'
+                         when user_agent ~* 'TikTok|BytedanceWebview' then 'TikTok in-app'
+                         when user_agent ~* 'Edg/|EdgiOS'             then 'Edge'
+                         when user_agent ~* 'OPR/|Opera'              then 'Opera'
+                         when user_agent ~* 'Chrome|CriOS'            then 'Chrome'
+                         when user_agent ~* 'Firefox|FxiOS'           then 'Firefox'
+                         when user_agent ~* 'Safari'                  then 'Safari'
+                         when user_agent ~* 'bot|crawl|spider'        then 'Bot / crawler'
+                         when user_agent is null                      then '(unknown)'
+                         else 'Other' end as k,
+                       count(*) as n
+                from utm_clicks group by 1 order by n desc) t),
+
+            'clicks_by_device', (select json_agg(t) from (
+                select case
+                         when user_agent ~* 'iPad|Tablet'                     then 'Tablet'
+                         when user_agent ~* 'Mobile|iPhone|Android.*Mobile'   then 'Mobile'
+                         when user_agent is null                              then '(unknown)'
+                         else 'Desktop' end as k,
+                       count(*) as n
+                from utm_clicks group by 1 order by n desc) t),
+
+            'clicks_by_referrer_host', (select json_agg(t) from (
+                select lower(coalesce(nullif(split_part(split_part(regexp_replace(referrer, '^https?://(www\.)?', ''), '/', 1), '?', 1), ''), '(direct)')) as k,
+                       count(*) as n
+                from utm_clicks group by 1 order by n desc limit 25) t),
+
+            'links_by_source', (select json_agg(t) from (
+                select coalesce(nullif(btrim(l.source), ''), '(none)') as k,
+                       count(*) as links,
+                       sum((select count(*) from utm_clicks c where c.link_id = l.id))       as clicks,
+                       sum((select count(*) from appointments a where a.utm_link_id = l.id)) as leads
+                from utm_links l
+                group by 1 order by clicks desc) t),
+
+            'link_performance', (select json_agg(t) from (
+                select coalesce(nullif(btrim(l.campaign), ''), '(none)') as campaign,
+                       coalesce(nullif(btrim(l.source), ''), '(none)')   as source,
+                       coalesce(nullif(btrim(l.medium), ''), '(none)')   as medium,
+                       (select count(*) from utm_clicks c where c.link_id = l.id)       as clicks,
+                       (select count(*) from appointments a where a.utm_link_id = l.id) as leads
+                from utm_links l
+                order by clicks desc, leads desc
+                limit 30) t),
+
+            'campaign_click_vs_lead', (select json_agg(t) from (
+                select coalesce(nullif(btrim(l.campaign), ''), '(none)') as k,
+                       sum((select count(*) from utm_clicks c where c.link_id = l.id))       as clicks,
+                       sum((select count(*) from appointments a where a.utm_link_id = l.id)) as leads
+                from utm_links l
+                group by 1 order by clicks desc limit 20) t),
+
+            'leads_daily', (select json_agg(t) from (
+                select to_char(date_trunc('day', created_at at time zone 'Asia/Riyadh'), 'YYYY-MM-DD') as k,
+                       count(*) as n
+                from appointments group by 1 order by 1) t),
+
+            'clicks_daily', (select json_agg(t) from (
+                select to_char(date_trunc('day', clicked_at at time zone 'Asia/Riyadh'), 'YYYY-MM-DD') as k,
+                       count(*) as n
+                from utm_clicks group by 1 order by 1) t),
+
+            'team_totals', (select json_build_object(
+                'members',  count(*),
+                'active',   count(*) filter (where is_active),
+                'by_role',  (select json_agg(r) from (select coalesce(role, 'unknown') as k, count(*) as n from team_members group by 1 order by n desc) r)
+              ) from team_members),
+
+            'doctor_totals', (select json_build_object(
+                'doctors',      count(*),
+                'active',       count(*) filter (where is_active),
+                'specialties',  (select count(distinct s) from doctors d2, unnest(d2.specialties) s),
+                'cities',       (select count(distinct c) from doctors d3, unnest(d3.cities) c)
+              ) from doctors),
+
+            'doctors_by_city', (select json_agg(t) from (
+                select c as k, count(*) as n from doctors d, unnest(d.cities) c group by 1 order by n desc) t),
+
+            'doctors_by_specialty', (select json_agg(t) from (
+                select s as k, count(*) as n from doctors d, unnest(d.specialties) s group by 1 order by n desc limit 25) t)
+          );
+          SQL
+
+          echo "── running aggregate queries ──"
+          docker compose exec -T db sh -c \
+            'psql -q -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" -At -f -' \
+            < "$OUT/stats.sql" > "$OUT/stats.json"
+
+          echo "── result size ──"
+          wc -c "$OUT/stats.json"
+          python3 -c "import json,sys; d=json.load(open(sys.argv[1])); print('keys:', len(d)); print('leads:', d['totals']['leads'], 'clicks:', d['click_totals']['clicks'])" "$OUT/stats.json"
+
+          echo "STATS_DIR=$OUT" >> "$GITHUB_ENV"
+
+          {
+            echo "# Leads statistics exported"
+            echo ""
+            echo '```json'
+            head -c 2000 "$OUT/stats.json"
+            echo ""
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload stats JSON
+        uses: actions/upload-artifact@v4
+        with:
+          name: leads-stats
+          path: ${{ env.STATS_DIR }}/stats.json
+          retention-days: 3
