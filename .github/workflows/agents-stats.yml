@@ -1,0 +1,206 @@
+# Per-agent performance statistics from the NourNet VM's Postgres.
+#
+# Companion to leads-stats.yml, same mechanism: the VM has a private IP and no
+# inbound SSH, so the self-hosted runner on it is the only way to reach the
+# database. Read-only — it runs SELECTs and writes nothing.
+#
+# Privacy: this report is ABOUT the team, so team_members identity columns
+# (name, work email, roles, allowed cities, active flag, join date) are
+# selected on purpose. password_hash is never touched. Everything on the lead
+# side is still a GROUP BY / count — no patient name, phone, note or email is
+# selected, so no patient-identifying data leaves the VM.
+#
+# Trigger: gh workflow run agents-stats.yml
+
+name: Agent statistics (read-only)
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: vm-agents-stats
+  cancel-in-progress: false
+
+jobs:
+  stats:
+    runs-on: [self-hosted, myclinic-vm]
+    timeout-minutes: 15
+    steps:
+      - name: Aggregate per-agent pipeline performance
+        run: |
+          set -euo pipefail
+          APP_DIR="${{ vars.DEPLOY_PATH }}"
+          APP_DIR="${APP_DIR:-/opt/myclinic}"
+          cd "$APP_DIR"
+
+          OUT="$RUNNER_TEMP/agents-stats"
+          mkdir -p "$OUT"
+
+          cat > "$OUT/stats.sql" <<'SQL'
+          -- One lead is "worked" once its status has been changed at least once.
+          -- Every duration below is capture -> first status change, in hours.
+          with worked as (
+            select *,
+                   extract(epoch from (status_changed_at - created_at)) / 3600.0 as hrs
+            from appointments
+            where status_changed_at is not null and status_changed_at >= created_at
+          )
+          select json_build_object(
+            'generated_at', now(),
+            'tz', 'Asia/Riyadh',
+
+            'totals', (select json_build_object(
+                'leads',        count(*),
+                'assigned',     count(*) filter (where assigned_to is not null),
+                'unassigned',   count(*) filter (where assigned_to is null),
+                'touched',      count(*) filter (where status_changed_at is not null),
+                'booked',       count(*) filter (where status in ('booked', 'confirmed')),
+                'first_lead',   min(created_at),
+                'last_lead',    max(created_at)
+              ) from appointments),
+
+            -- ── The roster: identity + lifetime numbers, one row per member ──
+            'roster', (select json_agg(t) from (
+                select tm.name,
+                       tm.email,
+                       tm.role,
+                       tm.roles,
+                       tm.allowed_cities,
+                       tm.is_active,
+                       tm.can_export,
+                       tm.created_at,
+                       (select count(*) from appointments a
+                          where a.assigned_to = tm.id) as assigned,
+                       (select count(*) from appointments a
+                          where a.assigned_to = tm.id and a.status in ('booked','confirmed')) as booked,
+                       (select count(*) from appointments a
+                          where a.assigned_to = tm.id and a.status_changed_at is not null) as touched,
+                       (select count(*) from appointments a
+                          where a.assigned_to = tm.id and a.status_changed_at is null) as untouched,
+                       (select count(*) from appointments a
+                          where a.status_changed_by like tm.name || ' (%') as status_changes,
+                       (select min(a.created_at) from appointments a
+                          where a.assigned_to = tm.id) as first_lead,
+                       (select max(a.created_at) from appointments a
+                          where a.assigned_to = tm.id) as last_lead
+                from team_members tm
+                order by assigned desc, tm.name) t),
+
+            -- ── Per-assignee cuts ───────────────────────────────────────────
+            'agent_status', (select json_agg(t) from (
+                select coalesce(nullif(btrim(assigned_to_name), ''), '(unassigned)') as k,
+                       coalesce(nullif(btrim(status), ''), '(none)') as v,
+                       count(*) as n
+                from appointments group by 1, 2 order by 1, 2) t),
+
+            'agent_month', (select json_agg(t) from (
+                select coalesce(nullif(btrim(assigned_to_name), ''), '(unassigned)') as k,
+                       to_char(date_trunc('month', created_at at time zone 'Asia/Riyadh'), 'YYYY-MM') as v,
+                       count(*) as n
+                from appointments group by 1, 2 order by 1, 2) t),
+
+            'agent_city', (select json_agg(t) from (
+                select coalesce(nullif(btrim(assigned_to_name), ''), '(unassigned)') as k,
+                       coalesce(nullif(btrim(city), ''), '(unknown)') as v,
+                       count(*) as n
+                from appointments group by 1, 2 order by 1, 2) t),
+
+            'agent_vertical', (select json_agg(t) from (
+                select coalesce(nullif(btrim(assigned_to_name), ''), '(unassigned)') as k,
+                       coalesce(nullif(btrim(vertical), ''), 'unknown') as v,
+                       count(*) as n
+                from appointments group by 1, 2 order by 1, 2) t),
+
+            'agent_source', (select json_agg(t) from (
+                select coalesce(nullif(btrim(assigned_to_name), ''), '(unassigned)') as k,
+                       coalesce(nullif(btrim(utm_source), ''), '(direct)') as v,
+                       count(*) as n
+                from appointments group by 1, 2 order by 1, 2) t),
+
+            -- ── Speed, per assignee ─────────────────────────────────────────
+            'agent_speed', (select json_agg(t) from (
+                select coalesce(nullif(btrim(assigned_to_name), ''), '(unassigned)') as k,
+                       count(*)                                            as n,
+                       avg(hrs)                                            as avg,
+                       percentile_cont(0.5) within group (order by hrs)     as median,
+                       percentile_cont(0.9) within group (order by hrs)     as p90,
+                       min(hrs)                                            as fastest,
+                       count(*) filter (where hrs <= 1)                    as under_1h,
+                       count(*) filter (where hrs <= 24)                   as under_24h,
+                       count(*) filter (where hrs > 72)                    as over_72h
+                from worked group by 1 order by n desc) t),
+
+            -- ── Activity shape, per assignee ────────────────────────────────
+            'agent_dow', (select json_agg(t) from (
+                select coalesce(nullif(btrim(assigned_to_name), ''), '(unassigned)') as k,
+                       extract(isodow from created_at at time zone 'Asia/Riyadh')::int as v,
+                       count(*) as n
+                from appointments group by 1, 2 order by 1, 2) t),
+
+            -- ── Who actually pressed the button (status_changed_by) ─────────
+            'worked_by', (select json_agg(t) from (
+                select coalesce(nullif(btrim(status_changed_by), ''), '(unknown)') as k,
+                       count(*) as n,
+                       count(*) filter (where status in ('booked','confirmed')) as booked
+                from appointments
+                where status_changed_at is not null
+                group by 1 order by n desc) t),
+
+            'worked_by_month', (select json_agg(t) from (
+                select coalesce(nullif(btrim(status_changed_by), ''), '(unknown)') as k,
+                       to_char(date_trunc('month', status_changed_at at time zone 'Asia/Riyadh'), 'YYYY-MM') as v,
+                       count(*) as n
+                from appointments
+                where status_changed_at is not null
+                group by 1, 2 order by 1, 2) t),
+
+            -- Leads whose assignee is not the person who moved them.
+            'assignee_vs_worker', (select json_agg(t) from (
+                select coalesce(nullif(btrim(assigned_to_name), ''), '(unassigned)') as k,
+                       coalesce(nullif(btrim(status_changed_by), ''), '(unknown)') as v,
+                       count(*) as n
+                from appointments
+                where status_changed_at is not null
+                group by 1, 2 order by 1, n desc) t),
+
+            'unassigned_by_month', (select json_agg(t) from (
+                select to_char(date_trunc('month', created_at at time zone 'Asia/Riyadh'), 'YYYY-MM') as k,
+                       count(*) filter (where assigned_to is null) as unassigned,
+                       count(*) filter (where assigned_to is not null) as assigned,
+                       count(*) as total
+                from appointments group by 1 order by 1) t),
+
+            'team_by_role', (select json_agg(t) from (
+                select coalesce(role, 'unknown') as k,
+                       count(*) as n,
+                       count(*) filter (where is_active) as active
+                from team_members group by 1 order by n desc) t),
+
+            'team_by_roles_array', (select json_agg(t) from (
+                select r as k, count(*) as n
+                from team_members tm, unnest(tm.roles) r
+                group by 1 order by n desc) t)
+          );
+          SQL
+
+          echo "── running aggregate queries ──"
+          docker compose exec -T db sh -c \
+            'psql -q -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" -At -f -' \
+            < "$OUT/stats.sql" > "$OUT/agents.json"
+
+          wc -c "$OUT/agents.json"
+          python3 -c "import json,sys; d=json.load(open(sys.argv[1])); print('keys:', len(d)); print('roster:', len(d['roster']), 'members')" "$OUT/agents.json"
+
+          echo "STATS_DIR=$OUT" >> "$GITHUB_ENV"
+          {
+            echo "# Agent statistics exported"
+            echo ""
+            echo "Roster rows: $(python3 -c "import json;print(len(json.load(open('$OUT/agents.json'))['roster']))")"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload agent stats JSON
+        uses: actions/upload-artifact@v4
+        with:
+          name: agents-stats
+          path: ${{ env.STATS_DIR }}/agents.json
+          retention-days: 3
