@@ -13,12 +13,18 @@ const PHONE_DISPLAY = "920 022 811";
 
 // Primary site navigation. Labels are inline (en/ar) so the component is fully
 // self-contained — matching the existing DentalNav / KidsNav pattern.
+//
+// Keep the English labels SHORT. The row is whitespace-nowrap and shares the
+// header with the logo, language toggle, phone and CTA; long labels used to
+// wrap every item onto two lines (a 36px link became 56px), which read as
+// mismatched stacked text. "Tele-consultation and Home care" alone was 250px.
+// These names match what the footer already calls the same pages.
 export const NAV_LINKS: { href: string; en: string; ar: string; icon: string }[] = [
   { href: "/", en: "Home", ar: "الرئيسية", icon: "home" },
   { href: "/find-doctor", en: "Find a Doctor", ar: "ابحث عن طبيب", icon: "stethoscope" },
   { href: "/specialties", en: "Specialties", ar: "التخصصات", icon: "medical_services" },
-  { href: "/my360", en: "My360 Programs", ar: "برامج عيادتي 360", icon: "health_and_safety" },
-  { href: "/health-homecare", en: "Tele-consultation and Home care", ar: "الاستشارة عن بعد والرعاية المنزلية", icon: "home_health" },
+  { href: "/my360", en: "My360", ar: "عيادتي 360", icon: "health_and_safety" },
+  { href: "/health-homecare", en: "Home Care", ar: "الرعاية المنزلية", icon: "home_health" },
 ];
 
 export default function SiteNav() {
@@ -67,7 +73,7 @@ export default function SiteNav() {
         </Link>
 
         {/* Desktop navigation */}
-        <nav className="hidden lg:flex items-center gap-1">
+        <nav className="hidden xl:flex items-center gap-1">
           {NAV_LINKS.map((link) => {
             const active = isActive(link.href);
             return (
@@ -75,7 +81,7 @@ export default function SiteNav() {
                 key={link.href}
                 href={link.href}
                 aria-current={active ? "page" : undefined}
-                className={`relative px-3.5 py-2 rounded-full text-sm font-bold transition-colors ${
+                className={`relative whitespace-nowrap px-3.5 py-2 rounded-full text-sm font-bold transition-colors ${
                   active ? "text-primary" : "text-on-surface-variant hover:text-primary"
                 }`}
               >
@@ -129,7 +135,7 @@ export default function SiteNav() {
             onClick={() => setOpen((v) => !v)}
             aria-label={isRtl ? "القائمة" : "Menu"}
             aria-expanded={open}
-            className="lg:hidden flex items-center justify-center w-10 h-10 rounded-full bg-surface-container text-primary hover:bg-primary hover:text-white transition-colors cursor-pointer"
+            className="xl:hidden flex items-center justify-center w-10 h-10 rounded-full bg-surface-container text-primary hover:bg-primary hover:text-white transition-colors cursor-pointer"
           >
             <span className="material-symbols-outlined">{open ? "close" : "menu"}</span>
           </button>
@@ -145,14 +151,14 @@ export default function SiteNav() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setOpen(false)}
-              className="lg:hidden fixed inset-0 top-[64px] z-40 bg-black/30 backdrop-blur-sm"
+              className="xl:hidden fixed inset-0 top-[64px] z-40 bg-black/30 backdrop-blur-sm"
             />
             <motion.nav
               initial={{ opacity: 0, y: -12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -12 }}
               transition={{ duration: 0.22, ease: "easeOut" }}
-              className="lg:hidden absolute top-full inset-x-0 z-50 bg-surface-container-lowest border-t border-outline-variant/20 shadow-clinical"
+              className="xl:hidden absolute top-full inset-x-0 z-50 bg-surface-container-lowest border-t border-outline-variant/20 shadow-clinical"
             >
               <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col gap-1">
                 {NAV_LINKS.map((link) => {
