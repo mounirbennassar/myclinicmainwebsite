@@ -1,56 +1,11 @@
-import { getAllActiveDoctors, toDoctorCard } from "./lib/doctors";
+import { getAllActiveDoctors, orderDoctorsForDisplay, toDoctorCard } from "./lib/doctors";
 import type { DoctorCard } from "./lib/doctors";
 import HomeClient from "./HomeClient";
 
-// Deterministic (pure) shuffle — mixes specialties so the carousel's "All" tab
-// interleaves dental with everyone else, without an impure Math.random in render.
-// Seeded by roster size so the order is stable per build yet re-mixes if the
-// roster changes. mulberry32 PRNG.
-function mixDoctors(list: DoctorCard[]): DoctorCard[] {
-  const a = [...list];
-  let s = (a.length * 2654435761) >>> 0;
-  const rand = () => {
-    s = (s + 0x6d2b79f5) | 0;
-    let t = Math.imul(s ^ (s >>> 15), 1 | s);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(rand() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
-/**
- * Doctors the clinic wants at the head of the home carousel, in this order.
- * Everyone else follows in the shuffled mix.
- *
- * Pinned by slug, not by name: a slug is fixed at creation and survives the
- * spelling corrections and title changes that names go through (two of these
- * are recorded as "Prof.", and Abdulqawi Mansari is spelled without the "Al").
- * A slug that no longer exists is skipped rather than leaving a hole, so a
- * removed doctor degrades to "not pinned" instead of breaking the carousel.
- */
-const PINNED_SLUGS = [
-  "dr-mohammed-samannodi",
-  "dr-prof-mohammed-batais",
-  "dr-abdullah-baatiyyah",
-  "dr-prof-turky-almigbal",
-  "dr-ahmed-alzahrani",
-  "dr-rakan-barghouthi",
-  "dr-abdulqawi-mansari",
-  "dr-ibraheem-algarni",
-  "dr-jehad-hariri",
-  "dr-mervat-qutub",
-];
-
-function pinFeatured(list: DoctorCard[]): DoctorCard[] {
-  const bySlug = new Map(list.map((d) => [d.slug, d]));
-  const pinned = PINNED_SLUGS.map((s) => bySlug.get(s)).filter((d): d is DoctorCard => Boolean(d));
-  const seen = new Set(pinned.map((d) => d.slug));
-  return [...pinned, ...list.filter((d) => !seen.has(d.slug))];
-}
+// The carousel's ordering (featured doctors pinned first, then a deterministic
+// specialty-interleaving shuffle) lives in lib/doctors.ts as
+// orderDoctorsForDisplay, shared with /find-doctor so both pages present the
+// roster in the same sequence.
 
 // Doctors are fetched on the server and baked into the page, so the home
 // carousel never depends on a client-side API call — same pattern as /pediatric
@@ -94,9 +49,7 @@ async function doctorsWithinBudget(): Promise<DoctorCard[]> {
 export default async function Home() {
   let doctors: DoctorCard[] = [];
   try {
-    // Shuffle first so the unpinned remainder still interleaves specialties,
-    // then lift the featured doctors to the front in their requested order.
-    doctors = pinFeatured(mixDoctors(await doctorsWithinBudget()));
+    doctors = orderDoctorsForDisplay(await doctorsWithinBudget());
   } catch {
     // The page must stay buildable without a reachable database; the carousel
     // then falls back to its client-side /api/doctors fetch.

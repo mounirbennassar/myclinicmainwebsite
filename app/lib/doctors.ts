@@ -47,6 +47,71 @@ export function toDoctorCard(d: Doctor): DoctorCard {
   };
 }
 
+/**
+ * ── Display ordering (shared by the home carousel and /find-doctor) ────────
+ *
+ * The clinic curates which doctors lead: the FEATURED_DOCTOR_SLUGS come first
+ * in exactly this order, and everyone else follows in a deterministic shuffle
+ * that interleaves specialties (so a run of dentists never dominates the top).
+ *
+ * One function feeds both pages on purpose — /find-doctor previously listed by
+ * raw sort_order while the home "World-Class Medical Minds" carousel had its
+ * own pin + mix, and the two drifted. Ordering here means a curation change is
+ * one edit that lands everywhere.
+ *
+ * Pinned by slug, not by name: a slug is fixed at creation and survives the
+ * spelling corrections and title changes that names go through (two of these
+ * are recorded as "Prof.", and Abdulqawi Mansari is spelled without the "Al").
+ * A slug that no longer exists is skipped rather than leaving a hole, so a
+ * removed doctor degrades to "not pinned" instead of breaking the page.
+ */
+export const FEATURED_DOCTOR_SLUGS = [
+  "dr-mohammed-samannodi",
+  "dr-prof-mohammed-batais",
+  "dr-abdullah-baatiyyah",
+  "dr-prof-turky-almigbal",
+  "dr-ahmed-alzahrani",
+  "dr-rakan-barghouthi",
+  "dr-abdulqawi-mansari",
+  "dr-ibraheem-algarni",
+  "dr-jehad-hariri",
+  "dr-mervat-qutub",
+];
+
+// Deterministic (pure) shuffle — mulberry32, seeded by roster size so the
+// order is stable per build yet re-mixes when the roster changes. Pure so the
+// same roster yields the same order on the server and in any client re-render.
+function mixDoctors<T>(list: T[]): T[] {
+  const a = [...list];
+  let s = (a.length * 2654435761) >>> 0;
+  const rand = () => {
+    s = (s + 0x6d2b79f5) | 0;
+    let t = Math.imul(s ^ (s >>> 15), 1 | s);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/**
+ * Shuffle first so the unpinned remainder still interleaves specialties, then
+ * lift the featured doctors to the front in their requested order. Generic
+ * over anything slug-bearing, so the home page can order narrow DoctorCards
+ * and /find-doctor its full Doctor records; the shuffle seed is the roster
+ * length, so both pages land on the identical sequence.
+ */
+export function orderDoctorsForDisplay<T extends { slug: string }>(list: T[]): T[] {
+  const mixed = mixDoctors(list);
+  const bySlug = new Map(mixed.map((d) => [d.slug, d]));
+  const pinned = FEATURED_DOCTOR_SLUGS.map((s) => bySlug.get(s)).filter((d): d is T => Boolean(d));
+  const seen = new Set(pinned.map((d) => d.slug));
+  return [...pinned, ...mixed.filter((d) => !seen.has(d.slug))];
+}
+
 // Lightweight column set for lists/cards/carousels (skips email).
 const CARD_COLS =
   "id, slug, name_en, name_ar, image_url, qualification_en, qualification_ar, specialty_raw," +

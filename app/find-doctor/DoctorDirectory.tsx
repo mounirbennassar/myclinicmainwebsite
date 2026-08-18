@@ -9,7 +9,7 @@ import { useLang } from "@/app/i18n/context";
 import translations, { type TranslationKey } from "@/app/i18n/translations";
 import { doctorFilters, specNameToKey } from "@/app/lib/specialties";
 import { doctorAvatar } from "@/app/lib/doctor-avatar";
-import DoctorWatermark from "@/app/components/DoctorWatermark";
+import DoctorProfileCard from "@/app/components/DoctorProfileCard";
 import { buildDoctorIndex, searchDoctors, closestDoctors } from "@/app/lib/doctor-search";
 import type { Doctor } from "@/app/lib/doctors";
 
@@ -351,30 +351,14 @@ export default function DoctorDirectory({ doctors }: { doctors: Doctor[] }) {
             <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
               {shown.map((d, i) => (
                 <motion.div key={d.id} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: (i % PAGE % 8) * 0.03 }}>
-                  <Link href={`/doctors/${d.slug}`} className="group block h-full bg-surface-container-lowest rounded-3xl overflow-hidden border border-outline-variant/20 shadow-clinical hover:shadow-xl hover:-translate-y-1 transition-all">
-                    {/* bg-white — see DoctorWatermark: the cut-out portraits carry a
-                        white circular disc that a tinted panel turns into a visible circle. */}
-                    <div className="relative aspect-[4/5] overflow-hidden bg-white">
-                      <Image src={d.image_url || doctorAvatar(d.name_en, d.name_ar)} alt={d.name_en} fill className="object-cover object-top group-hover:scale-105 transition-transform duration-500" sizes="(max-width:768px) 50vw, (max-width:1280px) 33vw, 25vw" loading={i < 8 ? "eager" : "lazy"} />
-                      <div className="absolute inset-0 bg-gradient-to-t from-primary/55 via-transparent to-transparent" />
-                      <DoctorWatermark isRtl={isRtl} />
-                      {d.specialties[0] && (
-                        <span className={`absolute bottom-3 ${isRtl ? "right-3" : "left-3"} bg-secondary-fixed text-on-secondary-fixed px-2.5 py-1 rounded-full text-[10px] font-bold`}>{tSpec(d.specialties[0])}</span>
-                      )}
-                    </div>
-                    <div className="p-4 md:p-5">
-                      {/* Full name over two lines — see DoctorsCarousel: a
-                          single clamped line cut the longer names. */}
-                      <h3 className="font-headline font-extrabold text-primary text-[15px] md:text-base leading-snug mb-1 line-clamp-2 min-h-[2.75em]">{isRtl && d.name_ar ? d.name_ar : d.name_en}</h3>
-                      <p className="text-on-surface-variant text-xs md:text-sm font-medium mb-2 line-clamp-2 min-h-[2.5em]">{subtitle(d)}</p>
-                      {d.cities[0] && (
-                        <p className="flex items-center gap-1 text-xs text-on-surface-variant/80">
-                          <span className="material-symbols-outlined text-sm text-primary">location_on</span>
-                          <span className="line-clamp-1">{isRtl ? (d.cities.includes("Riyadh") && d.cities.includes("Jeddah") ? "جدة، الرياض" : d.cities.includes("Riyadh") ? "الرياض" : "جدة") : d.cities.join(", ")}</span>
-                        </p>
-                      )}
-                    </div>
-                  </Link>
+                  <DoctorProfileCard
+                    doctor={d}
+                    isRtl={isRtl}
+                    tSpec={tSpec}
+                    sizes="(max-width:768px) 50vw, (max-width:1280px) 33vw, 25vw"
+                    eager={i < 8}
+                    showCity
+                  />
                 </motion.div>
               ))}
             </div>
