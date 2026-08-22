@@ -84,6 +84,16 @@ const statusLabel = (s: string) =>
 // silent, so this cadence costs the viewer nothing visually.
 const REFRESH_MS = 30_000;
 
+// The table paints a page at a time. Rendering the whole result set is what
+// makes the leads view crawl: each row carries a status <select>, an assignee
+// <select> and action buttons, so 8,000 leads is well over a hundred thousand
+// DOM nodes on a single blocking render — and every keystroke in the search box
+// used to re-render all of them.
+const DEFAULT_PAGE_SIZE = 50;
+/** Sentinel for the "All" choice — render every matching row, no slicing. */
+const ALL_ROWS = -1;
+const PAGE_SIZE_OPTIONS = [25, 50, 100, 200, ALL_ROWS];
+
 const STATUS_COLORS: Record<string, string> = {
   new: "bg-blue-500/10 text-blue-700 ring-1 ring-blue-500/20",
   out_of_jeddah: "bg-slate-500/10 text-slate-600 ring-1 ring-slate-500/20",
@@ -118,6 +128,8 @@ export default function Dashboard() {
   // Distinct from `loading`: a background refresh must never blank the table,
   // it only spins the refresh icon.
   const [refreshing, setRefreshing] = useState(false);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<number>(DEFAULT_PAGE_SIZE);
   const [search, setSearch] = useState("");
   const [filterCity, setFilterCity] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
@@ -164,6 +176,17 @@ export default function Dashboard() {
     const matchStatus = !filterStatus || a.status === filterStatus;
     return matchSearch && matchStatus;
   });
+
+  // Paging stays client-side, over `filtered`, on purpose: the stat cards, the
+  // free-text search, select-all and export all operate across the ENTIRE
+  // matching set. Move the slice into SQL and every one of them silently starts
+  // reporting on "whatever is on screen" instead — the stat cards would read 50.
+  const pageCount = pageSize === ALL_ROWS ? 1 : Math.max(1, Math.ceil(filtered.length / pageSize));
+  // Derived and clamped rather than stored: narrowing a filter while on page 12
+  // must not strand the user on a blank table.
+  const currentPage = Math.min(page, pageCount);
+  const rangeStart = pageSize === ALL_ROWS ? 0 : (currentPage - 1) * pageSize;
+  const paged = pageSize === ALL_ROWS ? filtered : filtered.slice(rangeStart, rangeStart + pageSize);
 
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) => {
@@ -319,6 +342,12 @@ export default function Dashboard() {
       (vertical === "my360" && my360ProgramCatalog.some((s) => s.slug === filterService));
     if (!stillOffered) setFilterService("");
   }, [vertical, filterService]);
+
+  // Any change to what is being looked at starts again at the first page —
+  // staying on page 12 of a freshly narrowed search is never what was meant.
+  useEffect(() => {
+    setPage(1);
+  }, [search, filterCity, filterStatus, filterService, filterAgent, vertical, pageSize]);
 
   const updateStatus = async (id: string, newStatus: string) => {
     try {
@@ -634,7 +663,7 @@ export default function Dashboard() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
-                  {filtered.map((a) => (
+                  {paged.map((a) => (
                     <tr key={a.id} className={`hover:bg-slate-50/80 transition-colors group ${selectedIds.has(a.id) ? "bg-[#004d99]/5" : ""}`}>
                       {canExport && (
                         <td className="w-10 px-3 py-3.5">
@@ -698,7 +727,7 @@ export default function Dashboard() {
 
             {/* Mobile Cards */}
             <div className="md:hidden divide-y divide-slate-100/80">
-              {filtered.map((a) => (
+              {paged.map((a) => (
                 <div key={a.id} className="px-4 py-3.5 active:bg-slate-50 transition-colors cursor-pointer" onClick={() => setSelectedAppointment(a)}>
                   <div className="flex justify-between items-start mb-1.5">
                     <div>
@@ -722,6 +751,71 @@ export default function Dashboard() {
                 </div>
               ))}
             </div>
+
+            {/* Pager. Hidden when everything already fits, so the common
+                "today's leads" view stays uncluttered. */}
+            {(pageCount > 1 || filtered.length > PAGE_SIZE_OPTIONS[0]) && (
+              <div className="px-4 md:px-5 py-3 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
+                  <label htmlFor="page-size">Show</label>
+                  <select
+                    id="page-size"
+                    value={pageSize}
+                    onChange={(e) => setPageSize(Number(e.target.value))}
+                    className="border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-semibold text-slate-700 cursor-pointer bg-white"
+                  >
+                    {PAGE_SIZE_OPTIONS.map((size) => (
+                      <option key={size} value={size}>{size === ALL_ROWS ? "All" : size}</option>
+                    ))}
+                  </select>
+                  <span className="hidden sm:inline">
+                    {filtered.length === 0
+                      ? "no leads"
+                      : `${rangeStart + 1}\u2013${rangeStart + paged.length} of ${filtered.length}`}
+                  </span>
+                </div>
+
+                {pageCount > 1 && (
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setPage(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-transparent disabled:cursor-not-allowed cursor-pointer"
+                    >
+                      Prev
+                    </button>
+                    {/* A window around the current page — 161 page buttons would
+                        wrap the toolbar at every screen size. */}
+                    {Array.from({ length: pageCount }, (_, i) => i + 1)
+                      .filter((n) => n === 1 || n === pageCount || Math.abs(n - currentPage) <= 1)
+                      .map((n, i, shown) => (
+                        <React.Fragment key={n}>
+                          {i > 0 && n - shown[i - 1] > 1 && (
+                            <span className="px-1 text-slate-300 text-xs">…</span>
+                          )}
+                          <button
+                            onClick={() => setPage(n)}
+                            className={`min-w-[1.9rem] px-2 py-1.5 rounded-lg text-xs font-semibold cursor-pointer ${
+                              n === currentPage
+                                ? "bg-[#004d99] text-white"
+                                : "text-slate-600 hover:bg-slate-100"
+                            }`}
+                          >
+                            {n}
+                          </button>
+                        </React.Fragment>
+                      ))}
+                    <button
+                      onClick={() => setPage(currentPage + 1)}
+                      disabled={currentPage === pageCount}
+                      className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-transparent disabled:cursor-not-allowed cursor-pointer"
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </>
         )}
       </div>
