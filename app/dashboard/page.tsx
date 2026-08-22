@@ -80,6 +80,10 @@ const STATUS_LABELS: Record<string, string> = {
 const statusLabel = (s: string) =>
   STATUS_LABELS[s] || (s ? s.charAt(0).toUpperCase() + s.slice(1) : "");
 
+// How often an open dashboard pulls in newly arrived leads. Refreshes are
+// silent, so this cadence costs the viewer nothing visually.
+const REFRESH_MS = 30_000;
+
 const STATUS_COLORS: Record<string, string> = {
   new: "bg-blue-500/10 text-blue-700 ring-1 ring-blue-500/20",
   out_of_jeddah: "bg-slate-500/10 text-slate-600 ring-1 ring-slate-500/20",
@@ -111,6 +115,9 @@ export default function Dashboard() {
   const vertical = useVertical();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
+  // Distinct from `loading`: a background refresh must never blank the table,
+  // it only spins the refresh icon.
+  const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState("");
   const [filterCity, setFilterCity] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
@@ -236,14 +243,19 @@ export default function Dashboard() {
     setShowExportMenu(false);
   };
 
-  const fetchAppointments = useCallback(async () => {
-    setLoading(true);
+  // `background: true` swaps the rows in silently. Only the very first load is
+  // allowed to blank the table for a spinner — flipping `loading` on every poll
+  // is what made the portal look like it was permanently reloading.
+  const fetchAppointments = useCallback(async (background = false) => {
+    if (background) setRefreshing(true);
+    else setLoading(true);
     try {
       const res = await fetch("/api/appointments");
       const json = await res.json();
       if (res.ok) setAppointments(json.data || []);
     } catch { /* silent */ }
-    setLoading(false);
+    if (background) setRefreshing(false);
+    else setLoading(false);
   }, []);
 
   // Only the people who can reassign a lead need the list to assign it to.
@@ -263,9 +275,37 @@ export default function Dashboard() {
   useEffect(() => {
     fetchAppointments();
     fetchAgents();
-    const interval = setInterval(fetchAppointments, 30000);
-    return () => clearInterval(interval);
   }, [fetchAppointments, fetchAgents]);
+
+  // Keep pulling in new leads, but only while the tab is actually being looked
+  // at — a dashboard left open in a background tab used to poll all day for
+  // nobody. Returning to the tab refreshes at once, so the list is current the
+  // moment it is back on screen rather than up to REFRESH_MS stale.
+  useEffect(() => {
+    let timer: ReturnType<typeof setInterval> | undefined;
+    const stop = () => {
+      if (timer) clearInterval(timer);
+      timer = undefined;
+    };
+    const start = () => {
+      stop();
+      timer = setInterval(() => fetchAppointments(true), REFRESH_MS);
+    };
+    const onVisibilityChange = () => {
+      if (document.hidden) {
+        stop();
+      } else {
+        fetchAppointments(true);
+        start();
+      }
+    };
+    if (!document.hidden) start();
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => {
+      stop();
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
+  }, [fetchAppointments]);
 
   // A service filter that isn't offered by the newly selected vertical would
   // stay active and silently empty the list — e.g. picking a dental page, then
@@ -428,11 +468,12 @@ export default function Dashboard() {
             Add Lead
           </button>
           <button
-            onClick={fetchAppointments}
-            className="p-2 rounded-lg hover:bg-slate-100 transition-colors text-slate-400 hover:text-slate-600"
-            title="Refresh"
+            onClick={() => fetchAppointments(true)}
+            disabled={refreshing}
+            className="p-2 rounded-lg hover:bg-slate-100 transition-colors text-slate-400 hover:text-slate-600 disabled:cursor-not-allowed"
+            title={refreshing ? "Refreshing…" : "Refresh"}
           >
-            <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+            <svg className={`w-4.5 h-4.5 ${refreshing ? "animate-spin" : ""}`} fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182M2.985 19.644l3.181-3.182" />
             </svg>
           </button>
