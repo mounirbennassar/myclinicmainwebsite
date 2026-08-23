@@ -78,7 +78,7 @@ export default function SiteNav() {
         </Link>
 
         {/* Desktop navigation */}
-        <nav className="hidden min-[1400px]:flex items-center gap-1">
+        <nav className="hidden xl:flex items-center gap-1">
           {NAV_LINKS.map((link) => {
             const active = isActive(link.href);
             return (
@@ -140,7 +140,7 @@ export default function SiteNav() {
             onClick={() => setOpen((v) => !v)}
             aria-label={isRtl ? "القائمة" : "Menu"}
             aria-expanded={open}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-container text-primary transition-colors hover:bg-primary hover:text-white min-[1400px]:hidden cursor-pointer"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-container text-primary transition-colors hover:bg-primary hover:text-white xl:hidden cursor-pointer"
           >
             <span className="material-symbols-outlined">{open ? "close" : "menu"}</span>
           </button>
@@ -156,14 +156,14 @@ export default function SiteNav() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setOpen(false)}
-              className="fixed inset-0 top-[64px] z-40 bg-black/30 backdrop-blur-sm min-[1400px]:hidden"
+              className="fixed inset-0 top-[64px] z-40 bg-black/30 backdrop-blur-sm xl:hidden"
             />
             <motion.nav
               initial={{ opacity: 0, y: -12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -12 }}
               transition={{ duration: 0.22, ease: "easeOut" }}
-              className="absolute inset-x-0 top-full z-50 border-t border-outline-variant/20 bg-surface-container-lowest shadow-clinical min-[1400px]:hidden"
+              className="absolute inset-x-0 top-full z-50 border-t border-outline-variant/20 bg-surface-container-lowest shadow-clinical xl:hidden"
             >
               <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col gap-1">
                 {NAV_LINKS.map((link) => {
