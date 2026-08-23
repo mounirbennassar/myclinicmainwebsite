@@ -8,7 +8,6 @@ import { useGSAP } from "@gsap/react";
 
 import { useLang } from "@/app/i18n/context";
 import { trackPhoneClick, trackWhatsAppClick } from "@/app/lib/tracking";
-import { doctorAvatar } from "@/app/lib/doctor-avatar";
 import SiteFooter from "@/app/components/SiteFooter";
 
 import My360Aurora from "./components/My360Aurora";
@@ -22,7 +21,7 @@ import {
   PHONE_DISPLAY,
   PHONE_TEL,
   PROGRAMS,
-  QUOTES,
+  TESTIMONIALS,
   WHATSAPP_DISPLAY,
   whatsappLink,
 } from "./content";
@@ -34,8 +33,24 @@ const ACTION = "#004d99";
 const HAIRLINE = "#E3E6EA";
 const MUTED = "#797C82";
 
-// Team cards use real My Clinic interiors rather than stock placeholders.
-const TEAM_PHOTOS = ["/clinic/consultation.webp", "/clinic/exam-room.webp", "/clinic/reception.webp"];
+// Every care-team card shows a real care interaction rather than an empty room.
+const TEAM_PHOTOS = [
+  {
+    src: "/clinic/consultation.webp",
+    altEn: "A consultant discussing an examination with a patient",
+    altAr: "استشارية تناقش الفحص مع أحد المرضى",
+  },
+  {
+    src: "/female-family/hero.webp",
+    altEn: "A GP speaking with a parent and child patient",
+    altAr: "طبيبة تتحدث مع أم وطفلتها",
+  },
+  {
+    src: "/dental/dentalv2/consult-desk.webp",
+    altEn: "A care team member reviewing information with a patient",
+    altAr: "عضوة من فريق الرعاية تراجع المعلومات مع إحدى المريضات",
+  },
+];
 
 export default function My360Client() {
   const { lang } = useLang();
@@ -69,16 +84,6 @@ export default function My360Client() {
             stagger: 0.09,
           });
         }
-        gsap.from(".m3-hero-card", {
-          autoAlpha: 0,
-          scale: 0.9,
-          y: 18,
-          duration: 0.7,
-          ease: "back.out(1.6)",
-          stagger: 0.14,
-          delay: 0.5,
-        });
-
         // ── Section reveals ──────────────────────────────────
         // Only pre-hide what starts BELOW the fold. Hiding every .m3-reveal made
         // the page's first paint depend on JS having run — a bad LCP, and a
@@ -127,18 +132,6 @@ export default function My360Client() {
           });
         });
 
-        // ── Calendar rows cascade in ─────────────────────────
-        const rows = gsap.utils.toArray<HTMLElement>(".m3-row");
-        if (rows.length) {
-          gsap.from(rows, {
-            autoAlpha: 0,
-            x: isRtl ? 18 : -18,
-            duration: 0.5,
-            ease: "power2.out",
-            stagger: 0.06,
-            scrollTrigger: { trigger: rows[0], start: "top 85%", once: true },
-          });
-        }
       });
 
       return () => mm.revert();
@@ -271,38 +264,6 @@ export default function My360Client() {
             </div>
           </div>
 
-          {/* Floating proof cards — side by side on one row on mobile, offset
-              over the photo on desktop. */}
-          <div className="mt-7 flex flex-nowrap items-stretch gap-2.5 sm:gap-3 lg:absolute lg:inset-y-0 lg:end-8 lg:mt-0 lg:block lg:w-[250px]">
-            <div
-              className="m3-hero-card flex min-w-0 flex-1 items-center gap-2.5 rounded-2xl bg-white px-3.5 py-3 shadow-[0_10px_34px_rgba(0,56,104,0.16)] sm:gap-3 sm:px-5 sm:py-4 lg:absolute lg:top-[26%] lg:end-0 lg:flex-none"
-              style={{ border: `1px solid ${HAIRLINE}` }}
-            >
-              <span className="h-2 w-2 shrink-0 rounded-full sm:h-2.5 sm:w-2.5" style={{ background: "#02AEAD" }} />
-              <div className="min-w-0">
-                <div className="truncate text-[12px] font-bold sm:text-[13.5px]" style={{ color: NAVY }}>
-                  {t.meta.heroCardTitle}
-                </div>
-                <div className="truncate text-[10.5px] sm:text-[11.5px]" style={{ color: MUTED }}>
-                  {t.meta.heroCardSub}
-                </div>
-              </div>
-            </div>
-
-            <div
-              className="m3-hero-card min-w-0 flex-1 rounded-2xl bg-white px-3.5 py-3 shadow-[0_10px_34px_rgba(0,56,104,0.16)] sm:px-6 sm:py-4 lg:absolute lg:bottom-[24%] lg:end-10 lg:flex-none"
-              style={{ border: `1px solid ${HAIRLINE}` }}
-            >
-              {/* Same bdi-not-block rule as the stats bar: dir on the block
-                  would left-align "90%" while its Arabic label aligns right. */}
-              <div className="text-[21px] font-extrabold leading-none sm:text-[27px]" style={{ color: NAVY }}>
-                <bdi dir="ltr">{t.meta.heroStatValue}</bdi>
-              </div>
-              <div className="mt-1 truncate text-[10.5px] sm:text-[12px]" style={{ color: MUTED }}>
-                {t.meta.heroStatLabel}
-              </div>
-            </div>
-          </div>
         </div>
       </header>
 
@@ -395,9 +356,6 @@ export default function My360Client() {
                 <div className="text-[20px] font-extrabold" style={{ color: NAVY }}>
                   {isRtl ? p.name.ar : p.name.en}
                 </div>
-                <div className="mt-0.5 font-arabic text-[13px]" style={{ color: MUTED }} dir="rtl">
-                  {p.tagline.ar}
-                </div>
               </div>
 
               <p className="text-[14px] leading-[1.6]">{isRtl ? p.blurb.ar : p.blurb.en}</p>
@@ -413,16 +371,6 @@ export default function My360Client() {
                 ))}
               </ul>
 
-              <a
-                href={p.brochure}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-auto inline-flex items-center gap-1.5 pt-2 text-[13.5px] font-bold hover:underline"
-                style={{ color: ACTION }}
-              >
-                <My360Icon name="download" className="h-4 w-4" />
-                {t.programs.download}
-              </a>
             </article>
           ))}
         </div>
@@ -488,8 +436,8 @@ export default function My360Client() {
             >
               <div className="relative h-[210px] overflow-hidden">
                 <Image
-                  src={TEAM_PHOTOS[i]}
-                  alt=""
+                  src={TEAM_PHOTOS[i].src}
+                  alt={isRtl ? TEAM_PHOTOS[i].altAr : TEAM_PHOTOS[i].altEn}
                   fill
                   sizes="(max-width: 768px) 100vw, 33vw"
                   className="object-cover transition-transform duration-700 group-hover:scale-105"
@@ -518,147 +466,71 @@ export default function My360Client() {
 
       {/* ── Annual care calendar ──────────────────────────────────── */}
       <section id="calendar" className="my360-cv mx-auto max-w-6xl scroll-mt-28 px-5 pt-16 md:px-8 md:pt-28">
-        <div className="grid items-start gap-9 lg:grid-cols-[1fr_330px]">
-          {/* min-w-0 is load-bearing: a grid item's default min-width is `auto`,
-              so the min-w-[520px] table inside would size the whole track to
-              520px and give the page a sideways scroll on phones. With it, the
-              overflow-x-auto wrapper shrinks and the table scrolls inside. */}
-          <div className="min-w-0">
-            <div className="m3-reveal">
+        <div
+          className="m3-reveal relative overflow-hidden rounded-[24px] border px-6 py-9 shadow-[0_10px_38px_rgba(0,56,104,0.08)] sm:px-9 md:px-12 md:py-12"
+          style={{ borderColor: HAIRLINE, background: "linear-gradient(135deg,#F2F6FA 0%,#ffffff 72%)" }}
+        >
+          <span
+            className="pointer-events-none absolute -end-20 -top-24 h-72 w-72 rounded-full opacity-30"
+            style={{ background: "radial-gradient(circle,#B9DAF3 0%,transparent 68%)" }}
+          />
+          <div className="relative grid items-center gap-7 md:grid-cols-[220px_1fr] md:gap-12">
+            <div>
+              <div
+                className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl"
+                style={{ background: NAVY, color: "white" }}
+              >
+                <My360Icon name="calendar" className="h-6 w-6" />
+              </div>
               {eyebrow(t.calendar.eyebrow)}
               <h2
-                className="mb-6 mt-2.5 text-[clamp(1.4rem,3.6vw,2.25rem)] font-bold leading-[1.25]"
+                className="mt-2.5 text-[clamp(1.4rem,3.6vw,2.25rem)] font-bold leading-[1.25]"
                 style={{ color: NAVY }}
               >
                 {t.calendar.title}
               </h2>
             </div>
-
-            {/* Four columns don't fit a phone without cramping every cell, so the
-                table scrolls sideways below its natural width instead. */}
-            <div
-              className="m3-reveal overflow-x-auto rounded-2xl border shadow-[0_2px_8px_rgba(0,56,104,0.06)]"
-              style={{ borderColor: HAIRLINE }}
-            >
-              <div className="min-w-[520px]">
-              <div
-                className="grid grid-cols-[2.1fr_1fr_1fr_1fr] gap-2 px-4 py-4 md:px-6"
-                style={{ background: NAVY }}
-              >
-                {t.calendar.head.map((h, i) => (
-                  <div key={i}>
-                    <div
-                      className={`text-[13px] ${i === 0 ? "font-semibold text-white/85" : "font-bold text-white"}`}
-                    >
-                      {h}
-                    </div>
-                    {t.calendar.ages[i] && (
-                      // dir goes on an inline <bdi>, not the block: on the block
-                      // it would also flip text-align, leaving the age flush left
-                      // while its column label stays flush right in Arabic.
-                      <div className="text-[11px] text-white/60">
-                        <bdi dir="ltr">{t.calendar.ages[i]}</bdi>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              {t.calendar.rows.map((row, r) => (
-                <div
-                  key={r}
-                  className="m3-row grid grid-cols-[2.1fr_1fr_1fr_1fr] gap-2 border-b px-4 py-3.5 last:border-b-0 md:px-6"
-                  style={{ borderColor: HAIRLINE, background: r % 2 ? "#F6F7F8" : "#fff" }}
-                >
-                  {row.map((cell, c) => (
-                    <div
-                      key={c}
-                      className={c === 0 ? "text-[13.5px] font-semibold" : "text-[13.5px]"}
-                      style={{ color: c === 0 ? "#3D434D" : undefined }}
-                    >
-                      {cell}
-                    </div>
-                  ))}
-                </div>
-              ))}
-              </div>
-            </div>
-
-            <p className="m3-reveal mt-3.5 text-[12.5px] leading-[1.5]" style={{ color: MUTED }}>
-              {t.calendar.note}
+            <p className="max-w-2xl text-[15px] leading-[1.75] md:text-[17px]" style={{ textWrap: "pretty" }}>
+              {t.calendar.body}
             </p>
-          </div>
-
-          <div className="flex flex-col gap-4">
-            <div className="m3-reveal rounded-2xl p-6" style={{ background: "#FBEACF" }}>
-              <div className="flex items-center gap-2.5">
-                <My360Icon name="diabetes" className="h-5 w-5" />
-                <div className="text-[16px] font-extrabold" style={{ color: NAVY }}>
-                  {t.calendar.diabetesTitle}
-                </div>
-              </div>
-              <p className="mt-3 text-[13.5px] leading-[1.6]">{t.calendar.diabetesBody}</p>
-            </div>
-
-            <div className="m3-reveal rounded-2xl border bg-white p-6" style={{ borderColor: HAIRLINE }}>
-              <div className="text-[16px] font-extrabold" style={{ color: NAVY }}>
-                {t.calendar.measureTitle}
-              </div>
-              <ul className="mt-3 flex flex-col gap-2.5 text-[13.5px] leading-[1.5]">
-                {t.calendar.measures.map((m, i) => (
-                  <li key={i} className="flex gap-2.5">
-                    <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: ACTION }} />
-                    {m}
-                  </li>
-                ))}
-              </ul>
-            </div>
           </div>
         </div>
       </section>
 
-      {/* ── Doctor quotes ─────────────────────────────────────────── */}
+      {/* ── Member testimonials ───────────────────────────────────── */}
       <section className="my360-cv mt-16 py-16 md:mt-28 md:py-24" style={{ background: "#F2F6FA" }}>
         <div className="mx-auto max-w-6xl px-5 md:px-8">
           <div className="m3-reveal mx-auto max-w-xl text-center">
-            {eyebrow(t.quotes.eyebrow)}
+            {eyebrow(t.testimonials.eyebrow)}
             <h2 className="mt-2.5 text-[clamp(1.4rem,3.6vw,2.25rem)] font-bold leading-[1.25]" style={{ color: NAVY }}>
-              {t.quotes.title}
+              {t.testimonials.title}
             </h2>
           </div>
 
-          <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
-            {QUOTES.map((q, i) => (
+          <div className="mx-auto mt-10 grid max-w-4xl gap-5 md:grid-cols-2">
+            {TESTIMONIALS.map((testimonial, i) => (
               <figure
                 key={i}
-                className="m3-reveal flex flex-col gap-4 rounded-[18px] border bg-white p-7 transition-shadow hover:shadow-[0_14px_34px_rgba(0,56,104,0.11)]"
+                className="m3-reveal relative flex flex-col gap-5 overflow-hidden rounded-[20px] border bg-white p-7 transition-shadow hover:shadow-[0_14px_34px_rgba(0,56,104,0.11)] md:p-8"
                 style={{ borderColor: HAIRLINE }}
               >
-                <div className="text-[44px] font-extrabold leading-[0.5] opacity-20" style={{ color: NAVY }}>
-                  &ldquo;
+                <span className="absolute inset-x-0 top-0 h-[3px]" style={{ background: testimonial.accent }} />
+                <div className="flex items-center justify-between gap-4">
+                  <div
+                    className="rounded-lg px-3 py-1.5 text-[12px] font-bold"
+                    style={{ background: `${testimonial.accent}18`, color: testimonial.accent }}
+                  >
+                    {isRtl ? testimonial.programAr : testimonial.programEn}
+                  </div>
+                  <div className="text-[44px] font-extrabold leading-[0.5] opacity-15" style={{ color: NAVY }}>
+                    &ldquo;
+                  </div>
                 </div>
                 <blockquote className="flex-1 text-[15px] leading-[1.65]">
-                  {isRtl ? q.quoteAr : q.quoteEn}
+                  {isRtl ? testimonial.quoteAr : testimonial.quoteEn}
                 </blockquote>
-                <figcaption
-                  className="flex items-center gap-3 border-t pt-4"
-                  style={{ borderColor: HAIRLINE }}
-                >
-                  <Image
-                    src={q.photo || doctorAvatar(q.nameEn, q.nameAr)}
-                    alt={isRtl ? q.nameAr : q.nameEn}
-                    width={48}
-                    height={48}
-                    className="h-12 w-12 shrink-0 rounded-full bg-[#F2F6FA] object-cover"
-                  />
-                  <div>
-                    <div className="text-[14px] font-bold" style={{ color: NAVY }}>
-                      {isRtl ? q.nameAr : q.nameEn}
-                    </div>
-                    <div className="text-[12px]" style={{ color: MUTED }}>
-                      {isRtl ? q.roleAr : q.roleEn}
-                    </div>
-                  </div>
+                <figcaption className="border-t pt-4 text-[13px] font-bold" style={{ borderColor: HAIRLINE, color: NAVY }}>
+                  {isRtl ? testimonial.memberAr : testimonial.memberEn}
                 </figcaption>
               </figure>
             ))}

@@ -14,7 +14,7 @@ export const PHONE_TEL = "920022811";
 export const PHONE_DISPLAY = "920 022 811";
 export const WHATSAPP_NUMBER = "966542228111";
 export const WHATSAPP_DISPLAY = "0542228111";
-export const EMAIL = "COE@myclinic.com.sa";
+export const EMAIL = "my360@myclinic.com.sa";
 
 export const whatsappLink = (isRtl: boolean) =>
   `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
@@ -29,11 +29,8 @@ type Program = {
   /** Program-specific accent, from the My Clinic specialty palette. */
   accent: string;
   tint: string;
-  brochure: string;
   age: { en: string; ar: string };
   name: { en: string; ar: string };
-  /** The Arabic sub-brand name — shown under the English name in both locales. */
-  tagline: { en: string; ar: string };
   blurb: { en: string; ar: string };
   points: { en: string; ar: string }[];
 };
@@ -43,10 +40,8 @@ export const PROGRAMS: Program[] = [
     slug: "grow",
     accent: "#A11A4E",
     tint: "#FCECF4",
-    brochure: "/my360/my360-grow.pdf",
     age: { en: "0–18 yrs", ar: "0–18 سنة" },
     name: { en: "My360 Grow", ar: "عيادتي 360 جرو" },
-    tagline: { en: "نموك دائما", ar: "نموك دائما" },
     blurb: {
       en: "Care that grows with your child — from birth through adolescence.",
       ar: "رعاية تنمو مع طفلك — منذ الولادة وحتى نهاية المراهقة.",
@@ -61,10 +56,8 @@ export const PROGRAMS: Program[] = [
     slug: "live",
     accent: "#02AEAD",
     tint: "#D2FBFB",
-    brochure: "/my360/my360-live.pdf",
     age: { en: "19–64 yrs", ar: "19–64 سنة" },
     name: { en: "My360 Live", ar: "عيادتي 360 ليف" },
-    tagline: { en: "صحتك اليوم", ar: "صحتك اليوم" },
     blurb: {
       en: "Care built to live well and live fully, through every adult year.",
       ar: "رعاية مستمرة لصحة أفضل في كل سنوات حياتك العملية.",
@@ -79,10 +72,8 @@ export const PROGRAMS: Program[] = [
     slug: "thrive",
     accent: "#68408F",
     tint: "#F4F0FE",
-    brochure: "/my360/my360-thrive.pdf",
     age: { en: "65+ yrs", ar: "65+ سنة" },
     name: { en: "My360 Thrive", ar: "عيادتي 360 ثرايف" },
-    tagline: { en: "عافيتك غدا", ar: "عافيتك غدا" },
     blurb: {
       en: "Care built for a better, longer life — with independence in focus.",
       ar: "رعاية صممت لحياة أفضل وأطول — مع التركيز على استقلاليتك.",
@@ -97,10 +88,8 @@ export const PROGRAMS: Program[] = [
     slug: "diabetes",
     accent: "#F98122",
     tint: "#FBEACF",
-    brochure: "/my360/my360-diabetes.pdf",
     age: { en: "Condition-based", ar: "حسب الحالة" },
     name: { en: "My360 Diabetes", ar: "عيادتي 360 للسكري" },
-    tagline: { en: "تحكم بثقة", ar: "تحكم بثقة" },
     blurb: {
       en: "Diabetes is something you manage — not something that runs your life.",
       ar: "السكري حالة تديرها أنت — لا حالة تدير حياتك.",
@@ -115,21 +104,17 @@ export const PROGRAMS: Program[] = [
 
 export const EN = {
   meta: {
-    badge: "My Clinic · My360 Health Programs",
+    badge: "My360",
     h1a: "Proactive care for ",
     h1b: "every stage",
     h1c: " of your life.",
     sub: "My360 is My Clinic's family of premium, proactive health programs — prevention, early detection and coordinated specialist care, delivered by a dedicated team that stays with you for life.",
     ctaBook: "Book an appointment",
     ctaWhatsApp: "WhatsApp us",
-    heroCardTitle: "One care team",
-    heroCardSub: "Consultant · GP · Coordinator",
-    heroStatValue: "90%",
-    heroStatLabel: "member satisfaction",
   },
   stats: [
     { value: 4, suffix: "", label: "Health programs" },
-    { value: 5000, suffix: "+", label: "Members served" },
+    { value: 10000, suffix: "+", label: "Members served" },
     { value: 8, suffix: " yrs", label: "Serving our patients" },
     { value: 90, suffix: "%", label: "Member satisfaction" },
   ],
@@ -137,7 +122,6 @@ export const EN = {
     eyebrow: "The programs",
     title: "One family of programs, every stage of life",
     sub: "Each program pairs you with a dedicated care team and a personalized annual calendar — built around your age, risk factors and goals.",
-    download: "Download brochure",
   },
   // NOTE: the `mark` keys below index My360Icons.tsx (inline SVG), NOT Material
   // Symbols. The field is called `mark` rather than `icon` on purpose —
@@ -192,7 +176,7 @@ export const EN = {
         body: "Your Most Responsible Physician — leads the multidisciplinary team, owns your care plan and coordinates every specialist.",
       },
       {
-        role: "Program GP",
+        role: "Clinical Excellence GP",
         tag: "Keeps you on track",
         body: "Your primary clinical contact — monitors progress, reviews results and keeps every touchpoint on schedule.",
       },
@@ -205,31 +189,13 @@ export const EN = {
   },
   calendar: {
     eyebrow: "Annual care calendar",
-    title: "A clear rhythm, every year",
-    head: ["Touchpoint", "Grow", "Live", "Thrive"],
-    ages: ["", "0–18", "19–64", "65+"],
-    rows: [
-      ["Program doctor visits", "1–5×/yr", "1–2×/yr", "4×/yr"],
-      ["Screening labs", "Risk-based", "1–2×/yr", "4×/yr"],
-      ["Dental", "1–2×/yr", "1×/yr", "1×/yr"],
-      ["Ophthalmology", "1×/yr", "1×/yr", "1×/yr"],
-      ["Nutrition", "1×/yr", "1×/yr", "1×/yr"],
-      ["Psychology & wellbeing", "Age-based", "1×/yr", "1×/yr"],
-    ],
-    note: "Minimum / recommended touchpoints. Every calendar is personalized to your age, risk factors and goals — not one-size-fits-all.",
-    diabetesTitle: "My360 Diabetes",
-    diabetesBody:
-      "Runs on its own quarterly rhythm — bloodwork and follow-ups every 3 months, plus annual eye, foot, dental and heart screening.",
-    measureTitle: "How we measure progress",
-    measures: [
-      "Tracked every visit — BMI, blood pressure, activity",
-      "Reviewed annually — HbA1c, LDL, screening completion",
-      "80%+ satisfaction & care-plan adherence, every year",
-    ],
+    title: "A care plan built around you",
+    body:
+      "Each program has a care calendar tailored specifically to your health conditions and needs. Your care team will design and tailor the program with you, so you have visibility of every touchpoint and confidence that the plan is designed to improve your health.",
   },
-  quotes: {
-    eyebrow: "From our doctors",
-    title: "Led by people who care",
+  testimonials: {
+    eyebrow: "Member experiences",
+    title: "What My360 members say",
   },
   faq: {
     eyebrow: "FAQ",
@@ -245,11 +211,7 @@ export const EN = {
       },
       {
         q: "Who coordinates my care?",
-        a: "A core team of three: a Consultant (MRP) who leads your care plan, a Program GP who monitors progress, and a Care Coordinator who handles every appointment, referral and follow-up.",
-      },
-      {
-        q: "Is the care calendar fixed?",
-        a: "No. The tables show minimum or recommended touchpoints — your calendar is personalized to your age, risk factors, health history and goals.",
+        a: "A core team of three: a Consultant (MRP) who leads your care plan, a Clinical Excellence GP who monitors progress, and a Care Coordinator who handles every appointment, referral and follow-up.",
       },
       {
         q: "Do I need a referral to join?",
@@ -257,7 +219,7 @@ export const EN = {
       },
       {
         q: "How do I enroll?",
-        a: "Call 920022811, WhatsApp 0542228111, or email COE@myclinic.com.sa. We're available Sun–Thu 9:00 AM–9:00 PM, Fri 5:00–9:00 PM and Sat 1:00–9:00 PM.",
+        a: "Call 920022811, WhatsApp 0542228111, or email my360@myclinic.com.sa. We're available Sun–Thu 9:00 AM–9:00 PM, Fri 5:00–9:00 PM and Sat 1:00–9:00 PM.",
       },
     ],
   },
@@ -299,21 +261,17 @@ export const EN = {
 
 export const AR: typeof EN = {
   meta: {
-    badge: "عيادتي · برامج عيادتي 360 الصحية",
+    badge: "My360",
     h1a: "رعاية استباقية ",
     h1b: "لكل مرحلة",
     h1c: " من حياتك.",
     sub: "عيادتي 360 هي مجموعة برامج الرعاية الصحية الاستباقية من عيادتي — تجمع بين الوقاية والكشف المبكر والرعاية المنسقة مع مختلف التخصصات، مع فريق طبي مخصص يرافقك مدى الحياة.",
     ctaBook: "احجز موعدك",
     ctaWhatsApp: "تواصل عبر واتساب",
-    heroCardTitle: "فريق رعاية واحد",
-    heroCardSub: "استشاري · طبيب برنامج · منسق رعاية",
-    heroStatValue: "90%",
-    heroStatLabel: "رضا الأعضاء",
   },
   stats: [
     { value: 4, suffix: "", label: "برامج صحية" },
-    { value: 5000, suffix: "+", label: "عضو استفاد من برامجنا" },
+    { value: 10000, suffix: "+", label: "عضو استفاد من برامجنا" },
     // The unit lives in the label, not the suffix: the counter is wrapped in
     // dir="ltr" (digits must not reorder), and an Arabic word inside that
     // wrapper would be laid out left-to-right — i.e. backwards.
@@ -324,7 +282,6 @@ export const AR: typeof EN = {
     eyebrow: "البرامج",
     title: "عائلة واحدة من البرامج لكل مراحل الحياة",
     sub: "كل برنامج يمنحك فريق رعاية مخصصا وجدول رعاية سنويا مصمما وفق عمرك وعوامل الخطورة وأهدافك الصحية.",
-    download: "حمل الكتيب",
   },
   why: {
     eyebrow: "لماذا عيادتي 360؟",
@@ -374,7 +331,7 @@ export const AR: typeof EN = {
         body: "طبيبك المسؤول الأول — يقود الفريق متعدد التخصصات، ويملك خطة رعايتك، وينسق مع كل المتخصصين.",
       },
       {
-        role: "طبيب البرنامج",
+        role: "طبيب التميز السريري",
         tag: "يبقيك على المسار",
         body: "جهة تواصلك الطبية الأولى — يتابع تقدمك، ويراجع نتائج الفحوصات، ويضمن انتظام كل نقاط المتابعة.",
       },
@@ -387,31 +344,13 @@ export const AR: typeof EN = {
   },
   calendar: {
     eyebrow: "جدول الرعاية السنوي",
-    title: "إيقاع واضح، كل عام",
-    head: ["نقاط المتابعة", "جرو", "ليف", "ثرايف"],
-    ages: ["", "0–18", "19–64", "65+"],
-    rows: [
-      ["زيارات طبيب البرنامج", "1–5 مرات/سنة", "1–2 مرة/سنة", "4 مرات/سنة"],
-      ["الفحوصات المخبرية", "حسب الحاجة", "1–2 مرة/سنة", "4 مرات/سنة"],
-      ["الأسنان", "1–2 مرة/سنة", "مرة/سنة", "مرة/سنة"],
-      ["العيون", "مرة/سنة", "مرة/سنة", "مرة/سنة"],
-      ["التغذية", "مرة/سنة", "مرة/سنة", "مرة/سنة"],
-      ["الصحة النفسية", "حسب العمر", "مرة/سنة", "مرة/سنة"],
-    ],
-    note: "الحد الأدنى / الموصى به من نقاط المتابعة. يخصص جدول الرعاية وفق العمر وعوامل الخطورة والأهداف الصحية — وليس بنظام واحد يناسب الجميع.",
-    diabetesTitle: "عيادتي 360 للسكري",
-    diabetesBody:
-      "يعمل بإيقاع ربع سنوي خاص — تحاليل ومتابعات كل 3 أشهر، مع فحص سنوي للعيون والقدم والأسنان والقلب.",
-    measureTitle: "كيف نقيس التقدم",
-    measures: [
-      "في كل زيارة — مؤشر كتلة الجسم وضغط الدم والنشاط البدني",
-      "سنويا — السكر التراكمي والكوليسترول واستكمال الفحوصات",
-      "رضا والتزام بخطة الرعاية بنسبة 80% أو أكثر سنويا",
-    ],
+    title: "خطة رعاية مصممة حولك",
+    body:
+      "لكل برنامج جدول رعاية يصمم خصيصا وفقا لحالتك الصحية واحتياجاتك. سيعمل فريق الرعاية معك على تصميم البرنامج وتخصيصه، لتكون على اطلاع بكل نقطة متابعة وتثق بأن الخطة وضعت لتحسين صحتك.",
   },
-  quotes: {
-    eyebrow: "من أطبائنا",
-    title: "بقيادة أشخاص يهتمون بك",
+  testimonials: {
+    eyebrow: "تجارب المستفيدين",
+    title: "ماذا يقول مستفيدو My360؟",
   },
   faq: {
     eyebrow: "الأسئلة الشائعة",
@@ -427,11 +366,7 @@ export const AR: typeof EN = {
       },
       {
         q: "من ينسق رعايتي؟",
-        a: "فريق أساسي من ثلاثة: استشاري (MRP) يقود خطة رعايتك، وطبيب برنامج يتابع تقدمك، ومنسق رعاية يتولى كل موعد وإحالة ومتابعة.",
-      },
-      {
-        q: "هل جدول الرعاية ثابت؟",
-        a: "لا. الجداول تعرض الحد الأدنى أو الموصى به من نقاط المتابعة — ويخصص جدولك وفق عمرك وتاريخك الصحي وعوامل الخطورة وأهدافك.",
+        a: "فريق أساسي من ثلاثة: استشاري (MRP) يقود خطة رعايتك، وطبيب التميز السريري يتابع تقدمك، ومنسق رعاية يتولى كل موعد وإحالة ومتابعة.",
       },
       {
         q: "هل أحتاج إلى تحويل للانضمام؟",
@@ -439,7 +374,7 @@ export const AR: typeof EN = {
       },
       {
         q: "كيف أنضم؟",
-        a: "اتصل على 920022811، أو واتساب 0542228111، أو راسلنا على COE@myclinic.com.sa. متاحون الأحد–الخميس 9 ص–9 م، الجمعة 5–9 م، السبت 1–9 م.",
+        a: "اتصل على 920022811، أو واتساب 0542228111، أو راسلنا على my360@myclinic.com.sa. متاحون الأحد–الخميس 9 ص–9 م، الجمعة 5–9 م، السبت 1–9 م.",
       },
     ],
   },
@@ -479,49 +414,28 @@ export const AR: typeof EN = {
   ],
 };
 
-/**
- * Doctor quotes. Photos: only Dr. ElBadawi has one in /public/doctors; the rest
- * fall back to the shared illustrated avatars via doctorAvatar().
- */
-export const QUOTES = [
+/** Anonymous member testimonials supplied as program-level experiences. */
+export const TESTIMONIALS = [
   {
-    photo: null,
-    nameEn: "Dr. Mervat Qutub",
-    nameAr: "د. ميرفت قطب",
-    roleEn: "Head of Paediatric Department",
-    roleAr: "رئيسة قسم طب الأطفال",
-    quoteEn: "At My360 Grow, we believe every child deserves the opportunity to reach their full potential.",
-    quoteAr: "نؤمن في عيادتي 360 أن كل طفل يستحق الفرصة ليصل إلى كامل إمكاناته.",
-  },
-  {
-    photo: null,
-    nameEn: "Dr. Ibrahim Alqarni",
-    nameAr: "د. إبراهيم القرني",
-    roleEn: "Head of Family Medicine Department",
-    roleAr: "رئيس قسم طب الأسرة",
+    programEn: "My360 Live",
+    programAr: "My360 Live",
+    memberEn: "My360 Live member",
+    memberAr: "أحد مستفيدي My360 Live",
+    accent: "#02AEAD",
     quoteEn:
-      "Our focus is on prevention, early detection, and coordinated care; helping members maintain their health and achieve better long-term outcomes.",
+      "I finally have one team looking at the full picture, not just separate appointments. I know what comes next and who to contact whenever I need support.",
     quoteAr:
-      "نركز على الوقاية والكشف المبكر والرعاية المتكاملة، لمساعدة المستفيدين على الحفاظ على صحتهم وتحقيق نتائج صحية أفضل على المدى الطويل.",
+      "أصبح لدي أخيرا فريق واحد ينظر إلى الصورة الصحية كاملة، وليس إلى مواعيد منفصلة. أعرف دائما ما هي الخطوة التالية ومن أتواصل معه عندما أحتاج إلى الدعم.",
   },
   {
-    photo: null,
-    nameEn: "Dr. Asim Alshanberi",
-    nameAr: "د. عاصم الشنبري",
-    roleEn: "My360 Thrive Consultant",
-    roleAr: "استشاري عيادتي 360 ثرايف",
-    quoteEn: "Our goal is not simply to add years to life, but to help add life to those years.",
-    quoteAr: "هدفنا ليس فقط إضافة سنوات إلى الحياة، بل أن نضيف حياة إلى هذه السنوات.",
-  },
-  {
-    photo: "/doctors/hussein-elbadawi.webp",
-    nameEn: "Dr. Hussein ElBadawi",
-    nameAr: "د. حسين البدوي",
-    roleEn: "Head of Endocrinology Department",
-    roleAr: "رئيس قسم الغدد الصماء",
+    programEn: "My360 Diabetes",
+    programAr: "My360 Diabetes",
+    memberEn: "My360 Diabetes member",
+    memberAr: "أحد مستفيدي My360 Diabetes",
+    accent: "#F98122",
     quoteEn:
-      "My360 Diabetes is not just a medical service — it's a seamless ecosystem where clinical excellence meets genuine human support.",
+      "The regular follow-ups helped me understand my results, stay consistent with my care plan and feel more confident managing diabetes day to day.",
     quoteAr:
-      "برنامج عيادتي 360 للسكري ليس مجرد خدمة طبية — بل منظومة متكاملة يلتقي فيها التميز الطبي بالدعم الإنساني الحقيقي.",
+      "ساعدتني المتابعات المنتظمة على فهم نتائجي والالتزام بخطة الرعاية والشعور بثقة أكبر في إدارة السكري كل يوم.",
   },
 ];
