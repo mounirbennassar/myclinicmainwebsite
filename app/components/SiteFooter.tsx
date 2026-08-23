@@ -32,8 +32,8 @@ export default function SiteFooter() {
   ];
 
   const serviceLinks = [
-    { href: "/my360", en: "My360 Programs", ar: "برامج عيادتي 360" },
-    { href: "/health-homecare", en: "Home Healthcare", ar: "الرعاية المنزلية" },
+    { href: "/my360", en: "My360", ar: "عيادتي 360" },
+    { href: "/health-homecare", en: "Home Care", ar: "الرعاية المنزلية" },
     { href: "/dental", en: "Dental Care", ar: "طب الأسنان" },
     { href: "/pediatric", en: "Pediatrics", ar: "طب الأطفال" },
   ];

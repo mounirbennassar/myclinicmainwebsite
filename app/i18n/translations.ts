@@ -114,7 +114,7 @@ const translations = {
     "svc.pharmacyDesc": "On-site dispensing",
     "svc.physiotherapy": "Physiotherapy",
     "svc.physiotherapyDesc": "Rehabilitation & recovery",
-    "svc.homeHealthcare": "Home Healthcare",
+    "svc.homeHealthcare": "Home Care",
     "svc.homeHealthcareDesc": "Blood draws, medication delivery, doctor visits",
     "svc.myCare": "My Care",
     "svc.myCareDesc": "Concierge Care Coordinators",

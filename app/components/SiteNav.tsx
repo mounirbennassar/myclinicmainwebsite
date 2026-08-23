@@ -25,6 +25,8 @@ export const NAV_LINKS: { href: string; en: string; ar: string; icon: string }[]
   { href: "/specialties", en: "Specialties", ar: "التخصصات", icon: "medical_services" },
   { href: "/my360", en: "My360", ar: "عيادتي 360", icon: "health_and_safety" },
   { href: "/health-homecare", en: "Home Care", ar: "الرعاية المنزلية", icon: "home_health" },
+  { href: "/dental", en: "Dental", ar: "الأسنان", icon: "dentistry" },
+  { href: "/pediatric", en: "Pediatrics", ar: "طب الأطفال", icon: "child_care" },
 ];
 
 export default function SiteNav() {
@@ -35,7 +37,10 @@ export default function SiteNav() {
   const [scrolled, setScrolled] = useState(false);
 
   // Close the mobile menu whenever the route changes.
-  useEffect(() => { setOpen(false); }, [pathname]);
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setOpen(false));
+    return () => cancelAnimationFrame(frame);
+  }, [pathname]);
 
   // The sheet is anchored to the sticky header, so it stays put as the page moves —
   // the page is deliberately left scrollable while it's open (client request).
@@ -59,7 +64,7 @@ export default function SiteNav() {
         scrolled ? "shadow-clinical border-b border-outline-variant/20" : ""
       }`}
     >
-      <div className="flex justify-between items-center gap-4 max-w-7xl mx-auto px-4 md:px-8 py-3">
+      <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-4 px-4 py-3 md:px-8">
         {/* Logo */}
         <Link href="/" aria-label="My Clinic — Home" className="shrink-0">
           <Image
@@ -73,7 +78,7 @@ export default function SiteNav() {
         </Link>
 
         {/* Desktop navigation */}
-        <nav className="hidden xl:flex items-center gap-1">
+        <nav className="hidden min-[1400px]:flex items-center gap-1">
           {NAV_LINKS.map((link) => {
             const active = isActive(link.href);
             return (
@@ -117,7 +122,7 @@ export default function SiteNav() {
           </div>
 
           {/* Phone — desktop only */}
-          <a href={`tel:${PHONE_TEL}`} onClick={trackPhoneClick} className="hidden xl:flex items-center gap-2 text-primary font-bold text-sm" dir="ltr">
+          <a href={`tel:${PHONE_TEL}`} onClick={trackPhoneClick} className="hidden min-[1400px]:flex items-center gap-2 text-primary font-bold text-sm" dir="ltr">
             <span className="material-symbols-outlined text-lg">call</span>
             {PHONE_DISPLAY}
           </a>
@@ -135,7 +140,7 @@ export default function SiteNav() {
             onClick={() => setOpen((v) => !v)}
             aria-label={isRtl ? "القائمة" : "Menu"}
             aria-expanded={open}
-            className="xl:hidden flex items-center justify-center w-10 h-10 rounded-full bg-surface-container text-primary hover:bg-primary hover:text-white transition-colors cursor-pointer"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-container text-primary transition-colors hover:bg-primary hover:text-white min-[1400px]:hidden cursor-pointer"
           >
             <span className="material-symbols-outlined">{open ? "close" : "menu"}</span>
           </button>
@@ -151,14 +156,14 @@ export default function SiteNav() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setOpen(false)}
-              className="xl:hidden fixed inset-0 top-[64px] z-40 bg-black/30 backdrop-blur-sm"
+              className="fixed inset-0 top-[64px] z-40 bg-black/30 backdrop-blur-sm min-[1400px]:hidden"
             />
             <motion.nav
               initial={{ opacity: 0, y: -12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -12 }}
               transition={{ duration: 0.22, ease: "easeOut" }}
-              className="xl:hidden absolute top-full inset-x-0 z-50 bg-surface-container-lowest border-t border-outline-variant/20 shadow-clinical"
+              className="absolute inset-x-0 top-full z-50 border-t border-outline-variant/20 bg-surface-container-lowest shadow-clinical min-[1400px]:hidden"
             >
               <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col gap-1">
                 {NAV_LINKS.map((link) => {
