@@ -467,14 +467,14 @@ export default function My360Client() {
                 style={{ background: p.accent }}
               />
               <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3.5">
+                <div className="flex min-w-0 items-center gap-3.5">
                   <div
                     className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-transform duration-300 group-hover:scale-110"
                     style={{ background: p.tint, color: p.accent }}
                   >
                     <My360Icon name={p.slug} className="h-[22px] w-[22px]" />
                   </div>
-                  <div className="text-[19px] font-extrabold leading-tight md:text-[20px]" style={{ color: NAVY }}>
+                  <div className="min-w-0 text-[19px] font-extrabold leading-tight md:text-[20px]" style={{ color: NAVY }}>
                     {isRtl ? p.name.ar : p.name.en}
                   </div>
                 </div>

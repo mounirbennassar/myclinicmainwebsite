@@ -59,10 +59,10 @@ export const PROGRAMS: Program[] = [
     accent: "#F98122",
     tint: "#FBEACF",
     age: { en: "Any age", ar: "أي عمر" },
-    name: { en: "My360 Diabetes", ar: "برنامج My 360 لإدارة السكري" },
+    name: { en: "My 360 Diabetes Management Program", ar: "برنامج My 360 لإدارة السكري" },
     short: { en: "Diabetes", ar: "إدارة السكري" },
     tagline: {
-      en: "Care Built Around You — So You Can Focus on Living",
+      en: "Care Built Around You, So You Can Focus on Living",
       ar: "رعاية متكاملة تساعدك على التحكم بالسكري بانتظام وثقة",
     },
     who: {
@@ -86,7 +86,7 @@ export const PROGRAMS: Program[] = [
     accent: "#A11A4E",
     tint: "#FCECF4",
     age: { en: "0–18 yrs", ar: "0–18 سنة" },
-    name: { en: "My360 Grow", ar: "برنامج رحلة طفلك" },
+    name: { en: "My 360 Grow", ar: "برنامج رحلة طفلك" },
     short: { en: "Grow", ar: "رحلة طفلك" },
     tagline: {
       en: "Care for Every Step of Their Growth",
@@ -97,9 +97,9 @@ export const PROGRAMS: Program[] = [
       ar: "الأطفال من الولادة وحتى عمر 18 عاما.",
     },
     points: [
-      { en: "The Foundation (birth–24 months) — up to 5 visits a year", ar: "مرحلة التأسيس (الولادة–24 شهرا): زيارات متكررة وتطعيمات ومتابعة مبكرة للنمو — حتى 5 زيارات سنويا" },
-      { en: "The Growing Years (3–9) — screening and checkup, year on year", ar: "سنوات النمو (3–9): وتيرة سنوية تتناوب بين الفحوصات والتقييم والمتابعة" },
-      { en: "The Formative Years (10–18) — psychology support added", ar: "سنوات التكوين (10–18): إضافة دعم الصحة النفسية والاستعداد للانتقال إلى رعاية البالغين" },
+      { en: "The Foundation (birth–24 months): up to 5 visits a year", ar: "مرحلة التأسيس (الولادة–24 شهرا): زيارات متكررة وتطعيمات ومتابعة مبكرة للنمو، حتى 5 زيارات سنويا" },
+      { en: "The Growing Years (3–9): screening and checkup, year on year", ar: "سنوات النمو (3–9): وتيرة سنوية تتناوب بين الفحوصات والتقييم والمتابعة" },
+      { en: "The Formative Years (10–18): psychology support added", ar: "سنوات التكوين (10–18): إضافة دعم الصحة النفسية والاستعداد للانتقال إلى رعاية البالغين" },
       { en: "Age-appropriate vaccinations and evidence-based screenings", ar: "تطعيمات مناسبة للعمر وفحوصات مبنية على تقييم الطبيب" },
       { en: "Milestone tracking and family-centered care", ar: "متابعة مراحل النمو، ورعاية تشارك الأسرة في قراراتها" },
     ],
@@ -113,7 +113,7 @@ export const PROGRAMS: Program[] = [
     accent: "#02AEAD",
     tint: "#D2FBFB",
     age: { en: "19–64 yrs", ar: "19–64 سنة" },
-    name: { en: "My360 Live", ar: "برنامج حياة" },
+    name: { en: "My 360 Live", ar: "برنامج حياة" },
     short: { en: "Live", ar: "حياة" },
     tagline: {
       en: "Care Built to Live Well & Live Fully",
@@ -124,10 +124,10 @@ export const PROGRAMS: Program[] = [
       ar: "المستفيدين من عمر 19 إلى 64 عاما.",
     },
     points: [
-      { en: "19–34 Baseline — core visits once a year", ar: "19–34: الزيارات الأساسية مرة سنويا" },
-      { en: "35–40 Step Up — core visits twice a year", ar: "35–40: الزيارات الأساسية مرتان سنويا" },
-      { en: "41–50 Stay Ahead — sustained engagement", ar: "41–50: متابعة مستمرة" },
-      { en: "51–64 Sustained Care — a lifelong partnership", ar: "51–64: رعاية صحية طويلة المدى" },
+      { en: "19–34 Baseline: core visits once a year", ar: "19–34: الزيارات الأساسية مرة سنويا" },
+      { en: "35–40 Step Up: core visits twice a year", ar: "35–40: الزيارات الأساسية مرتان سنويا" },
+      { en: "41–50 Stay Ahead: sustained engagement", ar: "41–50: متابعة مستمرة" },
+      { en: "51–64 Sustained Care: a lifelong partnership", ar: "51–64: رعاية صحية طويلة المدى" },
       { en: "Sensory and dental wellness, risk-based specialist referrals", ar: "تقييمات صحية أساسية، والعناية بصحة العينين والأسنان والسمع، وإحالات للتخصصات حسب عوامل الخطورة" },
     ],
     rhythm: {
@@ -140,7 +140,7 @@ export const PROGRAMS: Program[] = [
     accent: "#68408F",
     tint: "#F4F0FE",
     age: { en: "65+ yrs", ar: "65+ سنة" },
-    name: { en: "My360 Thrive", ar: "برنامج حياة متجددة" },
+    name: { en: "My 360 Thrive", ar: "برنامج حياة متجددة" },
     short: { en: "Thrive", ar: "حياة متجددة" },
     tagline: {
       en: "Care Built for a Better, Longer Life",
@@ -152,7 +152,7 @@ export const PROGRAMS: Program[] = [
     },
     points: [
       { en: "Preventive care and early detection of age-related concerns", ar: "الوقاية واكتشاف المشكلات المرتبطة بالتقدم في العمر مبكرا" },
-      { en: "Independence and functional wellbeing — mobility and strength", ar: "دعم الاستقلالية والصحة الوظيفية (الحركة، القوة، والحفاظ على النشاط)" },
+      { en: "Independence and functional wellbeing: mobility and strength", ar: "دعم الاستقلالية والصحة الوظيفية (الحركة، القوة، والحفاظ على النشاط)" },
       { en: "Chronic disease optimization", ar: "تحسين متابعة الحالات المزمنة الشائعة مع التقدم في العمر" },
       { en: "Audiology, speech, ophthalmology, dental, cardiology, orthopedics", ar: "دعم صحي متخصص: السمع، التخاطب، العيون، الأسنان، القلب، والعظام" },
       { en: "Full-body screening reviewed annually", ar: "مراجعة الفحوصات الشاملة سنويا" },
@@ -172,7 +172,7 @@ export const EN = {
     taglineAlt: "رفيق حياتك",
     h1a: "One clinic. ",
     h1b: "One dedicated care team.",
-    sub: "A personalized health journey that adapts to you at every age — from your child's first checkup to the care that keeps you living and thriving well.",
+    sub: "A personalized health journey that adapts to you at every age, from your child's first checkup to the care that keeps you living and thriving well.",
     ctaPrimary: "Find Your Program",
     ctaSecondary: "How My 360 Works",
     noFees: "No membership fees",
@@ -228,7 +228,7 @@ export const EN = {
   approach: {
     eyebrow: "How it works",
     title: "A Simple, Predictable Rhythm of Care",
-    body: "Every My 360 program follows the same reliable rhythm: a first assessment to understand your needs, a personalized plan built around you, and a care team that stays with you at every step — with scheduling, follow-ups, and reminders handled for you.",
+    body: "Every My 360 program follows the same reliable rhythm: a first assessment to understand your needs, a personalized plan built around you, and a care team that stays with you at every step, with scheduling, follow-ups, and reminders handled for you.",
     steps: [
       {
         mark: "chat",
@@ -331,7 +331,7 @@ export const EN = {
   testimonials: {
     eyebrow: "Experts & member stories",
     title: "Backed by a Trusted Team of Specialists",
-    sub: "Consultants, program GPs and specialists across every discipline — and the members whose care they coordinate.",
+    sub: "Consultants, program GPs and specialists across every discipline, and the members whose care they coordinate.",
   },
   faq: {
     eyebrow: "FAQ",
@@ -351,7 +351,7 @@ export const EN = {
       },
       {
         q: "Can I switch programs as my needs change?",
-        a: "Yes. My 360 is designed as a continuum — as you move through life stages (or your health needs change), your care team helps transition you to the right program.",
+        a: "Yes. My 360 is designed as a continuum. As you move through life stages (or your health needs change), your care team helps transition you to the right program.",
       },
       {
         q: "What happens between clinic visits?",
@@ -363,7 +363,7 @@ export const EN = {
       },
       {
         q: "Is My 360 available for children?",
-        a: "Yes — My 360 Grow is a dedicated pediatric program for children and adolescents from birth through age 18.",
+        a: "Yes. My 360 Grow is a dedicated pediatric program for children and adolescents from birth through age 18.",
       },
     ],
   },
@@ -375,7 +375,7 @@ export const EN = {
   },
   form: {
     title: "Request a call back",
-    sub: "Leave your details — our Care Coordinator will contact you.",
+    sub: "Leave your details and our Care Coordinator will contact you.",
     name: "Full name",
     phone: "Mobile number",
     city: "Select city",
@@ -412,7 +412,7 @@ export const AR: typeof EN = {
     taglineAlt: "Simply Better Living",
     h1a: "عيادة واحدة. ",
     h1b: "وفريق رعاية متكامل.",
-    sub: "ورحلة صحية مصممة لتناسبك في كل مرحلة من مراحل الحياة — من أول فحص لطفلك، إلى الرعاية التي تساعدك على مواصلة حياتك بصحة وحيوية.",
+    sub: "ورحلة صحية مصممة لتناسبك في كل مرحلة من مراحل الحياة، من أول فحص لطفلك إلى الرعاية التي تساعدك على مواصلة حياتك بصحة وحيوية.",
     ctaPrimary: "اكتشف برنامجك",
     ctaSecondary: "كيف يعمل My 360",
     noFees: "بدون رسوم عضوية",
@@ -569,7 +569,7 @@ export const AR: typeof EN = {
   testimonials: {
     eyebrow: "الخبراء وتجارب المرضى",
     title: "بدعم من فريق موثوق من الأطباء والأخصائيين",
-    sub: "استشاريون وأطباء برامج وأخصائيون في مختلف التخصصات — والمستفيدون الذين ينسقون رعايتهم.",
+    sub: "استشاريون وأطباء برامج وأخصائيون في مختلف التخصصات، والمستفيدون الذين ينسقون رعايتهم.",
   },
   faq: {
     eyebrow: "الأسئلة الشائعة",
@@ -613,7 +613,7 @@ export const AR: typeof EN = {
   },
   form: {
     title: "اطلب اتصالا منا",
-    sub: "اترك بياناتك — وسيتواصل معك منسق الرعاية.",
+    sub: "اترك بياناتك وسيتواصل معك منسق الرعاية.",
     name: "الاسم الكامل",
     phone: "رقم الجوال",
     city: "اختر المدينة",
@@ -681,9 +681,9 @@ export const TESTIMONIALS = [
     memberAr: "أحد المستفيدين من برنامج حياة",
     accent: "#02AEAD",
     quoteEn:
-      "I used to only see a doctor when something was wrong. Now I have a plan that keeps me ahead of it — regular checkups, clear next steps, and a team that actually remembers my history.",
+      "I used to only see a doctor when something was wrong. Now I have a plan that keeps me ahead of it: regular checkups, clear next steps, and a team that actually remembers my history.",
     quoteAr:
-      "كنت لا أزور الطبيب إلا عند حدوث مشكلة. الآن لدي خطة تسبق المشكلة — فحوصات منتظمة، وخطوات واضحة، وفريق يتذكر تاريخي الصحي فعلا.",
+      "كنت لا أزور الطبيب إلا عند حدوث مشكلة. الآن لدي خطة تسبق المشكلة: فحوصات منتظمة، وخطوات واضحة، وفريق يتذكر تاريخي الصحي فعلا.",
   },
   {
     programEn: "My 360 Thrive",
@@ -705,7 +705,7 @@ export const FAMILY_TESTIMONIAL = {
   memberEn: "A My 360 family, on multiple programs",
   memberAr: "إحدى عائلات My 360، على أكثر من برنامج",
   quoteEn:
-    "Our whole family is on My 360 now — my kids on Grow, my husband and I on Live. It's reassuring knowing everyone has the same standard of coordinated care, all through one clinic.",
+    "Our whole family is on My 360 now: my kids on Grow, my husband and I on Live. It's reassuring knowing everyone has the same standard of coordinated care, all through one clinic.",
   quoteAr:
-    "عائلتنا كلها الآن على My 360 — أطفالي على برنامج رحلة طفلك، وأنا وزوجي على برنامج حياة. من المطمئن أن يحظى الجميع بالمستوى نفسه من الرعاية المنسقة، عبر عيادة واحدة.",
+    "عائلتنا كلها الآن على My 360: أطفالي على برنامج رحلة طفلك، وأنا وزوجي على برنامج حياة. من المطمئن أن يحظى الجميع بالمستوى نفسه من الرعاية المنسقة، عبر عيادة واحدة.",
 };
