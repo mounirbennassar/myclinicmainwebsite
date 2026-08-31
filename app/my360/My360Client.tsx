@@ -18,10 +18,12 @@ import {
   AR,
   EMAIL,
   EN,
+  FAMILY_TESTIMONIAL,
   PHONE_DISPLAY,
   PHONE_TEL,
   PROGRAMS,
   TESTIMONIALS,
+  WEBSITE_DISPLAY,
   WHATSAPP_DISPLAY,
   whatsappLink,
 } from "./content";
@@ -32,6 +34,12 @@ const NAVY = "#003868";
 const ACTION = "#004d99";
 const HAIRLINE = "#E3E6EA";
 const MUTED = "#797C82";
+const TINT = "#F2F6FA";
+
+/** Program accent lookup, for the care-journey timeline nodes. */
+const ACCENT_BY_SLUG: Record<string, string> = Object.fromEntries(
+  PROGRAMS.map((p) => [p.slug, p.accent])
+);
 
 // Every care-team card shows a real care interaction rather than an empty room.
 const TEAM_PHOTOS = [
@@ -151,7 +159,7 @@ export default function My360Client() {
     <div ref={root} className="bg-white" style={{ color: "#3D434D" }}>
       <My360Nav onJump={scrollTo} />
 
-      {/* ── Hero ──────────────────────────────────────────────────── */}
+      {/* ── 1. Hero / Introducing My 360 ───────────────────────────── */}
       <header
         id="home"
         className="relative isolate overflow-hidden"
@@ -188,13 +196,25 @@ export default function My360Client() {
               {t.meta.badge}
             </div>
 
+            {/* The brand tagline lockup — bilingual in BOTH languages, exactly as
+                it appears under the logo in the brochures. The second half is
+                always the other language, so it gets its own dir. */}
+            <div className="m3-hero-in mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13.5px] font-bold sm:mt-5 sm:text-[15px]">
+              <span style={{ color: NAVY }}>{t.meta.tagline}</span>
+              <span aria-hidden style={{ color: "#C9D6E4" }}>
+                |
+              </span>
+              <span dir={isRtl ? "ltr" : "rtl"} style={{ color: MUTED }}>
+                {t.meta.taglineAlt}
+              </span>
+            </div>
+
             <h1
-              className="m3-hero-in mt-5 text-[clamp(1.7rem,5.8vw,4rem)] font-extrabold leading-[1.12] tracking-tight sm:mt-6"
+              className="m3-hero-in mt-3 text-[clamp(1.7rem,5.8vw,4rem)] font-extrabold leading-[1.12] tracking-tight sm:mt-4"
               style={{ color: NAVY, textWrap: "pretty" }}
             >
               {t.meta.h1a}
               <span style={{ color: ACTION }}>{t.meta.h1b}</span>
-              {t.meta.h1c}
             </h1>
 
             <p
@@ -204,29 +224,35 @@ export default function My360Client() {
               {t.meta.sub}
             </p>
 
-            {/* Both CTAs stay on one row at every width — they split it evenly
-                on phones and size to their text from sm up. */}
+            {/* Doc-specified CTAs: primary "Find Your Program", secondary
+                "How My 360 Works". Both are in-page anchors — the phone and
+                WhatsApp live in the sticky nav and in the closing band, so no
+                contact route is lost by keeping this block uncluttered. */}
             <div className="m3-hero-in mt-7 flex flex-nowrap items-stretch gap-2.5 sm:mt-9 sm:gap-3.5">
-              <a
-                href={`tel:${PHONE_TEL}`}
-                onClick={trackPhoneClick}
-                className="inline-flex flex-1 items-center justify-center gap-2 rounded-full px-3 py-3 text-[13px] font-bold text-white shadow-lg shadow-[#003868]/25 transition-all hover:bg-[#00294d] active:scale-[0.98] sm:flex-none sm:justify-start sm:gap-2.5 sm:px-7 sm:py-4 sm:text-[15px]"
+              <button
+                onClick={() => scrollTo("programs")}
+                className="inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full px-3 py-3 text-[13px] font-bold text-white shadow-lg shadow-[#003868]/25 transition-all hover:bg-[#00294d] active:scale-[0.98] sm:flex-none sm:gap-2.5 sm:px-7 sm:py-4 sm:text-[15px]"
                 style={{ background: NAVY }}
               >
-                <My360Icon name="phone" className="h-4 w-4 shrink-0 sm:h-[17px] sm:w-[17px]" />
-                <span className="truncate">{t.meta.ctaBook}</span>
-              </a>
-              <a
-                href={whatsappLink(isRtl)}
-                onClick={trackWhatsAppClick}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex flex-1 items-center justify-center gap-2 rounded-full border-[1.5px] bg-white px-3 py-3 text-[13px] font-bold transition-colors hover:border-[#004d99] sm:flex-none sm:justify-start sm:gap-2.5 sm:px-7 sm:py-4 sm:text-[15px]"
+                <My360Icon name="grid" className="h-4 w-4 shrink-0 sm:h-[17px] sm:w-[17px]" />
+                <span className="truncate">{t.meta.ctaPrimary}</span>
+              </button>
+              <button
+                onClick={() => scrollTo("approach")}
+                className="inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full border-[1.5px] bg-white px-3 py-3 text-[13px] font-bold transition-colors hover:border-[#004d99] active:scale-[0.98] sm:flex-none sm:gap-2.5 sm:px-7 sm:py-4 sm:text-[15px]"
                 style={{ borderColor: "#C9D6E4", color: ACTION }}
               >
-                <My360Icon name="whatsapp" className="h-4 w-4 shrink-0 sm:h-[17px] sm:w-[17px]" />
-                <span className="truncate">{t.meta.ctaWhatsApp}</span>
-              </a>
+                <My360Icon name="route" className="h-4 w-4 shrink-0 sm:h-[17px] sm:w-[17px]" />
+                <span className="truncate">{t.meta.ctaSecondary}</span>
+              </button>
+            </div>
+
+            <div
+              className="m3-hero-in mt-4 inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[12px] font-bold sm:text-[12.5px]"
+              style={{ background: "#E6F4EA", color: "#1E7B45" }}
+            >
+              <My360Icon name="tag" className="h-[15px] w-[15px] shrink-0" />
+              {t.meta.noFees}
             </div>
           </div>
 
@@ -312,75 +338,11 @@ export default function My360Client() {
         </div>
       </div>
 
-      {/* ── Programs ──────────────────────────────────────────────── */}
-      <section id="programs" className="mx-auto max-w-6xl scroll-mt-28 px-5 pt-16 md:px-8 md:pt-28">
-        <div className="m3-reveal max-w-2xl">
-          {eyebrow(t.programs.eyebrow)}
-          <h2
-            className="mt-2.5 text-[clamp(1.4rem,3.6vw,2.25rem)] font-bold leading-[1.25]"
-            style={{ color: NAVY, textWrap: "pretty" }}
-          >
-            {t.programs.title}
-          </h2>
-          <p className="mt-3 text-[14px] leading-[1.65] md:mt-3.5 md:text-[16px]">{t.programs.sub}</p>
-        </div>
-
-        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {PROGRAMS.map((p) => (
-            <article
-              key={p.slug}
-              className="m3-reveal group relative flex flex-col gap-3.5 overflow-hidden rounded-[18px] border bg-white p-6 shadow-[0_2px_8px_rgba(0,56,104,0.06)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_38px_rgba(0,56,104,0.14)]"
-              style={{ borderColor: HAIRLINE }}
-            >
-              {/* Accent hairline that grows on hover */}
-              <span
-                className="absolute inset-x-0 top-0 h-[3px] origin-left scale-x-0 transition-transform duration-500 group-hover:scale-x-100"
-                style={{ background: p.accent }}
-              />
-              <div className="flex items-center justify-between">
-                <div
-                  className="flex h-12 w-12 items-center justify-center rounded-xl transition-transform duration-300 group-hover:scale-110"
-                  style={{ background: p.tint, color: p.accent }}
-                >
-                  <My360Icon name={p.slug} className="h-[22px] w-[22px]" />
-                </div>
-                <span
-                  className="rounded-full px-3 py-1.5 text-[12px] font-bold"
-                  style={{ background: p.tint, color: p.accent }}
-                >
-                  {isRtl ? p.age.ar : p.age.en}
-                </span>
-              </div>
-
-              <div>
-                <div className="text-[20px] font-extrabold" style={{ color: NAVY }}>
-                  {isRtl ? p.name.ar : p.name.en}
-                </div>
-              </div>
-
-              <p className="text-[14px] leading-[1.6]">{isRtl ? p.blurb.ar : p.blurb.en}</p>
-
-              <ul className="flex flex-col gap-2 text-[13.5px] leading-[1.5]" style={{ color: "#3D434D" }}>
-                {p.points.map((pt, i) => (
-                  <li key={i} className="flex gap-2">
-                    <span className="font-bold" style={{ color: p.accent }}>
-                      ✓
-                    </span>
-                    {isRtl ? pt.ar : pt.en}
-                  </li>
-                ))}
-              </ul>
-
-            </article>
-          ))}
-        </div>
-      </section>
-
-      {/* ── Why My360 ─────────────────────────────────────────────── */}
-      <section id="why" className="my360-cv mt-16 scroll-mt-28 py-16 md:mt-28 md:py-24" style={{ background: "#F2F6FA" }}>
+      {/* ── 2. Why My 360? ────────────────────────────────────────── */}
+      <section id="why" className="my360-cv mt-16 scroll-mt-28 py-16 md:mt-24 md:py-24" style={{ background: TINT }}>
         <div className="mx-auto max-w-6xl px-5 md:px-8">
           <div className="m3-reveal flex flex-wrap items-end justify-between gap-5">
-            <div className="max-w-xl">
+            <div className="max-w-lg">
               {eyebrow(t.why.eyebrow)}
               <h2
                 className="mt-2.5 text-[clamp(1.4rem,3.6vw,2.25rem)] font-bold leading-[1.25]"
@@ -389,7 +351,7 @@ export default function My360Client() {
                 {t.why.title}
               </h2>
             </div>
-            <p className="max-w-md text-[15px] leading-[1.65]">{t.why.sub}</p>
+            <p className="max-w-xl text-[14.5px] leading-[1.7] md:text-[15px]">{t.why.sub}</p>
           </div>
 
           <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -401,7 +363,7 @@ export default function My360Client() {
               >
                 <div
                   className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
-                  style={{ background: "#F2F6FA", color: ACTION }}
+                  style={{ background: TINT, color: ACTION }}
                 >
                   <My360Icon name={item.mark} className="h-[21px] w-[21px]" />
                 </div>
@@ -417,14 +379,256 @@ export default function My360Client() {
         </div>
       </section>
 
-      {/* ── Care team ─────────────────────────────────────────────── */}
-      <section id="team" className="my360-cv mx-auto max-w-6xl scroll-mt-28 px-5 pt-16 md:px-8 md:pt-28">
+      {/* ── 3. My 360 approach / how it works ─────────────────────── */}
+      <section id="approach" className="my360-cv mx-auto max-w-6xl scroll-mt-28 px-5 pt-16 md:px-8 md:pt-24">
+        <div className="m3-reveal mx-auto max-w-2xl text-center">
+          {eyebrow(t.approach.eyebrow)}
+          <h2
+            className="mt-2.5 text-[clamp(1.4rem,3.6vw,2.25rem)] font-bold leading-[1.25]"
+            style={{ color: NAVY, textWrap: "pretty" }}
+          >
+            {t.approach.title}
+          </h2>
+          <p className="mt-3.5 text-[14.5px] leading-[1.7] md:text-[16px]" style={{ textWrap: "pretty" }}>
+            {t.approach.body}
+          </p>
+        </div>
+
+        {/* The three joining steps. On md+ a hairline runs behind the row and
+            ties them into one process rather than three loose cards. */}
+        <div className="relative mt-10 md:mt-12">
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-x-[16%] top-[46px] hidden h-[2px] md:block"
+            style={{ background: "linear-gradient(90deg,#C9D6E4,#C9D6E4)" }}
+          />
+          <div className="relative grid gap-5 md:grid-cols-3 md:gap-6">
+            {t.approach.steps.map((step, i) => (
+              <div
+                key={i}
+                className="m3-reveal flex items-start gap-4 rounded-[18px] border bg-white p-6 shadow-[0_2px_8px_rgba(0,56,104,0.05)] transition-shadow hover:shadow-[0_14px_32px_rgba(0,56,104,0.1)] md:flex-col md:items-center md:gap-0 md:pt-8 md:text-center"
+                style={{ borderColor: HAIRLINE }}
+              >
+                <div
+                  className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl md:h-14 md:w-14"
+                  style={{ background: NAVY, color: "white" }}
+                >
+                  <My360Icon name={step.mark} className="h-[22px] w-[22px] md:h-6 md:w-6" />
+                  <span
+                    className="absolute -end-1.5 -top-1.5 flex h-[22px] w-[22px] items-center justify-center rounded-full text-[11px] font-extrabold text-white ring-2 ring-white"
+                    style={{ background: ACTION }}
+                    dir="ltr"
+                  >
+                    {i + 1}
+                  </span>
+                </div>
+                <div className="md:mt-4">
+                  <div className="text-[16px] font-extrabold" style={{ color: NAVY }}>
+                    {step.title}
+                  </div>
+                  <p className="mt-1.5 text-[13.5px] leading-[1.6]">{step.body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <p
+          className="m3-reveal mx-auto mt-8 max-w-2xl text-center text-[15px] font-semibold leading-[1.65] md:mt-10 md:text-[17px]"
+          style={{ color: NAVY, textWrap: "pretty" }}
+        >
+          {t.approach.closing}
+        </p>
+      </section>
+
+      {/* ── 4. Explore My 360 programs ────────────────────────────── */}
+      <section id="programs" className="my360-cv mx-auto max-w-6xl scroll-mt-28 px-5 pt-16 md:px-8 md:pt-24">
+        <div className="m3-reveal max-w-3xl">
+          {eyebrow(t.programs.eyebrow)}
+          <h2
+            className="mt-2.5 text-[clamp(1.4rem,3.6vw,2.25rem)] font-bold leading-[1.25]"
+            style={{ color: NAVY, textWrap: "pretty" }}
+          >
+            {t.programs.title}
+          </h2>
+          <p className="mt-3 text-[14.5px] leading-[1.7] md:mt-3.5 md:text-[16px]">{t.programs.sub}</p>
+        </div>
+
+        <div className="mt-10 grid gap-5 md:grid-cols-2">
+          {PROGRAMS.map((p) => (
+            <article
+              key={p.slug}
+              className="m3-reveal group relative flex flex-col gap-4 overflow-hidden rounded-[18px] border bg-white p-6 shadow-[0_2px_8px_rgba(0,56,104,0.06)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_38px_rgba(0,56,104,0.14)] md:p-7"
+              style={{ borderColor: HAIRLINE }}
+            >
+              {/* Accent hairline that grows on hover */}
+              <span
+                className="absolute inset-x-0 top-0 h-[3px] origin-left scale-x-0 transition-transform duration-500 group-hover:scale-x-100"
+                style={{ background: p.accent }}
+              />
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3.5">
+                  <div
+                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-transform duration-300 group-hover:scale-110"
+                    style={{ background: p.tint, color: p.accent }}
+                  >
+                    <My360Icon name={p.slug} className="h-[22px] w-[22px]" />
+                  </div>
+                  <div className="text-[19px] font-extrabold leading-tight md:text-[20px]" style={{ color: NAVY }}>
+                    {isRtl ? p.name.ar : p.name.en}
+                  </div>
+                </div>
+                <span
+                  className="shrink-0 rounded-full px-3 py-1.5 text-[12px] font-bold"
+                  style={{ background: p.tint, color: p.accent }}
+                >
+                  {isRtl ? p.age.ar : p.age.en}
+                </span>
+              </div>
+
+              <p className="text-[15px] font-bold leading-[1.45]" style={{ color: p.accent }}>
+                {isRtl ? p.tagline.ar : p.tagline.en}
+              </p>
+
+              <div className="rounded-xl px-4 py-3" style={{ background: TINT }}>
+                <div
+                  className="text-[10.5px] font-bold uppercase tracking-[0.12em]"
+                  style={{ color: MUTED }}
+                >
+                  {t.programs.whoLabel}
+                </div>
+                <p className="mt-1 text-[13.5px] leading-[1.5]" style={{ color: NAVY }}>
+                  {isRtl ? p.who.ar : p.who.en}
+                </p>
+              </div>
+
+              <ul className="flex flex-1 flex-col gap-2 text-[13.5px] leading-[1.5]" style={{ color: "#3D434D" }}>
+                {p.points.map((pt, i) => (
+                  <li key={i} className="flex gap-2">
+                    <span className="font-bold" style={{ color: p.accent }}>
+                      ✓
+                    </span>
+                    {isRtl ? pt.ar : pt.en}
+                  </li>
+                ))}
+              </ul>
+
+              <div
+                className="flex items-start gap-2.5 border-t pt-4 text-[12.5px] leading-[1.5]"
+                style={{ borderColor: HAIRLINE, color: MUTED }}
+              >
+                <My360Icon name="clock" className="mt-[1px] h-4 w-4 shrink-0" />
+                {isRtl ? p.rhythm.ar : p.rhythm.en}
+              </div>
+
+              <button
+                onClick={() => scrollTo("my360-contact")}
+                className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border-[1.5px] px-5 py-2.5 text-[13.5px] font-bold transition-colors active:scale-[0.98]"
+                style={{ borderColor: p.accent, color: p.accent }}
+              >
+                {t.programs.cta}
+              </button>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      {/* ── 5. Your care journey ──────────────────────────────────── */}
+      <section id="journey" className="my360-cv mt-16 scroll-mt-28 py-16 md:mt-24 md:py-24" style={{ background: TINT }}>
+        <div className="mx-auto max-w-6xl px-5 md:px-8">
+          <div className="m3-reveal max-w-2xl">
+            {eyebrow(t.journey.eyebrow)}
+            <h2
+              className="mt-2.5 text-[clamp(1.4rem,3.6vw,2.25rem)] font-bold leading-[1.25]"
+              style={{ color: NAVY, textWrap: "pretty" }}
+            >
+              {t.journey.title}
+            </h2>
+            <p className="mt-3 text-[14.5px] leading-[1.7] md:mt-3.5 md:text-[16px]">{t.journey.body}</p>
+          </div>
+
+          {/* The lifeline. One rail element, re-oriented at lg: vertical down
+              the start edge on small screens, horizontal behind the dots on
+              wide ones. It deliberately runs past both ends and fades out —
+              this is a life, not a closed range. */}
+          <div className="relative mt-10 md:mt-12">
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-y-3 start-[7px] w-[2px] lg:inset-x-0 lg:inset-y-auto lg:top-[7px] lg:h-[2px] lg:w-auto"
+              style={{
+                background:
+                  "linear-gradient(to bottom,transparent,#C9D6E4 6%,#C9D6E4 94%,transparent)",
+              }}
+            />
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-x-0 top-[7px] hidden h-[2px] lg:block"
+              style={{
+                background:
+                  "linear-gradient(to right,transparent,#C9D6E4 7%,#C9D6E4 93%,transparent)",
+              }}
+            />
+
+            <ol className="relative flex flex-col gap-5 lg:flex-row lg:gap-2">
+              {t.journey.milestones.map((m, i) => (
+                <li
+                  key={i}
+                  className="m3-reveal flex flex-1 items-start gap-4 lg:flex-col lg:items-stretch lg:gap-3"
+                >
+                  <span
+                    className="mt-[3px] h-4 w-4 shrink-0 rounded-full ring-4 lg:mt-0"
+                    style={{
+                      background: ACCENT_BY_SLUG[m.slug] || ACTION,
+                      // The ring hides the rail where it passes under the dot.
+                      boxShadow: `0 0 0 4px ${TINT}`,
+                    }}
+                  />
+                  <div>
+                    <div className="text-[13px] font-extrabold" style={{ color: NAVY }}>
+                      {m.age}
+                    </div>
+                    <div className="mt-0.5 text-[13px] leading-[1.45]" style={{ color: MUTED }}>
+                      {m.label}
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ol>
+
+            {/* The Diabetes program is not a life stage — it is a parallel track
+                that plugs into any point on the line above. */}
+            <div
+              className="m3-reveal mt-7 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border border-dashed bg-white px-5 py-4 md:mt-9"
+              style={{ borderColor: "#F9812255" }}
+            >
+              <span
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
+                style={{ background: "#FBEACF", color: "#F98122" }}
+              >
+                <My360Icon name="diabetes" className="h-[18px] w-[18px]" />
+              </span>
+              <span className="text-[13px] font-extrabold" style={{ color: "#F98122" }}>
+                {t.journey.parallel.age}
+              </span>
+              <span className="text-[14px] font-bold" style={{ color: NAVY }}>
+                {t.journey.parallel.label}
+              </span>
+              <span className="text-[13px]" style={{ color: MUTED }}>
+                {t.journey.parallel.note}
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── 6. Your care team ─────────────────────────────────────── */}
+      <section id="team" className="my360-cv mx-auto max-w-6xl scroll-mt-28 px-5 pt-16 md:px-8 md:pt-24">
         <div className="m3-reveal max-w-2xl">
           {eyebrow(t.team.eyebrow)}
           <h2 className="mt-2.5 text-[clamp(1.4rem,3.6vw,2.25rem)] font-bold leading-[1.25]" style={{ color: NAVY }}>
             {t.team.title}
           </h2>
-          <p className="mt-3 text-[14px] leading-[1.65] md:mt-3.5 md:text-[16px]">{t.team.sub}</p>
+          <p className="mt-3 text-[14.5px] leading-[1.7] md:mt-3.5 md:text-[16px]">{t.team.sub}</p>
         </div>
 
         <div className="mt-10 grid gap-5 md:grid-cols-3">
@@ -464,50 +668,74 @@ export default function My360Client() {
         </div>
       </section>
 
-      {/* ── Annual care calendar ──────────────────────────────────── */}
-      <section id="calendar" className="my360-cv mx-auto max-w-6xl scroll-mt-28 px-5 pt-16 md:px-8 md:pt-28">
-        <div
-          className="m3-reveal relative overflow-hidden rounded-[24px] border px-6 py-9 shadow-[0_10px_38px_rgba(0,56,104,0.08)] sm:px-9 md:px-12 md:py-12"
-          style={{ borderColor: HAIRLINE, background: "linear-gradient(135deg,#F2F6FA 0%,#ffffff 72%)" }}
-        >
-          <span
-            className="pointer-events-none absolute -end-20 -top-24 h-72 w-72 rounded-full opacity-30"
-            style={{ background: "radial-gradient(circle,#B9DAF3 0%,transparent 68%)" }}
-          />
-          <div className="relative grid items-center gap-7 md:grid-cols-[220px_1fr] md:gap-12">
-            <div>
-              <div
-                className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl"
-                style={{ background: NAVY, color: "white" }}
-              >
-                <My360Icon name="calendar" className="h-6 w-6" />
-              </div>
-              {eyebrow(t.calendar.eyebrow)}
-              <h2
-                className="mt-2.5 text-[clamp(1.4rem,3.6vw,2.25rem)] font-bold leading-[1.25]"
-                style={{ color: NAVY }}
-              >
-                {t.calendar.title}
-              </h2>
-            </div>
-            <p className="max-w-2xl text-[15px] leading-[1.75] md:text-[17px]" style={{ textWrap: "pretty" }}>
-              {t.calendar.body}
-            </p>
-          </div>
+      {/* ── 7. Your care throughout the year ──────────────────────── */}
+      <section id="year" className="my360-cv mx-auto max-w-6xl scroll-mt-28 px-5 pt-16 md:px-8 md:pt-24">
+        <div className="m3-reveal max-w-2xl">
+          {eyebrow(t.year.eyebrow)}
+          <h2 className="mt-2.5 text-[clamp(1.4rem,3.6vw,2.25rem)] font-bold leading-[1.25]" style={{ color: NAVY }}>
+            {t.year.title}
+          </h2>
+          <p className="mt-3 text-[14.5px] leading-[1.7] md:mt-3.5 md:text-[16px]">{t.year.body}</p>
         </div>
+
+        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {t.year.groups.map((g, i) => (
+            <div
+              key={i}
+              className="m3-reveal flex flex-col gap-4 rounded-[18px] border bg-white p-6 transition-shadow hover:shadow-[0_12px_30px_rgba(0,56,104,0.1)]"
+              style={{ borderColor: HAIRLINE }}
+            >
+              <div
+                className="flex h-11 w-11 items-center justify-center rounded-xl"
+                style={{ background: TINT, color: ACTION }}
+              >
+                <My360Icon name={g.mark} className="h-[21px] w-[21px]" />
+              </div>
+              <div>
+                <div className="text-[15px] font-extrabold leading-tight" style={{ color: NAVY }}>
+                  {g.cadence}
+                </div>
+                {g.note && (
+                  <div className="mt-1.5 inline-flex rounded-md px-2 py-0.5 text-[11px] font-bold" style={{ background: "#FBEACF", color: "#B4550C" }}>
+                    {g.note}
+                  </div>
+                )}
+              </div>
+              <ul className="flex flex-wrap gap-1.5">
+                {g.items.map((item, j) => (
+                  <li
+                    key={j}
+                    className="rounded-lg px-2.5 py-1 text-[12.5px] font-medium"
+                    style={{ background: TINT, color: "#3D434D" }}
+                  >
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+        <p
+          className="m3-reveal mx-auto mt-8 max-w-3xl text-center text-[14.5px] leading-[1.7] md:mt-10 md:text-[16px]"
+          style={{ textWrap: "pretty" }}
+        >
+          {t.year.closing}
+        </p>
       </section>
 
-      {/* ── Member testimonials ───────────────────────────────────── */}
-      <section className="my360-cv mt-16 py-16 md:mt-28 md:py-24" style={{ background: "#F2F6FA" }}>
+      {/* ── 8. Medical experts / testimonials ─────────────────────── */}
+      <section className="my360-cv mt-16 py-16 md:mt-24 md:py-24" style={{ background: TINT }}>
         <div className="mx-auto max-w-6xl px-5 md:px-8">
-          <div className="m3-reveal mx-auto max-w-xl text-center">
+          <div className="m3-reveal mx-auto max-w-2xl text-center">
             {eyebrow(t.testimonials.eyebrow)}
             <h2 className="mt-2.5 text-[clamp(1.4rem,3.6vw,2.25rem)] font-bold leading-[1.25]" style={{ color: NAVY }}>
               {t.testimonials.title}
             </h2>
+            <p className="mt-3.5 text-[14.5px] leading-[1.7] md:text-[15.5px]">{t.testimonials.sub}</p>
           </div>
 
-          <div className="mx-auto mt-10 grid max-w-4xl gap-5 md:grid-cols-2">
+          <div className="mt-10 grid gap-5 md:grid-cols-2">
             {TESTIMONIALS.map((testimonial, i) => (
               <figure
                 key={i}
@@ -535,11 +763,34 @@ export default function My360Client() {
               </figure>
             ))}
           </div>
+
+          {/* The multi-program family quote — the one that proves the "one
+              clinic, every stage" promise, so it gets the full width. */}
+          <figure
+            className="m3-reveal relative mt-5 overflow-hidden rounded-[20px] p-7 md:p-10"
+            style={{ background: NAVY }}
+          >
+            <span className="pointer-events-none absolute inset-y-0 -inset-x-1/2 w-1/4 -skew-x-12 bg-gradient-to-r from-transparent via-white/[0.06] to-transparent animate-[my360-sheen_9s_ease-in-out_infinite]" />
+            <div className="relative flex flex-col gap-5">
+              <div className="inline-flex w-fit rounded-lg bg-white/[0.14] px-3 py-1.5 text-[12px] font-bold text-white">
+                {isRtl ? FAMILY_TESTIMONIAL.programAr : FAMILY_TESTIMONIAL.programEn}
+              </div>
+              <blockquote
+                className="max-w-3xl text-[17px] font-semibold leading-[1.6] text-white md:text-[20px]"
+                style={{ textWrap: "pretty" }}
+              >
+                {isRtl ? FAMILY_TESTIMONIAL.quoteAr : FAMILY_TESTIMONIAL.quoteEn}
+              </blockquote>
+              <figcaption className="text-[13px] font-bold text-white/70">
+                {isRtl ? FAMILY_TESTIMONIAL.memberAr : FAMILY_TESTIMONIAL.memberEn}
+              </figcaption>
+            </div>
+          </figure>
         </div>
       </section>
 
-      {/* ── FAQ ───────────────────────────────────────────────────── */}
-      <section id="faq" className="my360-cv mx-auto max-w-3xl scroll-mt-28 px-5 pt-16 md:px-8 md:pt-28">
+      {/* ── 9. FAQs ───────────────────────────────────────────────── */}
+      <section id="faq" className="my360-cv mx-auto max-w-3xl scroll-mt-28 px-5 pt-16 md:px-8 md:pt-24">
         <div className="m3-reveal text-center">
           {eyebrow(t.faq.eyebrow)}
           <h2 className="mt-2.5 text-[clamp(1.4rem,3.6vw,2.25rem)] font-bold leading-[1.25]" style={{ color: NAVY }}>
@@ -570,10 +821,10 @@ export default function My360Client() {
         </div>
       </section>
 
-      {/* ── Contact + lead form ───────────────────────────────────── */}
-      <section id="my360-contact" className="my360-cv mx-auto max-w-6xl scroll-mt-28 px-5 py-16 md:px-8 md:py-28">
+      {/* ── 10. Join My 360 / final CTA ───────────────────────────── */}
+      <section id="my360-contact" className="my360-cv mx-auto max-w-6xl scroll-mt-28 px-5 py-16 md:px-8 md:py-24">
         <div
-          className="m3-reveal relative grid items-center gap-8 overflow-hidden rounded-[24px] p-6 sm:p-8 md:gap-10 md:p-12 lg:grid-cols-[1fr_400px]"
+          className="m3-reveal relative grid items-start gap-8 overflow-hidden rounded-[24px] p-6 sm:p-8 md:gap-10 md:p-12 lg:grid-cols-[1fr_400px]"
           style={{ background: NAVY }}
         >
           <span className="pointer-events-none absolute inset-y-0 -inset-x-1/2 w-1/4 -skew-x-12 bg-gradient-to-r from-transparent via-white/[0.06] to-transparent animate-[my360-sheen_9s_ease-in-out_infinite]" />
@@ -583,15 +834,34 @@ export default function My360Client() {
           />
 
           <div className="relative">
+            <div className="text-[11px] font-bold uppercase tracking-[0.14em] text-white/60 md:text-[12px]">
+              {t.contact.eyebrow}
+            </div>
             <h2
-              className="text-[clamp(1.45rem,4vw,2.4rem)] font-extrabold leading-[1.2] text-white"
+              className="mt-2.5 text-[clamp(1.45rem,4vw,2.4rem)] font-extrabold leading-[1.2] text-white"
               style={{ textWrap: "pretty" }}
             >
               {t.contact.title}
             </h2>
             <p className="mt-3 max-w-md text-[14px] leading-[1.65] text-white/80 md:mt-4 md:text-[15.5px]">{t.contact.body}</p>
 
-            <div className="mt-7 flex flex-col gap-3 text-[14.5px] font-medium text-white">
+            {/* The three joining steps again, condensed — the guide asks for
+                them here so the closing band answers "what happens next?". */}
+            <ol className="mt-7 flex flex-col gap-2.5 border-y border-white/15 py-5 md:flex-row md:gap-6">
+              {t.approach.steps.map((step, i) => (
+                <li key={i} className="flex flex-1 items-center gap-3">
+                  <span
+                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/[0.14] text-[12px] font-extrabold text-white"
+                    dir="ltr"
+                  >
+                    {i + 1}
+                  </span>
+                  <span className="text-[13.5px] font-bold text-white">{step.title}</span>
+                </li>
+              ))}
+            </ol>
+
+            <div className="mt-6 flex flex-col gap-3 text-[14.5px] font-medium text-white">
               <a href={`tel:${PHONE_TEL}`} onClick={trackPhoneClick} className="flex items-center gap-3 hover:text-white">
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-white/[0.12]">
                   <My360Icon name="phone" className="h-4 w-4" />
@@ -615,6 +885,12 @@ export default function My360Client() {
                   <My360Icon name="mail" className="h-4 w-4" />
                 </span>
                 <span dir="ltr">{EMAIL}</span>
+              </a>
+              <a href="/" className="flex items-center gap-3 hover:text-white">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-white/[0.12]">
+                  <My360Icon name="globe" className="h-4 w-4" />
+                </span>
+                <span dir="ltr">{WEBSITE_DISPLAY}</span>
               </a>
               <div className="flex items-center gap-3 text-[13px] font-normal text-white/70">
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-white/[0.12]">

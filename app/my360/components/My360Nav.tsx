@@ -21,7 +21,7 @@ import { AR, EN, PHONE_DISPLAY, PHONE_TEL } from "../content";
  * so the bar always tells you where you are on a long single-page layout.
  */
 
-const SECTION_IDS = ["programs", "why", "team", "calendar", "faq"];
+const SECTION_IDS = ["why", "approach", "programs", "journey", "team", "year", "faq"];
 
 export default function My360Nav({ onJump }: { onJump: (id: string) => void }) {
   const { lang, setLang } = useLang();
@@ -137,7 +137,7 @@ export default function My360Nav({ onJump }: { onJump: (id: string) => void }) {
         </div>
 
         {/* Sections — desktop */}
-        <nav className="ms-auto hidden items-center gap-0.5 lg:flex">
+        <nav className="ms-auto hidden items-center gap-0.5 xl:flex">
           {t.nav.map((l) => {
             const id = l.href.slice(1);
             const isActive = active === id;
@@ -146,7 +146,7 @@ export default function My360Nav({ onJump }: { onJump: (id: string) => void }) {
                 key={l.href}
                 onClick={() => go(l.href)}
                 aria-current={isActive ? "true" : undefined}
-                className={`relative cursor-pointer rounded-full px-3.5 py-2 text-[13.5px] font-semibold transition-colors ${
+                className={`relative cursor-pointer rounded-full px-3 py-2 text-[13px] font-semibold transition-colors ${
                   isActive ? "text-[#004d99]" : "text-[#3D434D] hover:text-[#004d99]"
                 }`}
               >
@@ -164,7 +164,7 @@ export default function My360Nav({ onJump }: { onJump: (id: string) => void }) {
         </nav>
 
         {/* Actions */}
-        <div className="ms-auto flex items-center gap-2 lg:ms-3 lg:gap-2.5">
+        <div className="ms-auto flex items-center gap-2 xl:ms-3 xl:gap-2.5">
           <div className="flex items-center overflow-hidden rounded-full border border-[#E3E6EA] bg-[#F6F7F8] text-[11px] font-bold">
             <button
               onClick={() => switchLang("en")}
@@ -187,7 +187,7 @@ export default function My360Nav({ onJump }: { onJump: (id: string) => void }) {
           <a
             href={`tel:${PHONE_TEL}`}
             onClick={trackPhoneClick}
-            className="hidden items-center gap-1.5 text-[13.5px] font-bold text-[#003868] xl:flex"
+            className="hidden items-center gap-1.5 text-[13.5px] font-bold text-[#003868] 2xl:flex"
             dir="ltr"
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
@@ -209,7 +209,7 @@ export default function My360Nav({ onJump }: { onJump: (id: string) => void }) {
             aria-label={isRtl ? "القائمة" : "Menu"}
             aria-expanded={open}
             aria-controls="my360-menu"
-            className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full bg-[#003868]/[0.07] text-[#003868] transition-colors active:bg-[#003868]/15 lg:hidden"
+            className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full bg-[#003868]/[0.07] text-[#003868] transition-colors active:bg-[#003868]/15 xl:hidden"
           >
             {/* Bars, animated with transforms. Morphing an SVG `d` between
                 "M4 7h16" and "M6 6l12 12" would snap rather than tween —
@@ -248,7 +248,7 @@ export default function My360Nav({ onJump }: { onJump: (id: string) => void }) {
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            className="overflow-hidden border-t border-[#E3E6EA] bg-white lg:hidden"
+            className="overflow-hidden border-t border-[#E3E6EA] bg-white xl:hidden"
           >
             <motion.div
               initial="closed"
