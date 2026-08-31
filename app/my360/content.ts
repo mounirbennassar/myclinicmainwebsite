@@ -57,7 +57,7 @@ export const PROGRAMS: Program[] = [
     accent: "#F98122",
     tint: "#FBEACF",
     age: { en: "Any age", ar: "أي عمر" },
-    name: { en: "My360 Diabetes", ar: "عيادتي 360 للسكري" },
+    name: { en: "My360 Diabetes", ar: "برنامج التحكم بالسكري" },
     tagline: {
       en: "Care Built Around You — So You Can Focus on Living",
       ar: "رعاية مصممة حولك — لتتفرغ لحياتك",
@@ -83,7 +83,7 @@ export const PROGRAMS: Program[] = [
     accent: "#A11A4E",
     tint: "#FCECF4",
     age: { en: "0–18 yrs", ar: "0–18 سنة" },
-    name: { en: "My360 Grow", ar: "عيادتي 360 جرو" },
+    name: { en: "My360 Grow", ar: "برنامج رحلة طفلك" },
     tagline: {
       en: "Care for Every Step of Their Growth",
       ar: "رعاية ترافق كل خطوة في نموه",
@@ -109,7 +109,7 @@ export const PROGRAMS: Program[] = [
     accent: "#02AEAD",
     tint: "#D2FBFB",
     age: { en: "19–64 yrs", ar: "19–64 سنة" },
-    name: { en: "My360 Live", ar: "عيادتي 360 ليف" },
+    name: { en: "My360 Live", ar: "برنامج حياة" },
     tagline: {
       en: "Care Built to Live Well & Live Fully",
       ar: "رعاية لتعيش بصحة وتعيش حياتك كاملة",
@@ -135,7 +135,7 @@ export const PROGRAMS: Program[] = [
     accent: "#68408F",
     tint: "#F4F0FE",
     age: { en: "65+ yrs", ar: "65+ سنة" },
-    name: { en: "My360 Thrive", ar: "عيادتي 360 ثرايف" },
+    name: { en: "My360 Thrive", ar: "برنامج حياة متجددة" },
     tagline: {
       en: "Care Built for a Better, Longer Life",
       ar: "رعاية صممت لحياة أفضل وأطول",
@@ -492,17 +492,17 @@ export const AR: typeof EN = {
     title: "رحلة واحدة، ورعاية لا تنقطع",
     body: "صمم عيادتي 360 ليدعمك عبر الزمن. رعايتك مترابطة في كل خطوة، مع فريق مخصص يفهم صحتك، ويتابع تقدمك، ويبقى إلى جانبك كلما تغيرت احتياجاتك وأولوياتك.",
     milestones: [
-      { age: "الولادة – 24 شهرا", label: "جرو: مرحلة التأسيس", slug: "grow" },
-      { age: "3–9 سنوات", label: "جرو: سنوات النمو", slug: "grow" },
-      { age: "10–18 سنة", label: "جرو: سنوات التكوين", slug: "grow" },
-      { age: "19–34 سنة", label: "ليف: خط الأساس", slug: "live" },
-      { age: "35–50 سنة", label: "ليف: تصعيد المتابعة", slug: "live" },
-      { age: "51–64 سنة", label: "ليف: رعاية متواصلة", slug: "live" },
-      { age: "كبار السن", label: "ثرايف", slug: "thrive" },
+      { age: "الولادة – 24 شهرا", label: "رحلة طفلك: مرحلة التأسيس", slug: "grow" },
+      { age: "3–9 سنوات", label: "رحلة طفلك: سنوات النمو", slug: "grow" },
+      { age: "10–18 سنة", label: "رحلة طفلك: سنوات التكوين", slug: "grow" },
+      { age: "19–34 سنة", label: "حياة: خط الأساس", slug: "live" },
+      { age: "35–50 سنة", label: "حياة: تصعيد المتابعة", slug: "live" },
+      { age: "51–64 سنة", label: "حياة: رعاية متواصلة", slug: "live" },
+      { age: "كبار السن", label: "حياة متجددة", slug: "thrive" },
     ],
     parallel: {
       age: "في أي مرحلة",
-      label: "برنامج إدارة السكري",
+      label: "برنامج التحكم بالسكري",
       note: "لمن يتعايشون مع السكري",
     },
   },
@@ -543,7 +543,7 @@ export const AR: typeof EN = {
         mark: "calendar",
         cadence: "يراجع كل 3 أشهر",
         items: ["السكر التراكمي", "الكوليسترول الضار", "الالتزام بالأدوية"],
-        note: "السكري وثرايف",
+        note: "التحكم بالسكري وحياة متجددة",
       },
       {
         mark: "shield",
@@ -595,7 +595,7 @@ export const AR: typeof EN = {
       },
       {
         q: "هل عيادتي 360 متاح للأطفال؟",
-        a: "نعم — عيادتي 360 جرو برنامج مخصص لطب الأطفال، للأطفال والمراهقين منذ الولادة وحتى سن 18.",
+        a: "نعم — برنامج رحلة طفلك مخصص لطب الأطفال، للأطفال والمراهقين منذ الولادة وحتى سن 18.",
       },
     ],
   },
@@ -648,9 +648,9 @@ export const AR: typeof EN = {
 export const TESTIMONIALS = [
   {
     programEn: "Diabetes Management Program",
-    programAr: "برنامج إدارة السكري",
+    programAr: "برنامج التحكم بالسكري",
     memberEn: "Member, Diabetes Management Program",
-    memberAr: "أحد أعضاء برنامج إدارة السكري",
+    memberAr: "أحد أعضاء برنامج التحكم بالسكري",
     accent: "#F98122",
     quoteEn:
       "For years I managed my diabetes on my own, juggling appointments and never quite sure if I was on track. With My 360, I finally have one team that knows my whole picture, and my numbers have never been more stable.",
@@ -659,9 +659,9 @@ export const TESTIMONIALS = [
   },
   {
     programEn: "My 360 Grow",
-    programAr: "عيادتي 360 جرو",
+    programAr: "برنامج رحلة طفلك",
     memberEn: "Parent of a My 360 Grow patient",
-    memberAr: "والدة أحد أطفال عيادتي 360 جرو",
+    memberAr: "والدة أحد أطفال برنامج رحلة طفلك",
     accent: "#A11A4E",
     quoteEn:
       "As a first-time parent, I worried about missing something important. Having a dedicated pediatric team tracking every milestone, and a coordinator who handles the scheduling, has taken so much pressure off us.",
@@ -670,9 +670,9 @@ export const TESTIMONIALS = [
   },
   {
     programEn: "My 360 Live",
-    programAr: "عيادتي 360 ليف",
+    programAr: "برنامج حياة",
     memberEn: "Member, My 360 Live",
-    memberAr: "أحد أعضاء عيادتي 360 ليف",
+    memberAr: "أحد أعضاء برنامج حياة",
     accent: "#02AEAD",
     quoteEn:
       "I used to only see a doctor when something was wrong. Now I have a plan that keeps me ahead of it — regular checkups, clear next steps, and a team that actually remembers my history.",
@@ -681,14 +681,14 @@ export const TESTIMONIALS = [
   },
   {
     programEn: "My 360 Thrive",
-    programAr: "عيادتي 360 ثرايف",
+    programAr: "برنامج حياة متجددة",
     memberEn: "Member, My 360 Thrive",
-    memberAr: "أحد أعضاء عيادتي 360 ثرايف",
+    memberAr: "أحد أعضاء برنامج حياة متجددة",
     accent: "#68408F",
     quoteEn:
       "At my age, I wanted a care team that understood how everything is connected, not just separate visits for separate problems. My 360 Thrive gives me that, and I feel more in control of my health than I have in years.",
     quoteAr:
-      "في مثل عمري، أردت فريق رعاية يفهم كيف يرتبط كل شيء ببعضه، لا زيارات منفصلة لمشكلات منفصلة. عيادتي 360 ثرايف منحني ذلك، وأشعر بسيطرة على صحتي لم أشعر بها منذ سنوات.",
+      "في مثل عمري، أردت فريق رعاية يفهم كيف يرتبط كل شيء ببعضه، لا زيارات منفصلة لمشكلات منفصلة. برنامج حياة متجددة منحني ذلك، وأشعر بسيطرة على صحتي لم أشعر بها منذ سنوات.",
   },
 ];
 
@@ -701,5 +701,5 @@ export const FAMILY_TESTIMONIAL = {
   quoteEn:
     "Our whole family is on My 360 now — my kids on Grow, my husband and I on Live. It's reassuring knowing everyone has the same standard of coordinated care, all through one clinic.",
   quoteAr:
-    "عائلتنا كلها الآن على عيادتي 360 — أطفالي على جرو، وأنا وزوجي على ليف. من المطمئن أن يحظى الجميع بالمستوى نفسه من الرعاية المنسقة، عبر عيادة واحدة.",
+    "عائلتنا كلها الآن على عيادتي 360 — أطفالي على رحلة طفلك، وأنا وزوجي على حياة. من المطمئن أن يحظى الجميع بالمستوى نفسه من الرعاية المنسقة، عبر عيادة واحدة.",
 };

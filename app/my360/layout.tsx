@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "My 360 · عيادتي 360 — Simply Better Living | My Clinic",
     description:
-      "برامج رعاية صحية استباقية من عيادتي — برنامج السكري، جرو (0–18)، ليف (19–64)، ثرايف (65+). A personalized health journey that adapts to you at every age.",
+      "برامج رعاية صحية استباقية من عيادتي — برنامج التحكم بالسكري، وبرنامج رحلة طفلك (0–18)، وبرنامج حياة (19–64)، وبرنامج حياة متجددة (65+). A personalized health journey that adapts to you at every age.",
     images: [{ url: "/myclinic-frame-logo.webp", width: 800, height: 400, alt: "My Clinic | عيادتي" }],
     locale: "ar_SA",
     type: "website",

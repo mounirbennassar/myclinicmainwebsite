@@ -279,7 +279,7 @@ export default function My360Client() {
                     style={{ borderColor: HAIRLINE, color: "#3D434D" }}
                   >
                     <span className="h-2 w-2 rounded-full" style={{ background: p.accent }} />
-                    {(isRtl ? p.name.ar : p.name.en).replace(/^My360 |^عيادتي 360 /, "")}
+                    {(isRtl ? p.name.ar : p.name.en).replace(/^My360 |^برنامج /, "")}
                     <span style={{ color: MUTED }}>·</span>
                     {/* No dir override — the Arabic ages read "0–18 سنة", and
                         forcing LTR would lay the digits out on the wrong side. */}
