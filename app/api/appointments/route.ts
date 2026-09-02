@@ -55,7 +55,9 @@ export async function POST(request: Request) {
     const { city, name, phone } = body;
     if (!city || !name || !phone) throw new HttpError(400, "All fields are required");
 
-    const data: Record<string, unknown> = { city, name, phone };
+    // Every lead arrives untouched. "pending" is the entry stage; "new"
+    // (labelled Inquiry) is the first stage an agent moves it to.
+    const data: Record<string, unknown> = { city, name, phone, status: "pending" };
 
     const vertical = ALLOWED_VERTICALS.has(body.vertical) ? body.vertical : "medical";
     data.vertical = vertical;

@@ -52,6 +52,7 @@ type TeamMember = {
 type Period = "today" | "week" | "month" | "custom";
 
 const STATUS_LABELS: Record<string, string> = {
+  pending: "Pending",
   new: "Inquiry",
   out_of_jeddah: "Out of Jeddah",
   out_of_riyadh: "Out of Riyadh",
@@ -74,6 +75,7 @@ const statusLabel = (s: string) =>
   STATUS_LABELS[s] || (s ? s.charAt(0).toUpperCase() + s.slice(1) : "");
 
 const STATUS_COLORS_MAP: Record<string, string> = {
+  pending: "#f59e0b",
   new: "#3b82f6",
   out_of_jeddah: "#94a3b8",
   out_of_riyadh: "#64748b",
@@ -184,25 +186,29 @@ export default function ReportsPage() {
   // ── KPI Stats ──
   const kpi = useMemo(() => {
     const total = filtered.length;
+    const sPending = filtered.filter((a) => a.status === "pending").length;
     const sInquiry = filtered.filter((a) => a.status === "new").length;
     const sNoAnswer = filtered.filter((a) => a.status === "no_answer").length;
     const sBooked = filtered.filter((a) => isBooked(a.status)).length;
     const sDental = filtered.filter((a) => a.status === "dental").length;
     const sLost = filtered.filter((a) => isNotEligible(a.status)).length;
-    const responded = total - sInquiry;
+    // "Pending" is the untouched entry stage; anything else — Inquiry included —
+    // means an agent has acted on the lead.
+    const responded = total - sPending;
     const responseRate = total > 0 ? Math.round((responded / total) * 100) : 0;
     const conversionRate = total > 0 ? Math.round((sBooked / total) * 100) : 0;
-    return { total, sInquiry, sNoAnswer, sBooked, sDental, sLost, responseRate, conversionRate };
+    return { total, sPending, sInquiry, sNoAnswer, sBooked, sDental, sLost, responseRate, conversionRate };
   }, [filtered]);
 
   // ── Leads Over Time ──
   const leadsOverTime = useMemo(() => {
-    const map = new Map<string, { date: string; total: number; inquiry: number; booked: number; lost: number }>();
+    const map = new Map<string, { date: string; total: number; pending: number; inquiry: number; booked: number; lost: number }>();
     filtered.forEach((a) => {
       const d = new Date(a.created_at).toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
-      if (!map.has(d)) map.set(d, { date: d, total: 0, inquiry: 0, booked: 0, lost: 0 });
+      if (!map.has(d)) map.set(d, { date: d, total: 0, pending: 0, inquiry: 0, booked: 0, lost: 0 });
       const entry = map.get(d)!;
       entry.total++;
+      if (a.status === "pending") entry.pending++;
       if (a.status === "new") entry.inquiry++;
       if (isBooked(a.status)) entry.booked++;
       if (isNotEligible(a.status)) entry.lost++;
@@ -230,6 +236,7 @@ export default function ReportsPage() {
   const agentPerformance = useMemo(() => {
     return agents.map((agent) => {
       const assigned = filtered.filter((a) => a.assigned_to === agent.id);
+      const sPending = assigned.filter((a) => a.status === "pending").length;
       const sInquiry = assigned.filter((a) => a.status === "new").length;
       const sNoAnswer = assigned.filter((a) => a.status === "no_answer").length;
       const sBooked = assigned.filter((a) => isBooked(a.status)).length;
@@ -237,7 +244,7 @@ export default function ReportsPage() {
       const sLost = assigned.filter((a) => isNotEligible(a.status)).length;
       const total = assigned.length;
       const conversion = total > 0 ? Math.round((sBooked / total) * 100) : 0;
-      return { id: agent.id, name: agent.name, total, sInquiry, sNoAnswer, sBooked, sDental, sLost, conversion };
+      return { id: agent.id, name: agent.name, total, sPending, sInquiry, sNoAnswer, sBooked, sDental, sLost, conversion };
     }).sort((a, b) => b.total - a.total);
   }, [agents, filtered]);
 
@@ -270,12 +277,13 @@ export default function ReportsPage() {
 
   // ── Daily Breakdown ──
   const dailyBreakdown = useMemo(() => {
-    const map = new Map<string, { date: string; total: number; inquiry: number; noAnswer: number; booked: number; dental: number; lost: number; assigned: number }>();
+    const map = new Map<string, { date: string; total: number; pending: number; inquiry: number; noAnswer: number; booked: number; dental: number; lost: number; assigned: number }>();
     filtered.forEach((a) => {
       const d = new Date(a.created_at).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
-      if (!map.has(d)) map.set(d, { date: d, total: 0, inquiry: 0, noAnswer: 0, booked: 0, dental: 0, lost: 0, assigned: 0 });
+      if (!map.has(d)) map.set(d, { date: d, total: 0, pending: 0, inquiry: 0, noAnswer: 0, booked: 0, dental: 0, lost: 0, assigned: 0 });
       const entry = map.get(d)!;
       entry.total++;
+      if (a.status === "pending") entry.pending++;
       if (a.status === "new") entry.inquiry++;
       if (a.status === "no_answer") entry.noAnswer++;
       if (isBooked(a.status)) entry.booked++;
@@ -336,21 +344,22 @@ export default function ReportsPage() {
   // already cascade. Service catalog drives the row order so unused pages
   // still appear with zeros — telling you which pages aren't pulling weight.
   const dentalPagePerformance = useMemo(() => {
-    const counts = new Map<string, { leads: number; booked: number; noAnswer: number; lost: number; inquiry: number }>();
+    const counts = new Map<string, { leads: number; booked: number; noAnswer: number; lost: number; pending: number; inquiry: number }>();
     filtered.forEach((a) => {
       if (a.vertical !== "dental" || !a.service) return;
       if (!counts.has(a.service)) {
-        counts.set(a.service, { leads: 0, booked: 0, noAnswer: 0, lost: 0, inquiry: 0 });
+        counts.set(a.service, { leads: 0, booked: 0, noAnswer: 0, lost: 0, pending: 0, inquiry: 0 });
       }
       const row = counts.get(a.service)!;
       row.leads++;
+      if (a.status === "pending") row.pending++;
       if (a.status === "new") row.inquiry++;
       if (a.status === "no_answer") row.noAnswer++;
       if (isBooked(a.status)) row.booked++;
       if (isNotEligible(a.status)) row.lost++;
     });
     return dentalServiceCatalog.map((s) => {
-      const c = counts.get(s.slug) || { leads: 0, booked: 0, noAnswer: 0, lost: 0, inquiry: 0 };
+      const c = counts.get(s.slug) || { leads: 0, booked: 0, noAnswer: 0, lost: 0, pending: 0, inquiry: 0 };
       const conv = c.leads > 0 ? Math.round((c.booked / c.leads) * 100) : 0;
       return { slug: s.slug, name: s.en, nameAr: s.ar, ...c, conv };
     }).sort((a, b) => b.leads - a.leads);
@@ -359,7 +368,7 @@ export default function ReportsPage() {
   const getDentalPageExportData = () =>
     dentalPagePerformance.map((r) => ({
       Page: r.name, Slug: `/dental/${r.slug}`,
-      Leads: r.leads, Inquiry: r.inquiry, "No Answer": r.noAnswer,
+      Leads: r.leads, Pending: r.pending, Inquiry: r.inquiry, "No Answer": r.noAnswer,
       Booked: r.booked, "Not Eligible": r.lost, "Conversion %": r.conv,
     }));
 
@@ -367,21 +376,22 @@ export default function ReportsPage() {
   // Same shape as the dental table above: /my360 leads carry the program the
   // visitor selected in the same `service` column.
   const my360ProgramPerformance = useMemo(() => {
-    const counts = new Map<string, { leads: number; booked: number; noAnswer: number; lost: number; inquiry: number }>();
+    const counts = new Map<string, { leads: number; booked: number; noAnswer: number; lost: number; pending: number; inquiry: number }>();
     filtered.forEach((a) => {
       if (a.vertical !== "my360" || !a.service) return;
       if (!counts.has(a.service)) {
-        counts.set(a.service, { leads: 0, booked: 0, noAnswer: 0, lost: 0, inquiry: 0 });
+        counts.set(a.service, { leads: 0, booked: 0, noAnswer: 0, lost: 0, pending: 0, inquiry: 0 });
       }
       const row = counts.get(a.service)!;
       row.leads++;
+      if (a.status === "pending") row.pending++;
       if (a.status === "new") row.inquiry++;
       if (a.status === "no_answer") row.noAnswer++;
       if (isBooked(a.status)) row.booked++;
       if (isNotEligible(a.status)) row.lost++;
     });
     return my360ProgramCatalog.map((s) => {
-      const c = counts.get(s.slug) || { leads: 0, booked: 0, noAnswer: 0, lost: 0, inquiry: 0 };
+      const c = counts.get(s.slug) || { leads: 0, booked: 0, noAnswer: 0, lost: 0, pending: 0, inquiry: 0 };
       const conv = c.leads > 0 ? Math.round((c.booked / c.leads) * 100) : 0;
       return { slug: s.slug, name: s.en, ...c, conv };
     }).sort((a, b) => b.leads - a.leads);
@@ -390,7 +400,7 @@ export default function ReportsPage() {
   const getMy360ProgramExportData = () =>
     my360ProgramPerformance.map((r) => ({
       Program: r.name, Slug: r.slug,
-      Leads: r.leads, Inquiry: r.inquiry, "No Answer": r.noAnswer,
+      Leads: r.leads, Pending: r.pending, Inquiry: r.inquiry, "No Answer": r.noAnswer,
       Booked: r.booked, "Not Eligible": r.lost, "Conversion %": r.conv,
     }));
 
@@ -437,13 +447,13 @@ export default function ReportsPage() {
 
   const getAgentExportData = () =>
     agentPerformance.map((a) => ({
-      Agent: a.name, Assigned: a.total, Inquiry: a.sInquiry, "No Answer": a.sNoAnswer,
+      Agent: a.name, Assigned: a.total, Pending: a.sPending, Inquiry: a.sInquiry, "No Answer": a.sNoAnswer,
       Booked: a.sBooked, Dental: a.sDental, "Not Eligible": a.sLost, "Conversion %": a.conversion,
     }));
 
   const getDailyExportData = () =>
     dailyBreakdown.map((d) => ({
-      Date: d.date, Total: d.total, Inquiry: d.inquiry, "No Answer": d.noAnswer,
+      Date: d.date, Total: d.total, Pending: d.pending, Inquiry: d.inquiry, "No Answer": d.noAnswer,
       Booked: d.booked, Dental: d.dental, "Not Eligible": d.lost, Assigned: d.assigned,
     }));
 
@@ -536,9 +546,10 @@ export default function ReportsPage() {
       ) : (
         <>
           {/* KPI Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 mb-6">
             {[
               { label: "Total Leads", value: kpi.total, color: "text-[#004d99]", bg: "bg-[#004d99]/5" },
+              { label: "Pending", value: kpi.sPending, color: "text-amber-600", bg: "bg-amber-50" },
               { label: "Inquiry", value: kpi.sInquiry, color: "text-blue-600", bg: "bg-blue-50" },
               { label: "No Answer", value: kpi.sNoAnswer, color: "text-amber-600", bg: "bg-amber-50" },
               { label: "Booked", value: kpi.sBooked, color: "text-emerald-600", bg: "bg-emerald-50" },
@@ -630,7 +641,8 @@ export default function ReportsPage() {
                     <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #e2e8f0" }} />
                     <Bar dataKey="sBooked" stackId="a" fill="#10b981" name="Booked" />
                     <Bar dataKey="sNoAnswer" stackId="a" fill="#f59e0b" name="No Answer" />
-                    <Bar dataKey="sInquiry" stackId="a" fill="#3b82f6" name="Inquiry" radius={[0, 4, 4, 0]} />
+                    <Bar dataKey="sInquiry" stackId="a" fill="#3b82f6" name="Inquiry" />
+                    <Bar dataKey="sPending" stackId="a" fill="#f59e0b" name="Pending" radius={[0, 4, 4, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -651,6 +663,7 @@ export default function ReportsPage() {
                   <tr className="border-b border-slate-100">
                     <th className="text-left px-5 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Agent</th>
                     <th className="text-center px-3 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Assigned</th>
+                    <th className="text-center px-3 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Pending</th>
                     <th className="text-center px-3 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Inquiry</th>
                     <th className="text-center px-3 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">No Answer</th>
                     <th className="text-center px-3 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Booked</th>
@@ -661,7 +674,7 @@ export default function ReportsPage() {
                 </thead>
                 <tbody className="divide-y divide-slate-50">
                   {agentPerformance.length === 0 ? (
-                    <tr><td colSpan={8} className="text-center py-8 text-sm text-slate-300">No agent data</td></tr>
+                    <tr><td colSpan={9} className="text-center py-8 text-sm text-slate-300">No agent data</td></tr>
                   ) : (
                     agentPerformance.map((a) => (
                       <tr key={a.id} className="hover:bg-slate-50/50">
@@ -672,6 +685,7 @@ export default function ReportsPage() {
                           </div>
                         </td>
                         <td className="text-center px-3 py-3 text-sm font-semibold text-slate-800">{a.total}</td>
+                        <td className="text-center px-3 py-3 text-sm text-amber-700">{a.sPending}</td>
                         <td className="text-center px-3 py-3 text-sm text-blue-600">{a.sInquiry}</td>
                         <td className="text-center px-3 py-3 text-sm text-amber-600">{a.sNoAnswer}</td>
                         <td className="text-center px-3 py-3 text-sm text-emerald-600">{a.sBooked}</td>
@@ -796,7 +810,8 @@ export default function ReportsPage() {
                     <tr className="border-b border-slate-100">
                       <th className="text-left px-5 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Landing Page</th>
                       <th className="text-center px-3 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Leads</th>
-                      <th className="text-center px-3 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Inquiry</th>
+                      <th className="text-center px-3 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Pending</th>
+                    <th className="text-center px-3 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Inquiry</th>
                       <th className="text-center px-3 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">No Answer</th>
                       <th className="text-center px-3 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Booked</th>
                       <th className="text-center px-3 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Not Eligible</th>
@@ -805,7 +820,7 @@ export default function ReportsPage() {
                   </thead>
                   <tbody className="divide-y divide-slate-50">
                     {dentalPagePerformance.every((r) => r.leads === 0) ? (
-                      <tr><td colSpan={7} className="text-center py-8 text-sm text-slate-300">No dental leads in this period</td></tr>
+                      <tr><td colSpan={8} className="text-center py-8 text-sm text-slate-300">No dental leads in this period</td></tr>
                     ) : (
                       dentalPagePerformance.map((r) => (
                         <tr key={r.slug} className={`hover:bg-slate-50/50 ${r.leads === 0 ? "opacity-50" : ""}`}>
@@ -816,6 +831,7 @@ export default function ReportsPage() {
                             </div>
                           </td>
                           <td className="text-center px-3 py-3 text-sm font-semibold text-slate-800">{r.leads}</td>
+                          <td className="text-center px-3 py-3 text-sm text-amber-700">{r.pending}</td>
                           <td className="text-center px-3 py-3 text-sm text-blue-600">{r.inquiry}</td>
                           <td className="text-center px-3 py-3 text-sm text-amber-600">{r.noAnswer}</td>
                           <td className="text-center px-3 py-3 text-sm text-emerald-600">{r.booked}</td>
@@ -852,7 +868,8 @@ export default function ReportsPage() {
                     <tr className="border-b border-slate-100">
                       <th className="text-left px-5 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Program</th>
                       <th className="text-center px-3 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Leads</th>
-                      <th className="text-center px-3 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Inquiry</th>
+                      <th className="text-center px-3 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Pending</th>
+                    <th className="text-center px-3 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Inquiry</th>
                       <th className="text-center px-3 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">No Answer</th>
                       <th className="text-center px-3 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Booked</th>
                       <th className="text-center px-3 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Not Eligible</th>
@@ -861,7 +878,7 @@ export default function ReportsPage() {
                   </thead>
                   <tbody className="divide-y divide-slate-50">
                     {my360ProgramPerformance.every((r) => r.leads === 0) ? (
-                      <tr><td colSpan={7} className="text-center py-8 text-sm text-slate-300">No My360 leads in this period</td></tr>
+                      <tr><td colSpan={8} className="text-center py-8 text-sm text-slate-300">No My360 leads in this period</td></tr>
                     ) : (
                       my360ProgramPerformance.map((r) => (
                         <tr key={r.slug} className={`hover:bg-slate-50/50 ${r.leads === 0 ? "opacity-50" : ""}`}>
@@ -872,6 +889,7 @@ export default function ReportsPage() {
                             </div>
                           </td>
                           <td className="text-center px-3 py-3 text-sm font-semibold text-slate-800">{r.leads}</td>
+                          <td className="text-center px-3 py-3 text-sm text-amber-700">{r.pending}</td>
                           <td className="text-center px-3 py-3 text-sm text-blue-600">{r.inquiry}</td>
                           <td className="text-center px-3 py-3 text-sm text-amber-600">{r.noAnswer}</td>
                           <td className="text-center px-3 py-3 text-sm text-emerald-600">{r.booked}</td>
@@ -904,6 +922,7 @@ export default function ReportsPage() {
                   <tr className="border-b border-slate-100">
                     <th className="text-left px-5 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Date</th>
                     <th className="text-center px-3 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Total</th>
+                    <th className="text-center px-3 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Pending</th>
                     <th className="text-center px-3 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Inquiry</th>
                     <th className="text-center px-3 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">No Answer</th>
                     <th className="text-center px-3 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Booked</th>
@@ -914,12 +933,13 @@ export default function ReportsPage() {
                 </thead>
                 <tbody className="divide-y divide-slate-50">
                   {dailyBreakdown.length === 0 ? (
-                    <tr><td colSpan={8} className="text-center py-8 text-sm text-slate-300">No data for this period</td></tr>
+                    <tr><td colSpan={9} className="text-center py-8 text-sm text-slate-300">No data for this period</td></tr>
                   ) : (
                     dailyBreakdown.map((d, i) => (
                       <tr key={i} className="hover:bg-slate-50/50">
                         <td className="px-5 py-3 text-sm font-medium text-slate-700">{d.date}</td>
                         <td className="text-center px-3 py-3 text-sm font-semibold text-slate-800">{d.total}</td>
+                        <td className="text-center px-3 py-3 text-sm text-amber-700">{d.pending}</td>
                         <td className="text-center px-3 py-3 text-sm text-blue-600">{d.inquiry}</td>
                         <td className="text-center px-3 py-3 text-sm text-amber-600">{d.noAnswer}</td>
                         <td className="text-center px-3 py-3 text-sm text-emerald-600">{d.booked}</td>

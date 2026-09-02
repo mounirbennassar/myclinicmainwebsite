@@ -53,7 +53,9 @@ async def create_lead(request: Request):
     if not city or not name or not phone:
         raise HTTPException(status_code=400, detail="All fields are required")
 
-    data: dict[str, Any] = {"city": city, "name": name, "phone": phone}
+    # Every lead arrives untouched: "pending" is the entry stage, "new"
+    # (labelled Inquiry in the portal) is the first stage an agent moves it to.
+    data: dict[str, Any] = {"city": city, "name": name, "phone": phone, "status": "pending"}
 
     vertical = body.get("vertical")
     v = vertical if isinstance(vertical, str) and vertical in ALLOWED_VERTICALS else "medical"

@@ -33,10 +33,14 @@ type Agent = {
 };
 
 // Keep legacy values ("new", "contacted", "confirmed", "cancelled", "completed") working for
-// historical records; the active dropdown lists only the labels below. The value "new" is the
-// initial stage and is relabeled "Inquiry" — renaming the underlying key would have required a
-// data migration the user explicitly wanted to avoid.
+// historical records; the active dropdown lists only the labels below.
+//
+// Pipeline entry: every lead arrives as "pending" (nobody has looked at it yet).
+// "new" — relabeled "Inquiry" — is the first stage an agent moves it to; the key
+// stays "new" because renaming it would have required rewriting every historical
+// row. backend/sql/006_lead_status_pending.sql owns the default + backfill.
 const STATUS_OPTIONS: { value: string; label: string }[] = [
+  { value: "pending", label: "Pending" },
   { value: "new", label: "Inquiry" },
   { value: "out_of_jeddah", label: "Out of Jeddah" },
   { value: "out_of_riyadh", label: "Out of Riyadh" },
@@ -59,6 +63,7 @@ const SERVICE_FILTER_LABEL: Partial<Record<Vertical, string>> = {
 };
 
 const STATUS_LABELS: Record<string, string> = {
+  pending: "Pending",
   new: "Inquiry",
   out_of_jeddah: "Out of Jeddah",
   out_of_riyadh: "Out of Riyadh",
@@ -95,6 +100,7 @@ const ALL_ROWS = -1;
 const PAGE_SIZE_OPTIONS = [25, 50, 100, 200, ALL_ROWS];
 
 const STATUS_COLORS: Record<string, string> = {
+  pending: "bg-amber-500/10 text-amber-700 ring-1 ring-amber-500/20",
   new: "bg-blue-500/10 text-blue-700 ring-1 ring-blue-500/20",
   out_of_jeddah: "bg-slate-500/10 text-slate-600 ring-1 ring-slate-500/20",
   out_of_riyadh: "bg-slate-500/10 text-slate-600 ring-1 ring-slate-500/20",
@@ -166,7 +172,7 @@ export default function Dashboard() {
 
   // The table layers the transient lookups (free-text search + status) on top of
   // the scope. Status is intentionally kept out of `scoped` so the status-specific
-  // cards (Inquiry / Booked) keep showing a full breakdown of the segment.
+  // cards (Pending / Booked) keep showing a full breakdown of the segment.
   const filtered = scoped.filter((a) => {
     const matchSearch =
       !search ||
@@ -457,7 +463,7 @@ export default function Dashboard() {
   const stats = {
     total: scoped.length,
     today: scoped.filter((a) => new Date(a.created_at).toDateString() === new Date().toDateString()).length,
-    new: scoped.filter((a) => a.status === "new").length,
+    pending: scoped.filter((a) => a.status === "pending").length,
     confirmed: scoped.filter((a) => a.status === "booked" || a.status === "confirmed").length,
   };
 
@@ -514,7 +520,7 @@ export default function Dashboard() {
         {[
           { label: "Total Requests", value: stats.total, key: "total", accent: "text-[#004d99]", bg: "bg-[#004d99]/5" },
           { label: "Today", value: stats.today, key: "today", accent: "text-emerald-600", bg: "bg-emerald-50" },
-          { label: "Inquiry", value: stats.new, key: "pending", accent: "text-amber-600", bg: "bg-amber-50" },
+          { label: "Pending", value: stats.pending, key: "pending", accent: "text-amber-600", bg: "bg-amber-50" },
           { label: "Booked", value: stats.confirmed, key: "confirmed", accent: "text-emerald-600", bg: "bg-emerald-50" },
         ].map((stat) => (
           <div key={stat.label} className="bg-white rounded-xl border border-slate-200/80 p-4 md:p-5">
@@ -675,7 +681,7 @@ export default function Dashboard() {
                       <td className="px-5 py-3.5 text-sm text-slate-600">{a.city}</td>
                       <td className="px-5 py-3.5">
                         <div className="relative inline-block">
-                          <select value={a.status} onChange={(e) => updateStatus(a.id, e.target.value)} className={`${STATUS_COLORS[a.status] || STATUS_COLORS.new} text-[11px] font-semibold pl-2.5 pr-6 py-1 rounded-md border-0 cursor-pointer appearance-none`}>
+                          <select value={a.status} onChange={(e) => updateStatus(a.id, e.target.value)} className={`${STATUS_COLORS[a.status] || STATUS_COLORS.pending} text-[11px] font-semibold pl-2.5 pr-6 py-1 rounded-md border-0 cursor-pointer appearance-none`}>
                             {!STATUS_OPTIONS.some((s) => s.value === a.status) && a.status && (
                               <option value={a.status}>{statusLabel(a.status)}</option>
                             )}
@@ -734,7 +740,7 @@ export default function Dashboard() {
                       <p className="font-semibold text-slate-800 text-sm">{a.name}</p>
                       <a href={`tel:${a.phone}`} className="text-[#004d99] text-xs font-medium" onClick={(e) => e.stopPropagation()}>{a.phone}</a>
                     </div>
-                    <span className={`${STATUS_COLORS[a.status] || STATUS_COLORS.new} text-[10px] font-semibold px-2 py-0.5 rounded-md`}>
+                    <span className={`${STATUS_COLORS[a.status] || STATUS_COLORS.pending} text-[10px] font-semibold px-2 py-0.5 rounded-md`}>
                       {statusLabel(a.status)}
                     </span>
                   </div>
@@ -875,7 +881,7 @@ export default function Dashboard() {
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-slate-400 font-medium">Status</span>
                   <div className="relative inline-block">
-                    <select value={selectedAppointment.status} onChange={(e) => updateStatus(selectedAppointment.id, e.target.value)} className={`${STATUS_COLORS[selectedAppointment.status] || STATUS_COLORS.new} text-[11px] font-semibold pl-2.5 pr-6 py-1 rounded-md border-0 cursor-pointer appearance-none`}>
+                    <select value={selectedAppointment.status} onChange={(e) => updateStatus(selectedAppointment.id, e.target.value)} className={`${STATUS_COLORS[selectedAppointment.status] || STATUS_COLORS.pending} text-[11px] font-semibold pl-2.5 pr-6 py-1 rounded-md border-0 cursor-pointer appearance-none`}>
                       {!STATUS_OPTIONS.some((s) => s.value === selectedAppointment.status) && selectedAppointment.status && (
                         <option value={selectedAppointment.status}>{statusLabel(selectedAppointment.status)}</option>
                       )}
