@@ -1,6 +1,6 @@
 "use client";
-import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { useUser, useVertical, VERTICAL_LABELS, VERTICAL_BADGE } from "../layout";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useUser, useVertical, VERTICAL_LABELS, VERTICAL_BADGE, type Vertical } from "../layout";
 import { useRouter } from "next/navigation";
 import { dentalServiceCatalog } from "../../dental/content/services";
 import { my360ProgramCatalog } from "../../my360/programs";
@@ -132,14 +132,24 @@ function formatDate(d: Date): string {
   return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
 }
 
+// A half-typed custom date must not fire a request per keystroke; the preset
+// periods are a single click and go straight through.
+const CUSTOM_RANGE_DEBOUNCE_MS = 400;
+
 export default function ReportsPage() {
   const user = useUser();
   const vertical = useVertical();
   const router = useRouter();
+  // Only the leads inside the selected range and vertical — the server does
+  // that filtering (GET /api/appointments?mode=report), so the report never
+  // downloads the whole table again.
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [team, setTeam] = useState<TeamMember[]>([]);
   const [utmLinks, setUtmLinks] = useState<{ id: string; campaign: string; source: string; medium: string; clicks: number }[]>([]);
+  // `loading` covers the first paint only; a range change keeps the current
+  // numbers on screen and flags `updating` until the new ones arrive.
   const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
   const [period, setPeriod] = useState<Period>("month");
   const [customStart, setCustomStart] = useState("");
   const [customEnd, setCustomEnd] = useState("");
@@ -151,34 +161,65 @@ export default function ReportsPage() {
     }
   }, [user, router]);
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
+  // The team and the UTM links do not depend on the range: fetched once.
+  const fetchStatic = useCallback(async () => {
     try {
-      const [apptRes, teamRes, utmRes] = await Promise.all([
-        fetch("/api/appointments"),
-        fetch("/api/team"),
-        fetch("/api/utm"),
-      ]);
-      const [apptJson, teamJson, utmJson] = await Promise.all([apptRes.json(), teamRes.json(), utmRes.json()]);
-      if (apptRes.ok) setAppointments(apptJson.data || []);
+      const [teamRes, utmRes] = await Promise.all([fetch("/api/team"), fetch("/api/utm")]);
+      const [teamJson, utmJson] = await Promise.all([teamRes.json(), utmRes.json()]);
       if (teamRes.ok) setTeam(teamJson.data || []);
       if (utmRes.ok) setUtmLinks(utmJson.data || []);
     } catch { /* silent */ }
-    setLoading(false);
   }, []);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => { fetchStatic(); }, [fetchStatic]);
 
   const { start, end } = useMemo(() => getDateRange(period, customStart, customEnd), [period, customStart, customEnd]);
 
+  // The range the leads are fetched for. Strings, not Dates, so the effect
+  // below only fires when the range actually changes — and never for an
+  // unparseable custom date (an Invalid Date has no ISO form).
+  const validRange = !Number.isNaN(start.getTime()) && !Number.isNaN(end.getTime());
+  const fromIso = validRange ? start.toISOString() : null;
+  const toIso = validRange ? end.toISOString() : null;
+  const [leadRange, setLeadRange] = useState<{ from: string; to: string; vertical: Vertical } | null>(null);
+
+  useEffect(() => {
+    if (!fromIso || !toIso) return;
+    const delay = period === "custom" ? CUSTOM_RANGE_DEBOUNCE_MS : 0;
+    const timer = setTimeout(() => setLeadRange({ from: fromIso, to: toIso, vertical }), delay);
+    return () => clearTimeout(timer);
+  }, [fromIso, toIso, vertical, period]);
+
+  // A slow response for an earlier range must not overwrite a newer one.
+  const reqSeq = useRef(0);
+
+  const fetchLeads = useCallback(async () => {
+    if (!leadRange) return;
+    const seq = ++reqSeq.current;
+    setUpdating(true);
+    try {
+      const qs = new URLSearchParams({ mode: "report", from: leadRange.from, to: leadRange.to });
+      if (leadRange.vertical !== "all") qs.set("vertical", leadRange.vertical);
+      const res = await fetch(`/api/appointments?${qs}`);
+      const json = await res.json();
+      if (seq !== reqSeq.current) return;
+      if (res.ok) setAppointments(json.data || []);
+    } catch { /* silent */ }
+    if (seq !== reqSeq.current) return;
+    setLoading(false);
+    setUpdating(false);
+  }, [leadRange]);
+
+  useEffect(() => { fetchLeads(); }, [fetchLeads]);
+
+  // The server already applied the range and the vertical; this stays as a
+  // no-op safety net for the aggregations below, which are untouched.
   const filtered = useMemo(() =>
     appointments.filter((a) => {
-      const d = new Date(a.created_at);
       const v = a.vertical || "medical";
-      const matchVertical = vertical === "all" || v === vertical;
-      return d >= start && d < end && matchVertical;
+      return leadRange === null || leadRange.vertical === "all" || v === leadRange.vertical;
     }),
-  [appointments, start, end, vertical]);
+  [appointments, leadRange]);
 
   const agents = useMemo(() => team.filter((m) => hasRole(m.roles, "agent")), [team]);
   const admins = useMemo(() => team.filter((m) => hasRole(m.roles, ...ADMIN_ROLES)), [team]);
@@ -508,7 +549,10 @@ export default function ReportsPage() {
               {VERTICAL_LABELS[vertical]}
             </span>
           </div>
-          <p className="text-xs text-slate-400 mt-0.5">{formatDate(start)} - {formatDate(end)} &middot; {filtered.length} leads</p>
+          <p className="text-xs text-slate-400 mt-0.5">
+            {formatDate(start)} - {formatDate(end)} &middot; {filtered.length} leads
+            {updating && !loading && <span className="ml-2 text-slate-300">Updating…</span>}
+          </p>
         </div>
         <div className="flex items-center gap-2">
           {(["today", "week", "month", "custom"] as Period[]).map((p) => (

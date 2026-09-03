@@ -10,11 +10,13 @@ import {
   requireRoles,
 } from "@/app/lib/auth";
 import { query, queryOne } from "@/app/lib/db";
+import { jsonResponse } from "@/app/lib/gzip-json";
+import { LEAD_VERTICALS, parseLeadListParams, runLeadList } from "@/app/lib/leads-query";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const ALLOWED_VERTICALS = new Set(["medical", "dental", "pediatric", "my360"]);
+const ALLOWED_VERTICALS = new Set<string>(LEAD_VERTICALS);
 const ALLOWED_DENTAL_SERVICES = new Set([
   "general", "implants", "orthodontics", "veneers", "oral-surgery",
   "pediatric", "root-canal", "whitening", "crowns-bridges", "gums",
@@ -168,51 +170,26 @@ export async function POST(request: Request) {
   }
 }
 
-/** The lead pipeline. Agents see only their own; non-super-admins only their cities. */
-export async function GET() {
+/**
+ * The lead pipeline, one page at a time.
+ *
+ * Filtering, paging and the stat counts run in SQL (app/lib/leads-query.ts);
+ * the role scope — agents see only their own leads, non-super-admins only
+ * their cities — is applied to every mode. Query params, all optional:
+ *   page, size            1-based page and rows per page (size clamped 1..500)
+ *   vertical, service,    the segment being looked at; these also bound the
+ *   city, agent, from, to stat counts (`agent` is a uuid or "unassigned")
+ *   status, q             narrow the table only; q matches name or phone
+ *   mode                  table (default) | export | report | ids
+ * The three non-table modes return every matching row and are gzipped when
+ * the caller accepts it; `table` also goes through jsonResponse so it picks up
+ * the private/no-store cache headers.
+ */
+export async function GET(request: Request) {
   try {
     const user = await requireRoles(...LEAD_VIEW_ROLES);
-    const isSuperAdmin = hasRole(user.roles, "super_admin");
-    if (!isSuperAdmin && !user.allowed_cities.length) {
-      return Response.json({ data: [] });
-    }
-
-    const conds: string[] = [];
-    const params: unknown[] = [];
-    if (!isSuperAdmin) {
-      params.push(user.allowed_cities);
-      conds.push(`city = ANY($${params.length}::text[])`);
-    }
-    // Own-leads-only is what `agent` means, and it survives being paired with a
-    // non-lead role like content_manager. Pairing it with admin lifts it —
-    // that's the whole point of granting both.
-    if (hasRole(user.roles, "agent") && !hasRole(user.roles, ...LEAD_ALL_ROLES)) {
-      params.push(user.id);
-      conds.push(`assigned_to = $${params.length}::uuid`);
-    }
-
-    const where = conds.length ? `where ${conds.join(" and ")}` : "";
-    return Response.json({
-      // Explicit column list, not `select *` — the response carries every lead,
-      // so a column nobody reads is paid for thousands of times over. This is
-      // the UNION of what the two consumers need, and BOTH must be re-checked
-      // before narrowing it further:
-      //   app/dashboard/page.tsx          the lead table + detail modal
-      //   app/dashboard/reports/page.tsx  campaign attribution, which needs the
-      //                                   utm_* columns the lead table ignores
-      // Omitted as unused by both: utm_term, utm_content, referrer (the last
-      // being the widest column on the table, at up to 500 chars a row).
-      // NB: there is no `branch` or `department` column despite the client type
-      // declaring them — `select *` just returned nothing for those.
-      data: await query(
-        `select id, created_at, city, name, phone, status,
-                status_changed_by, status_changed_at, assigned_to, assigned_to_name,
-                channel, note, created_by, vertical, service,
-                utm_source, utm_medium, utm_campaign, utm_link_id
-           from appointments ${where} order by created_at desc`,
-        params
-      ),
-    });
+    const params = parseLeadListParams(new URL(request.url).searchParams);
+    return jsonResponse(request, await runLeadList(user, params));
   } catch (err) {
     return errorResponse(err);
   }

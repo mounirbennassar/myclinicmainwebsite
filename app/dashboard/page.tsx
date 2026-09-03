@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useUser, useVertical, VERTICAL_LABELS, VERTICAL_BADGE, type Vertical } from "./layout";
 import { dentalServiceCatalog } from "../dental/content/services";
 import { my360ProgramCatalog } from "../my360/programs";
@@ -8,8 +8,6 @@ import { ADMIN_ROLES, LEAD_ALL_ROLES, hasRole } from "../lib/roles";
 type Appointment = {
   id: string;
   city: string;
-  branch: string;
-  department: string;
   name: string;
   phone: string;
   status: string;
@@ -31,6 +29,10 @@ type Agent = {
   roles: string[];
   is_active: boolean;
 };
+
+/** The stat cards, counted by the server over the active segment. */
+type LeadStats = { total: number; today: number; pending: number; booked: number };
+const EMPTY_STATS: LeadStats = { total: 0, today: 0, pending: 0, booked: 0 };
 
 // Keep legacy values ("new", "contacted", "confirmed", "cancelled", "completed") working for
 // historical records; the active dropdown lists only the labels below.
@@ -86,18 +88,23 @@ const statusLabel = (s: string) =>
   STATUS_LABELS[s] || (s ? s.charAt(0).toUpperCase() + s.slice(1) : "");
 
 // How often an open dashboard pulls in newly arrived leads. Refreshes are
-// silent, so this cadence costs the viewer nothing visually.
+// silent, so this cadence costs the viewer nothing visually — and since a
+// refresh is now one page of rows plus four counts, it costs the server
+// next to nothing either.
 const REFRESH_MS = 30_000;
 
-// The table paints a page at a time. Rendering the whole result set is what
-// makes the leads view crawl: each row carries a status <select>, an assignee
-// <select> and action buttons, so 8,000 leads is well over a hundred thousand
-// DOM nodes on a single blocking render — and every keystroke in the search box
-// used to re-render all of them.
+// Typing in the search box waits this long for the next keystroke before
+// asking the server; every keystroke used to re-filter 10,000 rows in the browser.
+const SEARCH_DEBOUNCE_MS = 300;
+
+// The server hands back one page at a time; filtering, paging and the stat
+// counts all happen in SQL (app/lib/leads-query.ts). Rendering the whole
+// result set is what made the leads view crawl: each row carries a status
+// <select>, an assignee <select> and action buttons, so 10,000 leads was well
+// over a hundred thousand DOM nodes on a single blocking render. There is no
+// "All" page size for that reason.
 const DEFAULT_PAGE_SIZE = 50;
-/** Sentinel for the "All" choice — render every matching row, no slicing. */
-const ALL_ROWS = -1;
-const PAGE_SIZE_OPTIONS = [25, 50, 100, 200, ALL_ROWS];
+const PAGE_SIZE_OPTIONS = [25, 50, 100, 200, 500];
 
 const STATUS_COLORS: Record<string, string> = {
   pending: "bg-amber-500/10 text-amber-700 ring-1 ring-amber-500/20",
@@ -129,19 +136,23 @@ const STAT_ICONS: Record<string, React.ReactNode> = {
 export default function Dashboard() {
   const user = useUser();
   const vertical = useVertical();
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  // The page of leads on screen, and the counts the server computed alongside it.
+  const [leads, setLeads] = useState<Appointment[]>([]);
+  const [scoped, setScoped] = useState(0);
+  const [stats, setStats] = useState<LeadStats>(EMPTY_STATS);
   const [loading, setLoading] = useState(true);
   // Distinct from `loading`: a background refresh must never blank the table,
   // it only spins the refresh icon.
   const [refreshing, setRefreshing] = useState(false);
-  const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState<number>(DEFAULT_PAGE_SIZE);
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [filterCity, setFilterCity] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [filterService, setFilterService] = useState("");
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [selectingAll, setSelectingAll] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [filterAgent, setFilterAgent] = useState("");
@@ -156,43 +167,152 @@ export default function Dashboard() {
   const canAssign = hasRole(user?.roles, ...ADMIN_ROLES);
   const canDelete = hasRole(user?.roles, "super_admin");
 
-  // `scoped` = the active segment the user is looking at: the vertical (and the
-  // dental page, when one is chosen) plus the structural city/agent filters. The
-  // stat cards and the "X of Y" denominator read from this, so the numbers always
-  // track the selected vertical/page instead of the global, all-verticals total.
-  const scoped = appointments.filter((a) => {
-    const matchCity = !filterCity || a.city === filterCity;
-    const matchAgent = !filterAgent || (filterAgent === "unassigned" ? !a.assigned_to : a.assigned_to === filterAgent);
-    // Treat legacy rows with NULL vertical as 'medical' so they keep showing in the medical view.
-    const v = a.vertical || "medical";
-    const matchVertical = vertical === "all" || v === vertical;
-    const matchService = !filterService || a.service === filterService;
-    return matchCity && matchAgent && matchVertical && matchService;
-  });
+  // What is being looked at, as the API takes it. The vertical (and the dental
+  // page / My360 program, when one is chosen) plus the structural city/agent
+  // filters bound the stat cards and the "of Y" denominator; status and the
+  // search box narrow only the table, so the Pending / Booked cards keep
+  // showing the full breakdown of the segment while an agent searches. That
+  // split is the server's (see app/lib/leads-query.ts) — here it is one string.
+  const listQuery = useMemo(() => {
+    const p = new URLSearchParams();
+    if (vertical !== "all") p.set("vertical", vertical);
+    if (filterService) p.set("service", filterService);
+    if (filterCity) p.set("city", filterCity);
+    if (filterStatus) p.set("status", filterStatus);
+    if (filterAgent) p.set("agent", filterAgent);
+    if (debouncedSearch) p.set("q", debouncedSearch);
+    return p.toString();
+  }, [vertical, filterService, filterCity, filterStatus, filterAgent, debouncedSearch]);
 
-  // The table layers the transient lookups (free-text search + status) on top of
-  // the scope. Status is intentionally kept out of `scoped` so the status-specific
-  // cards (Pending / Booked) keep showing a full breakdown of the segment.
-  const filtered = scoped.filter((a) => {
-    const matchSearch =
-      !search ||
-      a.name?.toLowerCase().includes(search.toLowerCase()) ||
-      a.phone?.includes(search) ||
-      a.department?.toLowerCase().includes(search.toLowerCase());
-    const matchStatus = !filterStatus || a.status === filterStatus;
-    return matchSearch && matchStatus;
-  });
+  // Any change to what is being looked at starts again at the first page —
+  // staying on page 12 of a freshly narrowed search is never what was meant.
+  // Derived rather than reset in an effect: the page number is stored together
+  // with the filters it was chosen under and reads as 1 the moment they
+  // differ, so a filter change is exactly one fetch, not "old page, then page 1".
+  const pageKey = `${listQuery}|${pageSize}`;
+  const [pageState, setPageState] = useState({ page: 1, key: pageKey });
+  const setPage = useCallback((n: number) => setPageState({ page: n, key: pageKey }), [pageKey]);
+  // Clamped, too: a poll or a delete can shrink the result set under an open
+  // page, and the last page that still exists is where the user should land —
+  // never an empty table. `total` is 0 until the first response, which reads
+  // as page 1, exactly where the first load starts anyway.
+  const [total, setTotal] = useState(0);
+  const pageCount = Math.max(1, Math.ceil(total / pageSize));
+  const page = Math.min(pageState.key === pageKey ? pageState.page : 1, pageCount);
 
-  // Paging stays client-side, over `filtered`, on purpose: the stat cards, the
-  // free-text search, select-all and export all operate across the ENTIRE
-  // matching set. Move the slice into SQL and every one of them silently starts
-  // reporting on "whatever is on screen" instead — the stat cards would read 50.
-  const pageCount = pageSize === ALL_ROWS ? 1 : Math.max(1, Math.ceil(filtered.length / pageSize));
-  // Derived and clamped rather than stored: narrowing a filter while on page 12
-  // must not strand the user on a blank table.
-  const currentPage = Math.min(page, pageCount);
-  const rangeStart = pageSize === ALL_ROWS ? 0 : (currentPage - 1) * pageSize;
-  const paged = pageSize === ALL_ROWS ? filtered : filtered.slice(rangeStart, rangeStart + pageSize);
+  // Superseded requests must not paint: a slow page-2 response landing after a
+  // fast page-3 one would put the wrong rows under the right pager. Every
+  // fetch takes a sequence number, aborts the one before it, and only the
+  // newest is allowed to write state.
+  const reqSeq = useRef(0);
+  const abortRef = useRef<AbortController | null>(null);
+  const loadedOnce = useRef(false);
+
+  // Only the very first load is allowed to blank the table for a spinner —
+  // every later fetch (poll, filter change, page turn) just spins the refresh
+  // icon. Flipping `loading` on every poll is what made the portal look like
+  // it was permanently reloading.
+  const fetchAppointments = useCallback(async () => {
+    const seq = ++reqSeq.current;
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+    if (loadedOnce.current) setRefreshing(true);
+    else setLoading(true);
+    try {
+      const qs = new URLSearchParams(listQuery);
+      qs.set("page", String(page));
+      qs.set("size", String(pageSize));
+      const res = await fetch(`/api/appointments?${qs}`, { signal: controller.signal });
+      const json = await res.json();
+      if (seq !== reqSeq.current) return;
+      if (res.ok) {
+        setLeads(json.data || []);
+        setTotal(json.total ?? 0);
+        setScoped(json.scoped ?? 0);
+        setStats(json.stats ?? EMPTY_STATS);
+      }
+    } catch { /* aborted, or offline — the next fetch sorts it out */ }
+    if (seq !== reqSeq.current) return;
+    loadedOnce.current = true;
+    setLoading(false);
+    setRefreshing(false);
+  }, [listQuery, page, pageSize]);
+
+  // Only the people who can reassign a lead need the list to assign it to.
+  // Keyed on the derived boolean, not on user.roles — an array dependency is a
+  // fresh reference on every render and would refetch the team forever.
+  const fetchAgents = useCallback(async () => {
+    if (!canAssign) return;
+    try {
+      const res = await fetch("/api/team");
+      const json = await res.json();
+      if (res.ok) {
+        setAgents((json.data || []).filter((m: Agent) => hasRole(m.roles, "agent") && m.is_active));
+      }
+    } catch { /* silent */ }
+  }, [canAssign]);
+
+  // `fetchAppointments` changes identity with the page, page size and filters,
+  // so this is also what refetches on every change to what is being looked at.
+  useEffect(() => {
+    fetchAppointments();
+  }, [fetchAppointments]);
+
+  useEffect(() => {
+    fetchAgents();
+  }, [fetchAgents]);
+
+  // Keep pulling in new leads, but only while the tab is actually being looked
+  // at — a dashboard left open in a background tab used to poll all day for
+  // nobody. Returning to the tab refreshes at once, so the list is current the
+  // moment it is back on screen rather than up to REFRESH_MS stale.
+  useEffect(() => {
+    let timer: ReturnType<typeof setInterval> | undefined;
+    const stop = () => {
+      if (timer) clearInterval(timer);
+      timer = undefined;
+    };
+    const start = () => {
+      stop();
+      timer = setInterval(() => fetchAppointments(), REFRESH_MS);
+    };
+    const onVisibilityChange = () => {
+      if (document.hidden) {
+        stop();
+      } else {
+        fetchAppointments();
+        start();
+      }
+    };
+    if (!document.hidden) start();
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => {
+      stop();
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
+  }, [fetchAppointments]);
+
+  // The search box drives the query only once typing pauses.
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search.trim()), SEARCH_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  // A service filter that isn't offered by the newly selected vertical would
+  // stay active and silently empty the list — e.g. picking a dental page, then
+  // flipping to My360, or to Medical (which has no service dropdown at all).
+  // Drop the filter whenever it stops being selectable.
+  useEffect(() => {
+    if (!filterService) return;
+    const stillOffered =
+      vertical === "all" ||
+      (vertical === "dental" && dentalServiceCatalog.some((s) => s.slug === filterService)) ||
+      (vertical === "my360" && my360ProgramCatalog.some((s) => s.slug === filterService));
+    if (!stillOffered) setFilterService("");
+  }, [vertical, filterService]);
+
+  const rangeStart = (page - 1) * pageSize;
 
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) => {
@@ -202,19 +322,44 @@ export default function Dashboard() {
     });
   };
 
+  // The header checkbox works on the page in view; "Select all N matching"
+  // below reaches past it to every lead behind the current filters.
+  const allOnPageSelected = leads.length > 0 && leads.every((a) => selectedIds.has(a.id));
+
   const toggleSelectAll = () => {
-    if (selectedIds.size === filtered.length) {
-      setSelectedIds(new Set());
-    } else {
-      setSelectedIds(new Set(filtered.map((a) => a.id)));
-    }
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (allOnPageSelected) leads.forEach((a) => next.delete(a.id));
+      else leads.forEach((a) => next.add(a.id));
+      return next;
+    });
   };
 
-  const getExportData = () => {
-    const rows = selectedIds.size > 0
-      ? filtered.filter((a) => selectedIds.has(a.id))
-      : filtered;
-    return rows.map((a) => ({
+  const selectAllMatching = async () => {
+    setSelectingAll(true);
+    try {
+      const qs = new URLSearchParams(listQuery);
+      qs.set("mode", "ids");
+      const res = await fetch(`/api/appointments?${qs}`);
+      const json = await res.json();
+      if (res.ok) setSelectedIds(new Set<string>(json.ids || []));
+    } catch { /* silent */ }
+    setSelectingAll(false);
+  };
+
+  // One request for every lead behind the current filters (the server gzips
+  // it), narrowed to the selection when there is one. Same columns as always.
+  const getExportData = async () => {
+    const qs = new URLSearchParams(listQuery);
+    qs.set("mode", "export");
+    let matching: Appointment[] = [];
+    try {
+      const res = await fetch(`/api/appointments?${qs}`);
+      const json = await res.json();
+      if (res.ok) matching = json.data || [];
+    } catch { /* silent */ }
+    if (selectedIds.size > 0) matching = matching.filter((a) => selectedIds.has(a.id));
+    return matching.map((a) => ({
       Name: a.name,
       Phone: a.phone,
       City: a.city,
@@ -223,8 +368,8 @@ export default function Dashboard() {
     }));
   };
 
-  const exportCSV = () => {
-    const rows = getExportData();
+  const exportCSV = async () => {
+    const rows = await getExportData();
     if (!rows.length) return;
     const headers = Object.keys(rows[0]);
     const csv = [headers.join(","), ...rows.map((r) => headers.map((h) => `"${String(r[h as keyof typeof r]).replace(/"/g, '""')}"`).join(","))].join("\n");
@@ -239,7 +384,7 @@ export default function Dashboard() {
   // export button is clicked, so they are imported on demand instead of being
   // bundled into the dashboard page.
   const exportExcel = async () => {
-    const rows = getExportData();
+    const rows = await getExportData();
     if (!rows.length) return;
     const XLSX = await import("xlsx");
     const ws = XLSX.utils.json_to_sheet(rows);
@@ -250,7 +395,7 @@ export default function Dashboard() {
   };
 
   const exportPDF = async () => {
-    const rows = getExportData();
+    const rows = await getExportData();
     if (!rows.length) return;
     const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
       import("jspdf"),
@@ -272,89 +417,9 @@ export default function Dashboard() {
     setShowExportMenu(false);
   };
 
-  // `background: true` swaps the rows in silently. Only the very first load is
-  // allowed to blank the table for a spinner — flipping `loading` on every poll
-  // is what made the portal look like it was permanently reloading.
-  const fetchAppointments = useCallback(async (background = false) => {
-    if (background) setRefreshing(true);
-    else setLoading(true);
-    try {
-      const res = await fetch("/api/appointments");
-      const json = await res.json();
-      if (res.ok) setAppointments(json.data || []);
-    } catch { /* silent */ }
-    if (background) setRefreshing(false);
-    else setLoading(false);
-  }, []);
-
-  // Only the people who can reassign a lead need the list to assign it to.
-  // Keyed on the derived boolean, not on user.roles — an array dependency is a
-  // fresh reference on every render and would refetch the team forever.
-  const fetchAgents = useCallback(async () => {
-    if (!canAssign) return;
-    try {
-      const res = await fetch("/api/team");
-      const json = await res.json();
-      if (res.ok) {
-        setAgents((json.data || []).filter((m: Agent) => hasRole(m.roles, "agent") && m.is_active));
-      }
-    } catch { /* silent */ }
-  }, [canAssign]);
-
-  useEffect(() => {
-    fetchAppointments();
-    fetchAgents();
-  }, [fetchAppointments, fetchAgents]);
-
-  // Keep pulling in new leads, but only while the tab is actually being looked
-  // at — a dashboard left open in a background tab used to poll all day for
-  // nobody. Returning to the tab refreshes at once, so the list is current the
-  // moment it is back on screen rather than up to REFRESH_MS stale.
-  useEffect(() => {
-    let timer: ReturnType<typeof setInterval> | undefined;
-    const stop = () => {
-      if (timer) clearInterval(timer);
-      timer = undefined;
-    };
-    const start = () => {
-      stop();
-      timer = setInterval(() => fetchAppointments(true), REFRESH_MS);
-    };
-    const onVisibilityChange = () => {
-      if (document.hidden) {
-        stop();
-      } else {
-        fetchAppointments(true);
-        start();
-      }
-    };
-    if (!document.hidden) start();
-    document.addEventListener("visibilitychange", onVisibilityChange);
-    return () => {
-      stop();
-      document.removeEventListener("visibilitychange", onVisibilityChange);
-    };
-  }, [fetchAppointments]);
-
-  // A service filter that isn't offered by the newly selected vertical would
-  // stay active and silently empty the list — e.g. picking a dental page, then
-  // flipping to My360, or to Medical (which has no service dropdown at all).
-  // Drop the filter whenever it stops being selectable.
-  useEffect(() => {
-    if (!filterService) return;
-    const stillOffered =
-      vertical === "all" ||
-      (vertical === "dental" && dentalServiceCatalog.some((s) => s.slug === filterService)) ||
-      (vertical === "my360" && my360ProgramCatalog.some((s) => s.slug === filterService));
-    if (!stillOffered) setFilterService("");
-  }, [vertical, filterService]);
-
-  // Any change to what is being looked at starts again at the first page —
-  // staying on page 12 of a freshly narrowed search is never what was meant.
-  useEffect(() => {
-    setPage(1);
-  }, [search, filterCity, filterStatus, filterService, filterAgent, vertical, pageSize]);
-
+  // Status and assignment changes update the row and the open modal in place,
+  // then refetch in the background so the stat cards (and the row's place
+  // under a status filter) catch up with the server.
   const updateStatus = async (id: string, newStatus: string) => {
     try {
       const res = await fetch("/api/appointments", {
@@ -366,12 +431,13 @@ export default function Dashboard() {
         const data = await res.json();
         const changedBy = data.status_changed_by || null;
         const changedAt = data.status_changed_at || null;
-        setAppointments((prev) =>
+        setLeads((prev) =>
           prev.map((a) => (a.id === id ? { ...a, status: newStatus, status_changed_by: changedBy, status_changed_at: changedAt } : a))
         );
         if (selectedAppointment?.id === id) {
           setSelectedAppointment({ ...selectedAppointment, status: newStatus, status_changed_by: changedBy, status_changed_at: changedAt });
         }
+        fetchAppointments();
       }
     } catch { /* silent */ }
   };
@@ -385,12 +451,13 @@ export default function Dashboard() {
         body: JSON.stringify({ id: appointmentId, assigned_to: agentId || null, assigned_to_name: agent?.name || null }),
       });
       if (res.ok) {
-        setAppointments((prev) =>
+        setLeads((prev) =>
           prev.map((a) => (a.id === appointmentId ? { ...a, assigned_to: agentId || null, assigned_to_name: agent?.name || null } : a))
         );
         if (selectedAppointment?.id === appointmentId) {
           setSelectedAppointment({ ...selectedAppointment, assigned_to: agentId || null, assigned_to_name: agent?.name || null });
         }
+        fetchAppointments();
       }
     } catch { /* silent */ }
   };
@@ -415,9 +482,12 @@ export default function Dashboard() {
       });
       const data = await res.json();
       if (res.ok && data.data) {
-        setAppointments((prev) => [data.data, ...prev]);
         setShowCreateModal(false);
         setCreateForm({ name: "", phone: "", city: "Jeddah", channel: "Call", note: "", otherChannel: "" });
+        // Newest first, so the new lead lands on page 1 (when it matches the
+        // filters). Moving the page refetches by itself.
+        if (page !== 1) setPage(1);
+        else fetchAppointments();
       } else {
         setCreateError(data.error || "Failed to create lead");
       }
@@ -425,6 +495,14 @@ export default function Dashboard() {
       setCreateError("Network error");
     }
     setCreateLoading(false);
+  };
+
+  const dropFromSelection = (ids: Iterable<string>) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      for (const id of ids) next.delete(id);
+      return next;
+    });
   };
 
   const deleteLead = async (id: string) => {
@@ -435,8 +513,10 @@ export default function Dashboard() {
         body: JSON.stringify({ id }),
       });
       if (res.ok) {
-        setAppointments((prev) => prev.filter((a) => a.id !== id));
+        setLeads((prev) => prev.filter((a) => a.id !== id));
+        dropFromSelection([id]);
         if (selectedAppointment?.id === id) setSelectedAppointment(null);
+        fetchAppointments();
       }
     } catch { /* silent */ }
     setDeleteConfirmId(null);
@@ -452,19 +532,13 @@ export default function Dashboard() {
         body: JSON.stringify({ ids: idsToDelete }),
       });
       if (res.ok) {
-        setAppointments((prev) => prev.filter((a) => !selectedIds.has(a.id)));
+        setLeads((prev) => prev.filter((a) => !selectedIds.has(a.id)));
         if (selectedAppointment && selectedIds.has(selectedAppointment.id)) setSelectedAppointment(null);
         setSelectedIds(new Set());
+        fetchAppointments();
       }
     } catch { /* silent */ }
     setShowBulkDeleteConfirm(false);
-  };
-
-  const stats = {
-    total: scoped.length,
-    today: scoped.filter((a) => new Date(a.created_at).toDateString() === new Date().toDateString()).length,
-    pending: scoped.filter((a) => a.status === "pending").length,
-    confirmed: scoped.filter((a) => a.status === "booked" || a.status === "confirmed").length,
   };
 
   // Human-readable label for the active scope, shown beside the page title.
@@ -503,7 +577,7 @@ export default function Dashboard() {
             Add Lead
           </button>
           <button
-            onClick={() => fetchAppointments(true)}
+            onClick={() => fetchAppointments()}
             disabled={refreshing}
             className="p-2 rounded-lg hover:bg-slate-100 transition-colors text-slate-400 hover:text-slate-600 disabled:cursor-not-allowed"
             title={refreshing ? "Refreshing…" : "Refresh"}
@@ -521,7 +595,7 @@ export default function Dashboard() {
           { label: "Total Requests", value: stats.total, key: "total", accent: "text-[#004d99]", bg: "bg-[#004d99]/5" },
           { label: "Today", value: stats.today, key: "today", accent: "text-emerald-600", bg: "bg-emerald-50" },
           { label: "Pending", value: stats.pending, key: "pending", accent: "text-amber-600", bg: "bg-amber-50" },
-          { label: "Booked", value: stats.confirmed, key: "confirmed", accent: "text-emerald-600", bg: "bg-emerald-50" },
+          { label: "Booked", value: stats.booked, key: "confirmed", accent: "text-emerald-600", bg: "bg-emerald-50" },
         ].map((stat) => (
           <div key={stat.label} className="bg-white rounded-xl border border-slate-200/80 p-4 md:p-5">
             <div className={`w-9 h-9 rounded-lg ${stat.bg} ${stat.accent} flex items-center justify-center mb-3`}>
@@ -540,7 +614,7 @@ export default function Dashboard() {
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
             <input
               type="text"
-              placeholder="Search name, phone, department..."
+              placeholder="Search name or phone..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-[#004d99]/20 focus:border-[#004d99] transition-all placeholder:text-slate-300"
@@ -592,8 +666,25 @@ export default function Dashboard() {
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <p className="text-xs text-slate-400 font-medium">
-            {selectedIds.size > 0 ? `${selectedIds.size} selected — ` : ""}{filtered.length} of {scoped.length} appointments
+            {selectedIds.size > 0 ? `${selectedIds.size} selected — ` : ""}{total} of {scoped} appointments
           </p>
+          {canExport && allOnPageSelected && total > leads.length && selectedIds.size < total && (
+            <button
+              onClick={selectAllMatching}
+              disabled={selectingAll}
+              className="text-xs font-semibold text-[#004d99] hover:underline disabled:opacity-50 disabled:cursor-wait"
+            >
+              {selectingAll ? "Selecting…" : `Select all ${total} matching`}
+            </button>
+          )}
+          {selectedIds.size > 0 && (
+            <button
+              onClick={() => setSelectedIds(new Set())}
+              className="text-xs font-semibold text-slate-400 hover:text-slate-600 hover:underline"
+            >
+              Clear selection
+            </button>
+          )}
           {canDelete && selectedIds.size > 0 && (
             <button
               onClick={() => setShowBulkDeleteConfirm(true)}
@@ -639,7 +730,7 @@ export default function Dashboard() {
           <div className="flex items-center justify-center py-20">
             <div className="w-6 h-6 border-2 border-slate-200 border-t-[#004d99] rounded-full animate-spin" />
           </div>
-        ) : filtered.length === 0 ? (
+        ) : leads.length === 0 ? (
           <div className="text-center py-20">
             <svg className="w-12 h-12 text-slate-200 mx-auto mb-3" fill="none" stroke="currentColor" strokeWidth={1} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V19.5a2.25 2.25 0 002.25 2.25h.75" /></svg>
             <p className="text-slate-400 text-sm font-medium">No appointments found</p>
@@ -654,7 +745,7 @@ export default function Dashboard() {
                   <tr className="border-b border-slate-100">
                     {canExport && (
                       <th className="w-10 px-3 py-3">
-                        <input type="checkbox" checked={selectedIds.size === filtered.length && filtered.length > 0} onChange={toggleSelectAll} className="w-3.5 h-3.5 rounded border-slate-300 text-[#004d99] cursor-pointer" />
+                        <input type="checkbox" checked={allOnPageSelected} onChange={toggleSelectAll} className="w-3.5 h-3.5 rounded border-slate-300 text-[#004d99] cursor-pointer" />
                       </th>
                     )}
                     <th className="text-left px-5 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Patient</th>
@@ -669,7 +760,7 @@ export default function Dashboard() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
-                  {paged.map((a) => (
+                  {leads.map((a) => (
                     <tr key={a.id} className={`hover:bg-slate-50/80 transition-colors group ${selectedIds.has(a.id) ? "bg-[#004d99]/5" : ""}`}>
                       {canExport && (
                         <td className="w-10 px-3 py-3.5">
@@ -733,7 +824,7 @@ export default function Dashboard() {
 
             {/* Mobile Cards */}
             <div className="md:hidden divide-y divide-slate-100/80">
-              {paged.map((a) => (
+              {leads.map((a) => (
                 <div key={a.id} className="px-4 py-3.5 active:bg-slate-50 transition-colors cursor-pointer" onClick={() => setSelectedAppointment(a)}>
                   <div className="flex justify-between items-start mb-1.5">
                     <div>
@@ -760,7 +851,7 @@ export default function Dashboard() {
 
             {/* Pager. Hidden when everything already fits, so the common
                 "today's leads" view stays uncluttered. */}
-            {(pageCount > 1 || filtered.length > PAGE_SIZE_OPTIONS[0]) && (
+            {(pageCount > 1 || total > PAGE_SIZE_OPTIONS[0]) && (
               <div className="px-4 md:px-5 py-3 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
                 <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
                   <label htmlFor="page-size">Show</label>
@@ -771,21 +862,21 @@ export default function Dashboard() {
                     className="border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-semibold text-slate-700 cursor-pointer bg-white"
                   >
                     {PAGE_SIZE_OPTIONS.map((size) => (
-                      <option key={size} value={size}>{size === ALL_ROWS ? "All" : size}</option>
+                      <option key={size} value={size}>{size}</option>
                     ))}
                   </select>
                   <span className="hidden sm:inline">
-                    {filtered.length === 0
+                    {leads.length === 0
                       ? "no leads"
-                      : `${rangeStart + 1}\u2013${rangeStart + paged.length} of ${filtered.length}`}
+                      : `${rangeStart + 1}\u2013${rangeStart + leads.length} of ${total}`}
                   </span>
                 </div>
 
                 {pageCount > 1 && (
                   <div className="flex items-center gap-1">
                     <button
-                      onClick={() => setPage(currentPage - 1)}
-                      disabled={currentPage === 1}
+                      onClick={() => setPage(page - 1)}
+                      disabled={page === 1}
                       className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-transparent disabled:cursor-not-allowed cursor-pointer"
                     >
                       Prev
@@ -793,7 +884,7 @@ export default function Dashboard() {
                     {/* A window around the current page — 161 page buttons would
                         wrap the toolbar at every screen size. */}
                     {Array.from({ length: pageCount }, (_, i) => i + 1)
-                      .filter((n) => n === 1 || n === pageCount || Math.abs(n - currentPage) <= 1)
+                      .filter((n) => n === 1 || n === pageCount || Math.abs(n - page) <= 1)
                       .map((n, i, shown) => (
                         <React.Fragment key={n}>
                           {i > 0 && n - shown[i - 1] > 1 && (
@@ -802,7 +893,7 @@ export default function Dashboard() {
                           <button
                             onClick={() => setPage(n)}
                             className={`min-w-[1.9rem] px-2 py-1.5 rounded-lg text-xs font-semibold cursor-pointer ${
-                              n === currentPage
+                              n === page
                                 ? "bg-[#004d99] text-white"
                                 : "text-slate-600 hover:bg-slate-100"
                             }`}
@@ -812,8 +903,8 @@ export default function Dashboard() {
                         </React.Fragment>
                       ))}
                     <button
-                      onClick={() => setPage(currentPage + 1)}
-                      disabled={currentPage === pageCount}
+                      onClick={() => setPage(page + 1)}
+                      disabled={page === pageCount}
                       className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-transparent disabled:cursor-not-allowed cursor-pointer"
                     >
                       Next
