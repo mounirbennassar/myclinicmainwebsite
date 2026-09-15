@@ -11,7 +11,7 @@ import { WhatsAppIcon } from "@/app/components/icons";
 
 const PHONE_TEL = "920022811";
 const PHONE_DISPLAY = "920 022 811";
-const WA_NUMBER = "966567729095";
+const WA_NUMBER = "966549112992";
 const waUrl = (isRtl: boolean, msg?: string) =>
   `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(
     msg ??
