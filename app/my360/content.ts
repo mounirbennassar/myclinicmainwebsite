@@ -18,8 +18,8 @@
 
 export const PHONE_TEL = "920022811";
 export const PHONE_DISPLAY = "920 022 811";
-export const WHATSAPP_NUMBER = "966542228111";
-export const WHATSAPP_DISPLAY = "0542228111";
+export const WHATSAPP_NUMBER = "966920022811";
+export const WHATSAPP_DISPLAY = "920 022 811";
 export const EMAIL = "my360@myclinic.com.sa";
 export const WEBSITE_DISPLAY = "www.myclinic.com.sa";
 
@@ -359,7 +359,7 @@ export const EN = {
       },
       {
         q: "How do I join?",
-        a: "Call 920022811, WhatsApp 0542228111, email my360@myclinic.com.sa, or speak to our team at your next clinic visit.",
+        a: "Call or WhatsApp 920022811, email my360@myclinic.com.sa, or speak to our team at your next clinic visit.",
       },
       {
         q: "Is My 360 available for children?",
@@ -597,7 +597,7 @@ export const AR: typeof EN = {
       },
       {
         q: "كيف يمكنني الانضمام؟",
-        a: "اتصل على 920022811، أو تواصل معنا عبر واتساب على 0542228111، أو راسلنا على my360@myclinic.com.sa، كما يمكنك التحدث مع فريقنا خلال زيارتك القادمة لأحد فروع عيادتي.",
+        a: "اتصل أو تواصل معنا عبر واتساب على 920022811، أو راسلنا على my360@myclinic.com.sa، كما يمكنك التحدث مع فريقنا خلال زيارتك القادمة لأحد فروع عيادتي.",
       },
       {
         q: "هل يتوفر برنامج My 360 للأطفال؟",
