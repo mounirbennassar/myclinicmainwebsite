@@ -42,12 +42,6 @@ const PATHS: Record<string, React.ReactNode> = {
     </>
   ),
   heart: <path d="M12 20s-7-4.5-9-9a5 5 0 0 1 9-3 5 5 0 0 1 9 3c-2 4.5-9 9-9 9z" />,
-  whatsapp: (
-    <>
-      <path d="M21 12a9 9 0 0 1-13.2 8L3 21l1-4.6A9 9 0 1 1 21 12z" />
-      <path d="M9 10c.5 2.5 2.5 4.5 5 5l1.2-1.4 2.3 1" />
-    </>
-  ),
   mail: (
     <>
       <rect x="3" y="5" width="18" height="14" rx="2" />

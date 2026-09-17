@@ -9,6 +9,7 @@ import { useGSAP } from "@gsap/react";
 import { useLang } from "@/app/i18n/context";
 import { trackPhoneClick, trackWhatsAppClick } from "@/app/lib/tracking";
 import SiteFooter from "@/app/components/SiteFooter";
+import { WhatsAppIcon } from "@/app/components/icons";
 
 import My360Aurora from "./components/My360Aurora";
 import My360Icon from "./components/My360Icons";
@@ -875,8 +876,10 @@ export default function My360Client() {
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 hover:text-white"
               >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-white/[0.12]">
-                  <My360Icon name="whatsapp" className="h-4 w-4" />
+                {/* The real WhatsApp mark on its brand green, so the row reads as
+                    a WhatsApp button at a glance rather than a generic chat icon. */}
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[#25D366] text-white">
+                  <WhatsAppIcon className="text-[19px]" />
                 </span>
                 <span dir="ltr">WhatsApp {WHATSAPP_DISPLAY}</span>
               </a>
