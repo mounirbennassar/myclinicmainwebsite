@@ -9,11 +9,12 @@ import SiteFooter from "@/app/components/SiteFooter";
 const PHONE_TEL = "920022811";
 const PHONE_DISPLAY = "920 022 811";
 
-// Zoho Creator embed. NOTE: this must stay the `form-embed` variant — the
-// `form-perma` share link answers X-Frame-Options: DENY and renders blank
-// inside an iframe.
-const ZOHO_FORM_URL =
-  "https://creatorapp.zohopublic.in/subash797/my-clinics-development/form-embed/General_Enquiry/T47WgZzD2Fj2sDVbjTBDd0qsXjyKYthRjYQ0KknzWRrwVdtdFbFw7K7JY0mh5Q9v1s9281WMCY5q7BkxkyrQFW6y9eVnzCFm0kte";
+// Zoho Creator feedback form on the clinic's production account. Opened in a
+// new tab on purpose: Zoho's `page-perma` share links answer
+// X-Frame-Options: DENY, so they render blank inside an iframe. The Zoho team
+// passes `?Channel=Mobile` from the app; the website sends no channel param.
+const ZOHO_FEEDBACK_URL =
+  "https://creatorapp.zohopublic.sa/myclinic/my-clinic/page-perma/Final_Webform/9wPfk9vemN3EAjYgV3Udeezq1FfQQzsZ0HnZk2CFnEnbAZxY6fC7sGOug71Jmjb5twpj2EtYHsjWgyHnx0mwCdSu6m3dj5gvpS9k";
 
 // No icon font on this page: app/layout.tsx loads a subset of Material
 // Symbols (only the glyphs the rest of the site uses), so any new icon name
@@ -64,6 +65,24 @@ const FAQS = [
   },
 ];
 
+function ArrowUpRight({ flip }: { flip: boolean }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={`w-5 h-5 shrink-0 transition-transform duration-300 group-hover:-translate-y-0.5 ${flip ? "-scale-x-100 group-hover:-translate-x-0.5" : "group-hover:translate-x-0.5"}`}
+      aria-hidden
+    >
+      <path d="M7 17 17 7" />
+      <path d="M8 7h9v9" />
+    </svg>
+  );
+}
+
 function Chevron() {
   return (
     <svg
@@ -112,9 +131,9 @@ export default function FeedbackPage() {
             </p>
             <h1 className={`mt-4 font-headline font-extrabold text-primary text-4xl md:text-6xl ${isRtl ? "leading-[1.3]" : "tracking-tight leading-[1.06]"} [text-wrap:balance]`}>
               {isRtl ? (
-                <>صوتك يصنع <span className="bg-gradient-to-l from-primary via-tertiary to-secondary bg-clip-text text-transparent">رعاية افضل</span></>
+                <>صوتك يصنع <span className="bg-gradient-to-l from-primary via-tertiary to-secondary bg-clip-text text-transparent px-[0.12em] -mx-[0.12em]">رعاية افضل</span></>
               ) : (
-                <>Your voice shapes <span className="bg-gradient-to-r from-primary via-tertiary to-secondary bg-clip-text text-transparent">better care</span></>
+                <>Your voice shapes <span className="bg-gradient-to-r from-primary via-tertiary to-secondary bg-clip-text text-transparent px-[0.12em] -mx-[0.12em]">better care</span></>
               )}
             </h1>
             <p className="mt-5 text-on-surface-variant text-base md:text-lg max-w-2xl mx-auto leading-relaxed [text-wrap:pretty]">
@@ -130,16 +149,29 @@ export default function FeedbackPage() {
           </div>
         </section>
 
-        {/* ── Form ── */}
-        <section className="relative max-w-4xl mx-auto px-4 md:px-8 -mt-2 pb-14 md:pb-20">
+        {/* ── Call to action ── */}
+        <section className="relative max-w-3xl mx-auto px-4 md:px-8 -mt-2 pb-14 md:pb-20">
           <div className="bg-white rounded-[2rem] shadow-[0_30px_70px_-30px_rgba(0,77,153,0.35)] ring-1 ring-outline-variant/30 overflow-hidden">
             <div className="h-1.5 bg-gradient-to-r from-primary via-tertiary to-secondary" aria-hidden />
-            <iframe
-              src={ZOHO_FORM_URL}
-              title={isRtl ? "نموذج الملاحظات والشكاوى" : "Feedback & complaints form"}
-              loading="lazy"
-              className="block w-full h-[1050px] border-0 bg-white"
-            />
+            <div className="px-6 md:px-12 py-10 md:py-14 text-center">
+              <h2 className="font-headline font-extrabold text-primary text-2xl md:text-3xl [text-wrap:balance]">
+                {isRtl ? "حدثنا عن تجربتك" : "Tell us about your experience"}
+              </h2>
+              <p className="mt-3 text-on-surface-variant text-sm md:text-base leading-relaxed max-w-xl mx-auto [text-wrap:pretty]">
+                {isRtl
+                  ? "ثناء او اقتراح او شكوى — النموذج يستغرق دقيقتين تقريبا ويفتح في نافذة جديدة."
+                  : "Compliment, suggestion or complaint — the form takes about two minutes and opens in a new tab."}
+              </p>
+              <a
+                href={ZOHO_FEEDBACK_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group mt-8 w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-primary text-white font-extrabold text-base md:text-lg px-9 py-4 rounded-full shadow-[0_8px_24px_-8px_rgba(0,77,153,0.6)] hover:-translate-y-0.5 hover:shadow-[0_12px_28px_-8px_rgba(0,77,153,0.7)] active:translate-y-0 transition-all"
+              >
+                {isRtl ? "شاركنا ملاحظتك" : "Share your feedback"}
+                <ArrowUpRight flip={isRtl} />
+              </a>
+            </div>
           </div>
           <p className="mt-5 text-center text-xs md:text-[13px] text-on-surface-variant">
             {isRtl ? (
