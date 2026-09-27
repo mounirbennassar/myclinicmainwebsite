@@ -13,6 +13,7 @@ const PHONE_DISPLAY = "920 022 811";
 // new tab on purpose: Zoho's `page-perma` share links answer
 // X-Frame-Options: DENY, so they render blank inside an iframe. The Zoho team
 // passes `?Channel=Mobile` from the app; the website sends no channel param.
+// `?lang=ar|en` opens the form in the visitor's current site language.
 const ZOHO_FEEDBACK_URL =
   "https://creatorapp.zohopublic.sa/myclinic/my-clinic/page-perma/Final_Webform/9wPfk9vemN3EAjYgV3Udeezq1FfQQzsZ0HnZk2CFnEnbAZxY6fC7sGOug71Jmjb5twpj2EtYHsjWgyHnx0mwCdSu6m3dj5gvpS9k";
 
@@ -163,7 +164,7 @@ export default function FeedbackPage() {
                   : "Compliment, suggestion or complaint — the form takes about two minutes and opens in a new tab."}
               </p>
               <a
-                href={ZOHO_FEEDBACK_URL}
+                href={`${ZOHO_FEEDBACK_URL}?lang=${isRtl ? "ar" : "en"}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group mt-8 w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-primary text-white font-extrabold text-base md:text-lg px-9 py-4 rounded-full shadow-[0_8px_24px_-8px_rgba(0,77,153,0.6)] hover:-translate-y-0.5 hover:shadow-[0_12px_28px_-8px_rgba(0,77,153,0.7)] active:translate-y-0 transition-all"
