@@ -234,20 +234,6 @@ function CeoCard({ isRtl }: { isRtl: boolean }) {
               ? "يقود رؤية عيادتي ومسيرة نموها، ليجعل الرعاية الصحية المتخصصة أقرب وأيسر لكل أسرة في المملكة."
               : "Leading My Clinic's vision and growth, bringing specialized healthcare closer to every family in the Kingdom."}
           </p>
-
-          {/* Glass stat strip — frosts brighter on hover */}
-          <div className="mt-8 grid grid-cols-3 gap-2 rounded-2xl border border-white/15 bg-white/[0.07] p-2 backdrop-blur-xl transition-colors duration-500 group-hover:bg-white/[0.12] group-data-[lit]:bg-white/[0.12]">
-            {[
-              { v: "2017", en: "Founded", ar: "التأسيس" },
-              { v: "+24", en: "Specialties", ar: "تخصصا" },
-              { v: "+300", en: "Professionals", ar: "متخصص" },
-            ].map((s) => (
-              <div key={s.en} className="rounded-xl px-2 py-3 text-center">
-                <div className="font-headline text-xl md:text-2xl font-extrabold text-white" dir="ltr">{s.v}</div>
-                <div className="mt-0.5 text-[11px] md:text-xs font-semibold text-white/60">{isRtl ? s.ar : s.en}</div>
-              </div>
-            ))}
-          </div>
         </div>
       </div>
     </article>
