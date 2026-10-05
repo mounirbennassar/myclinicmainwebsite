@@ -3,7 +3,8 @@ import type { Metadata } from "next";
 // Leadership page — PREVIEW, awaiting management approval.
 // Hidden on purpose: noindex/nofollow, not in sitemap.ts, not linked from
 // SiteNav/SiteFooter. It is deliberately NOT listed in robots.ts either, since
-// a Disallow line would publish the path. To launch: drop `robots` below, add
+// a Disallow line would publish the path. page.tsx also 404s without the
+// preview key. To launch: remove the key gate in page.tsx, drop `robots` below, add
 // "/leadership" to STATIC_ROUTES in app/sitemap.ts, link it from the nav/footer,
 // and replace the placeholder portraits in public/leadership/.
 export const metadata: Metadata = {
