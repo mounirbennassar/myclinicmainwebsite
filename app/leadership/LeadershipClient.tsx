@@ -9,7 +9,7 @@ import SiteFooter from "@/app/components/SiteFooter";
 
 // Portraits in public/leadership/ are AI-generated PLACEHOLDERS for the
 // approval preview. Swap in the real photos (4:5, same file names) and set this
-// to false before launch — it removes the "preview" ribbon and photo tags.
+// to false before launch — it removes the "Placeholder photo" tags.
 const PREVIEW = true;
 
 type Leader = {
@@ -265,12 +265,6 @@ export default function LeadershipClient() {
           {/* Fade the hero glow into the page so it has no hard bottom edge */}
           <div aria-hidden className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-b from-transparent to-surface pointer-events-none" />
           <div className="relative max-w-4xl mx-auto px-4 md:px-8 pt-14 md:pt-20 pb-24 md:pb-32 text-center">
-            {PREVIEW && (
-              <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-amber-50 px-3.5 py-1.5 text-[12px] font-bold text-amber-800 ring-1 ring-amber-200">
-                <span className="material-symbols-outlined text-[16px]">visibility</span>
-                {isRtl ? "نسخة معاينة للاعتماد — الصور مؤقتة" : "Preview for approval — portraits are placeholders"}
-              </div>
-            )}
             <div>
               <span className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white text-primary font-extrabold shadow-clinical ring-1 ring-primary/10 ${isRtl ? "text-[13px]" : "text-[11px] uppercase tracking-[0.15em]"}`}>
                 {isRtl ? "فريق القيادة" : "Our Leadership"}
