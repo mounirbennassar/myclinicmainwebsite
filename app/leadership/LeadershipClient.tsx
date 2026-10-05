@@ -1,6 +1,6 @@
 "use client";
 
-import { type MouseEvent, type ReactNode } from "react";
+import { type MouseEvent, type ReactNode, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { useLang } from "@/app/i18n/context";
@@ -72,6 +72,42 @@ function Reveal({ children, className, delay = 0 }: { children: ReactNode; class
   );
 }
 
+/**
+ * Plays the hover effect once, by itself, when a card first scrolls into view:
+ * sets data-lit for LIT_MS, and every hover style is mirrored on
+ * `data-[lit]` / `group-data-[lit]`. Hovering afterwards plays it again as usual.
+ * `delay` staggers the cards and waits for the Reveal fade-in to finish.
+ */
+const LIT_MS = 1700;
+function useIntroGlow<T extends HTMLElement>(delay: number) {
+  const ref = useRef<T>(null);
+  const [lit, setLit] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    let on: number | undefined;
+    let off: number | undefined;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        io.disconnect();
+        on = window.setTimeout(() => {
+          setLit(true);
+          off = window.setTimeout(() => setLit(false), LIT_MS);
+        }, delay);
+      },
+      { threshold: 0.45 }
+    );
+    io.observe(el);
+    return () => {
+      io.disconnect();
+      window.clearTimeout(on);
+      window.clearTimeout(off);
+    };
+  }, [delay]);
+  return [ref, lit ? "" : undefined] as const;
+}
+
 /** Feeds the pointer position to the card's spotlight as CSS variables. */
 function trackPointer(e: MouseEvent<HTMLElement>) {
   const r = e.currentTarget.getBoundingClientRect();
@@ -85,14 +121,14 @@ function HoverLight() {
     <>
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 z-20 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+        className="pointer-events-none absolute inset-0 z-20 opacity-0 transition-opacity duration-500 group-hover:opacity-100 group-data-[lit]:opacity-100"
         style={{
           background:
             "radial-gradient(420px circle at var(--mx, 50%) var(--my, 30%), rgba(255,255,255,0.22), transparent 45%)",
         }}
       />
       <div aria-hidden className="pointer-events-none absolute inset-0 z-20 overflow-hidden">
-        <div className="absolute -inset-y-10 -left-1/2 w-1/3 -skew-x-[20deg] bg-gradient-to-r from-transparent via-white/35 to-transparent -translate-x-full motion-safe:transition-transform motion-safe:duration-[1100ms] motion-safe:ease-out group-hover:translate-x-[520%]" />
+        <div className="absolute -inset-y-10 -left-1/2 w-1/3 -skew-x-[20deg] bg-gradient-to-r from-transparent via-white/35 to-transparent -translate-x-full motion-safe:transition-transform motion-safe:duration-[1100ms] motion-safe:ease-out group-hover:translate-x-[520%] group-data-[lit]:translate-x-[520%]" />
       </div>
     </>
   );
@@ -107,25 +143,28 @@ function PreviewTag({ isRtl }: { isRtl: boolean }) {
   );
 }
 
-function LeaderCard({ leader, isRtl, tier }: { leader: Leader; isRtl: boolean; tier: string }) {
+function LeaderCard({ leader, isRtl, tier, order }: { leader: Leader; isRtl: boolean; tier: string; order: number }) {
+  const [glowRef, lit] = useIntroGlow<HTMLElement>(700 + order * 350);
   const name = isRtl ? leader.name.ar : leader.name.en;
   const title = isRtl ? leader.title.ar : leader.title.en;
   return (
     <article
+      ref={glowRef}
+      data-lit={lit}
       onMouseMove={trackPointer}
-      className="group relative isolate aspect-[4/5] overflow-hidden rounded-[1.4rem] md:rounded-[2rem] bg-primary-fixed shadow-[0_24px_60px_-34px_rgba(0,27,61,0.55)] ring-1 ring-primary/10 motion-safe:transition-all motion-safe:duration-500 hover:-translate-y-2 hover:shadow-[0_40px_80px_-30px_rgba(0,77,153,0.55)] hover:ring-secondary-fixed-dim/70"
+      className="group relative isolate aspect-[4/5] overflow-hidden rounded-[1.4rem] md:rounded-[2rem] bg-primary-fixed shadow-[0_24px_60px_-34px_rgba(0,27,61,0.55)] ring-1 ring-primary/10 motion-safe:transition-all motion-safe:duration-500 hover:-translate-y-2 data-[lit]:-translate-y-2 hover:shadow-[0_40px_80px_-30px_rgba(0,77,153,0.55)] data-[lit]:shadow-[0_40px_80px_-30px_rgba(0,77,153,0.55)] hover:ring-secondary-fixed-dim/70 data-[lit]:ring-secondary-fixed-dim/70"
     >
       <Image
         src={leader.img}
         alt={`${name} — ${title}`}
         fill
         sizes="(min-width: 1280px) 340px, (min-width: 768px) 45vw, 50vw"
-        className="object-cover object-top motion-safe:transition-transform motion-safe:duration-[900ms] motion-safe:ease-out group-hover:scale-[1.06]"
+        className="object-cover object-top motion-safe:transition-transform motion-safe:duration-[900ms] motion-safe:ease-out group-hover:scale-[1.06] group-data-[lit]:scale-[1.06]"
       />
       {/* Legibility gradient — deepens on hover so the glass panel reads */}
       <div
         aria-hidden
-        className="absolute inset-0 z-10 bg-gradient-to-t from-[#001b3d]/85 via-[#001b3d]/10 to-transparent transition-opacity duration-500 group-hover:opacity-90"
+        className="absolute inset-0 z-10 bg-gradient-to-t from-[#001b3d]/85 via-[#001b3d]/10 to-transparent transition-opacity duration-500 group-hover:opacity-90 group-data-[lit]:opacity-90"
       />
       <HoverLight />
       <PreviewTag isRtl={isRtl} />
@@ -133,12 +172,12 @@ function LeaderCard({ leader, isRtl, tier }: { leader: Leader; isRtl: boolean; t
       {/* Glass caption: name + title always visible; the panel frosts over and
           reveals the tier line on hover (touch devices still get the essentials). */}
       <div className="absolute inset-x-1.5 bottom-1.5 md:inset-x-3 md:bottom-3 z-30">
-        <div className="rounded-[1.1rem] md:rounded-[1.4rem] border border-transparent p-3 md:p-4 transition-all duration-500 group-hover:border-white/30 group-hover:bg-white/12 group-hover:backdrop-blur-xl group-hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_10px_30px_-10px_rgba(0,0,0,0.4)]">
+        <div className="rounded-[1.1rem] md:rounded-[1.4rem] border border-transparent p-3 md:p-4 transition-all duration-500 group-hover:border-white/30 group-data-[lit]:border-white/30 group-hover:bg-white/12 group-data-[lit]:bg-white/12 group-hover:backdrop-blur-xl group-data-[lit]:backdrop-blur-xl group-hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_10px_30px_-10px_rgba(0,0,0,0.4)] group-data-[lit]:shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_10px_30px_-10px_rgba(0,0,0,0.4)]">
           <h3 className={`font-headline font-bold text-white text-[15px] sm:text-lg md:text-xl leading-tight ${isRtl ? "" : "tracking-tight"}`}>
             {name}
           </h3>
           <p className="mt-1 text-[11px] sm:text-[13px] font-semibold leading-snug text-secondary-fixed">{title}</p>
-          <div className="grid grid-rows-[0fr] opacity-0 transition-all duration-500 group-hover:grid-rows-[1fr] group-hover:opacity-100">
+          <div className="grid grid-rows-[0fr] opacity-0 transition-all duration-500 group-hover:grid-rows-[1fr] group-data-[lit]:grid-rows-[1fr] group-hover:opacity-100 group-data-[lit]:opacity-100">
             <div className="overflow-hidden">
               <div className="mt-3 flex items-center gap-2 border-t border-white/20 pt-3 text-[12px] font-medium text-white/80">
                 <span className="material-symbols-outlined text-[18px] text-secondary-fixed-dim">{leader.icon}</span>
@@ -153,10 +192,13 @@ function LeaderCard({ leader, isRtl, tier }: { leader: Leader; isRtl: boolean; t
 }
 
 function CeoCard({ isRtl }: { isRtl: boolean }) {
+  const [glowRef, lit] = useIntroGlow<HTMLElement>(800);
   return (
     <article
+      ref={glowRef}
+      data-lit={lit}
       onMouseMove={trackPointer}
-      className="group relative isolate overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-[#002a57] via-primary to-[#00395f] p-2 shadow-[0_50px_100px_-45px_rgba(0,27,61,0.8)] ring-1 ring-white/10 motion-safe:transition-all motion-safe:duration-500 hover:-translate-y-1.5 hover:shadow-[0_60px_110px_-40px_rgba(0,77,153,0.75)]"
+      className="group relative isolate overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-[#002a57] via-primary to-[#00395f] p-2 shadow-[0_50px_100px_-45px_rgba(0,27,61,0.8)] ring-1 ring-white/10 motion-safe:transition-all motion-safe:duration-500 hover:-translate-y-1.5 data-[lit]:-translate-y-1.5 hover:shadow-[0_60px_110px_-40px_rgba(0,77,153,0.75)] data-[lit]:shadow-[0_60px_110px_-40px_rgba(0,77,153,0.75)]"
     >
       <div aria-hidden className="pointer-events-none absolute -top-32 end-0 h-80 w-80 rounded-full bg-secondary-container/25 blur-3xl" />
       <div aria-hidden className="pointer-events-none absolute -bottom-40 start-1/3 h-80 w-80 rounded-full bg-primary-fixed-dim/20 blur-3xl" />
@@ -170,7 +212,7 @@ function CeoCard({ isRtl }: { isRtl: boolean }) {
             fill
             priority
             sizes="(min-width: 1024px) 440px, (min-width: 768px) 45vw, 92vw"
-            className="object-cover object-top motion-safe:transition-transform motion-safe:duration-[900ms] motion-safe:ease-out group-hover:scale-[1.05]"
+            className="object-cover object-top motion-safe:transition-transform motion-safe:duration-[900ms] motion-safe:ease-out group-hover:scale-[1.05] group-data-[lit]:scale-[1.05]"
           />
           <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-[#001b3d]/40 to-transparent" />
           <PreviewTag isRtl={isRtl} />
@@ -194,7 +236,7 @@ function CeoCard({ isRtl }: { isRtl: boolean }) {
           </p>
 
           {/* Glass stat strip — frosts brighter on hover */}
-          <div className="mt-8 grid grid-cols-3 gap-2 rounded-2xl border border-white/15 bg-white/[0.07] p-2 backdrop-blur-xl transition-colors duration-500 group-hover:bg-white/[0.12]">
+          <div className="mt-8 grid grid-cols-3 gap-2 rounded-2xl border border-white/15 bg-white/[0.07] p-2 backdrop-blur-xl transition-colors duration-500 group-hover:bg-white/[0.12] group-data-[lit]:bg-white/[0.12]">
             {[
               { v: "2017", en: "Founded", ar: "التأسيس" },
               { v: "+24", en: "Specialties", ar: "تخصصا" },
@@ -296,7 +338,7 @@ export default function LeadershipClient() {
           <div className="flex flex-wrap justify-center gap-3 md:gap-6">
             {EXECUTIVES.map((l, i) => (
               <Reveal key={l.img} delay={i * 0.08} className="w-[calc(50%-6px)] md:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]">
-                <LeaderCard leader={l} isRtl={isRtl} tier={execTier} />
+                <LeaderCard leader={l} isRtl={isRtl} tier={execTier} order={i} />
               </Reveal>
             ))}
           </div>
@@ -310,7 +352,7 @@ export default function LeadershipClient() {
           <div className="grid grid-cols-2 gap-3 md:gap-6 lg:grid-cols-4">
             {MEDICAL.map((l, i) => (
               <Reveal key={l.img} delay={i * 0.08}>
-                <LeaderCard leader={l} isRtl={isRtl} tier={medTier} />
+                <LeaderCard leader={l} isRtl={isRtl} tier={medTier} order={i} />
               </Reveal>
             ))}
           </div>
