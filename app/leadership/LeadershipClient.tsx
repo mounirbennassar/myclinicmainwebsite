@@ -7,10 +7,8 @@ import { useLang } from "@/app/i18n/context";
 import SiteNav from "@/app/components/SiteNav";
 import SiteFooter from "@/app/components/SiteFooter";
 
-// Portraits in public/leadership/ are AI-generated PLACEHOLDERS for the
-// approval preview. Swap in the real photos (4:5, same file names) and set this
-// to false before launch — it removes the "Placeholder photo" tags.
-const PREVIEW = true;
+// Portraits in public/leadership/ are the client-supplied photos, cut out and
+// re-framed onto one studio backdrop (880x1100, 4:5) so every card matches.
 
 type Leader = {
   img: string;
@@ -20,7 +18,7 @@ type Leader = {
 };
 
 const CEO: Leader = {
-  img: "/leadership/ceo.webp",
+  img: "/leadership/abdullah-alghamdi.webp",
   icon: "verified",
   name: { en: "Abdullah Alghamdi", ar: "عبدالله الغامدي" },
   title: { en: "Chief Executive Officer", ar: "الرئيس التنفيذي" },
@@ -28,32 +26,32 @@ const CEO: Leader = {
 
 const EXECUTIVES: Leader[] = [
   {
-    img: "/leadership/coo.webp",
+    img: "/leadership/hesham-abdulwahab.webp",
     icon: "apartment",
-    name: { en: "Hisham Abdulwahab", ar: "هشام عبدالوهاب" },
+    name: { en: "Hesham Abdulwahab", ar: "هشام عبدالوهاب" },
     title: { en: "Chief Operating Officer", ar: "الرئيس التنفيذي للعمليات" },
   },
   {
-    img: "/leadership/cfo.webp",
+    img: "/leadership/omar-bashanfar.webp",
     icon: "payments",
     name: { en: "Omar Bashanfar", ar: "عمر باشنفر" },
     title: { en: "Chief Financial Officer", ar: "الرئيس التنفيذي للمالية" },
   },
   {
-    img: "/leadership/cmo.webp",
-    icon: "rocket_launch",
-    name: { en: "Ahmed Alzahrani", ar: "أحمد الزهراني" },
-    title: { en: "Chief Marketing Officer", ar: "الرئيس التنفيذي للتسويق" },
+    img: "/leadership/ahmed-alzahrani.webp",
+    icon: "health_and_safety",
+    name: { en: "Dr. Ahmed Alzahrani", ar: "د. أحمد الزهراني" },
+    title: { en: "Chief Medical Officer", ar: "الرئيس التنفيذي الطبي" },
   },
 ];
 
 const MEDICAL_DIRECTOR = { en: "Medical Director", ar: "المدير الطبي" };
 
 const MEDICAL: Leader[] = [
-  { img: "/leadership/md1.webp", name: { en: "Asim Alshanbari", ar: "عاصم الشنبري" } },
-  { img: "/leadership/md2.webp", name: { en: "Majed Alnabulsi", ar: "ماجد النابلسي" } },
-  { img: "/leadership/md3.webp", name: { en: "Majed Almansouri", ar: "ماجد المنصوري" } },
-  { img: "/leadership/md4.webp", name: { en: "Prof. Mohammed Batais", ar: "البروفيسور محمد بطيس" } },
+  { img: "/leadership/asim-alshanbari.webp", name: { en: "Dr. Asim Alshanbari", ar: "د. عاصم الشنبري" } },
+  { img: "/leadership/majed-alnabulsi.webp", name: { en: "Dr. Majed Alnabulsi", ar: "د. ماجد النابلسي" } },
+  { img: "/leadership/majed-almansouri.webp", name: { en: "Dr. Majed Almansouri", ar: "د. ماجد المنصوري" } },
+  { img: "/leadership/mohammed-batais.webp", name: { en: "Prof. Mohammed Batais", ar: "البروفيسور محمد بطيس" } },
 ].map((m) => ({ ...m, icon: "stethoscope", title: MEDICAL_DIRECTOR }));
 
 /* Safe scroll reveal — framer-motion whileInView, same as about-us (GSAP
@@ -134,15 +132,6 @@ function HoverLight() {
   );
 }
 
-function PreviewTag({ isRtl }: { isRtl: boolean }) {
-  if (!PREVIEW) return null;
-  return (
-    <span className="absolute top-2.5 start-2.5 md:top-4 md:start-4 z-30 rounded-full bg-black/35 backdrop-blur-md px-2.5 py-1 text-[10px] font-bold text-white/90 ring-1 ring-white/25">
-      {isRtl ? "صورة مؤقتة" : "Placeholder photo"}
-    </span>
-  );
-}
-
 function LeaderCard({ leader, isRtl, tier }: { leader: Leader; isRtl: boolean; tier: string }) {
   const name = isRtl ? leader.name.ar : leader.name.en;
   const title = isRtl ? leader.title.ar : leader.title.en;
@@ -164,7 +153,6 @@ function LeaderCard({ leader, isRtl, tier }: { leader: Leader; isRtl: boolean; t
         className="absolute inset-0 z-10 bg-gradient-to-t from-[#001b3d]/85 via-[#001b3d]/10 to-transparent transition-opacity duration-500 group-hover:opacity-90"
       />
       <HoverLight />
-      <PreviewTag isRtl={isRtl} />
 
       {/* Glass caption: name + title always visible; the panel frosts over and
           reveals the tier line on hover (touch devices still get the essentials). */}
@@ -212,7 +200,6 @@ function CeoCard({ isRtl }: { isRtl: boolean }) {
             className="object-cover object-top motion-safe:transition-transform motion-safe:duration-[900ms] motion-safe:ease-out group-hover:scale-[1.05] group-data-[lit]:scale-[1.05]"
           />
           <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-[#001b3d]/40 to-transparent" />
-          <PreviewTag isRtl={isRtl} />
         </div>
 
         <div className="relative flex flex-col justify-center p-6 md:p-10 lg:p-12">
