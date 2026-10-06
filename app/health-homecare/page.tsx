@@ -198,7 +198,7 @@ export default function HealthHomecarePage() {
   const isRtl = lang === "ar";
   const WA = waUrl(isRtl);
   /* Contact dock — book, after-care and call, sized by its own width (container
-     queries): one column on phones, the two WhatsApp lines side by side with
+     queries): one column (and smaller type) on phones, the two WhatsApp lines side by side with
      the call bar beneath in the hero column, all three in a row when there is room (closing CTA). */
   const ctaDock = (
     <div className="@container">
@@ -223,15 +223,15 @@ export default function HealthHomecarePage() {
             target="_blank"
             rel="noopener noreferrer"
             onClick={trackWhatsAppClick}
-            className="group flex items-center gap-3 rounded-[1.25rem] px-3.5 py-3 text-white shadow-[0_12px_28px_-14px_rgba(37,211,102,0.8)] hover:-translate-y-0.5 hover:shadow-[0_18px_34px_-14px_rgba(37,211,102,0.9)] active:translate-y-0 transition-all"
+            className="group flex items-center gap-2.5 @min-[440px]:gap-3 rounded-[1.25rem] px-3 py-2.5 @min-[440px]:px-3.5 @min-[440px]:py-3 text-white shadow-[0_12px_28px_-14px_rgba(37,211,102,0.8)] hover:-translate-y-0.5 hover:shadow-[0_18px_34px_-14px_rgba(37,211,102,0.9)] active:translate-y-0 transition-all"
             style={{ background: b.bg }}
           >
-            <span className="w-10 h-10 rounded-full bg-white/20 ring-1 ring-white/30 flex items-center justify-center shrink-0">
-              <WhatsAppIcon className="text-[22px]" />
+            <span className="w-9 h-9 @min-[440px]:w-10 @min-[440px]:h-10 rounded-full bg-white/20 ring-1 ring-white/30 flex items-center justify-center shrink-0">
+              <WhatsAppIcon className="text-[19px] @min-[440px]:text-[22px]" />
             </span>
             <span className="flex-1 min-w-0 text-start">
-              <span className={`block text-[11px] font-bold text-white/80 ${isRtl ? "" : "uppercase tracking-[0.1em]"}`}>{b.eyebrow}</span>
-              <span className="block text-[14.5px] font-extrabold leading-snug [text-wrap:balance]">{b.label}</span>
+              <span className={`block text-[10px] @min-[440px]:text-[11px] font-bold text-white/80 ${isRtl ? "" : "uppercase tracking-[0.1em]"}`}>{b.eyebrow}</span>
+              <span className="block text-[13px] @min-[440px]:text-[14.5px] font-extrabold leading-snug [text-wrap:balance]">{b.label}</span>
             </span>
             <span className={`material-symbols-outlined text-[20px] shrink-0 transition-transform ${isRtl ? "rotate-180 group-hover:-translate-x-0.5" : "group-hover:translate-x-0.5"}`}>arrow_forward</span>
           </a>
@@ -239,14 +239,14 @@ export default function HealthHomecarePage() {
         <a
           href={`tel:${PHONE_TEL}`}
           onClick={trackPhoneClick}
-          className="flex items-center justify-center gap-3 rounded-[1.25rem] px-5 py-3 text-white bg-white/10 ring-1 ring-white/20 hover:bg-white/20 transition-all @min-[440px]:col-span-2 @min-[820px]:col-span-1"
+          className="flex items-center justify-center gap-2.5 @min-[440px]:gap-3 rounded-[1.25rem] px-5 py-2.5 @min-[440px]:py-3 text-white bg-white/10 ring-1 ring-white/20 hover:bg-white/20 transition-all @min-[440px]:col-span-2 @min-[820px]:col-span-1"
         >
-          <span className="w-10 h-10 rounded-full bg-white/10 ring-1 ring-white/25 flex items-center justify-center shrink-0">
-            <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>call</span>
+          <span className="w-9 h-9 @min-[440px]:w-10 @min-[440px]:h-10 rounded-full bg-white/10 ring-1 ring-white/25 flex items-center justify-center shrink-0">
+            <span className="material-symbols-outlined text-[18px] @min-[440px]:text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>call</span>
           </span>
           <span className="text-start">
-            <span className={`block text-[11px] font-bold text-white/70 ${isRtl ? "" : "uppercase tracking-[0.1em]"}`}>{isRtl ? "اتصل بنا" : "Call us"}</span>
-            <span dir="ltr" className="block text-[15px] font-extrabold whitespace-nowrap">{PHONE_DISPLAY}</span>
+            <span className={`block text-[10px] @min-[440px]:text-[11px] font-bold text-white/70 ${isRtl ? "" : "uppercase tracking-[0.1em]"}`}>{isRtl ? "اتصل بنا" : "Call us"}</span>
+            <span dir="ltr" className="block text-[14px] @min-[440px]:text-[15px] font-extrabold whitespace-nowrap">{PHONE_DISPLAY}</span>
           </span>
         </a>
       </div>
@@ -340,7 +340,7 @@ export default function HealthHomecarePage() {
                   ))}
                 </ul>
 
-                <div className="mt-8">{ctaDock}</div>
+                <div className="mt-8 hidden lg:block">{ctaDock}</div>
               </motion.div>
 
               {/* Image */}
@@ -384,6 +384,9 @@ export default function HealthHomecarePage() {
                   </div>
                 </div>
               </motion.div>
+
+              {/* Below lg the dock sits under the image instead of the copy */}
+              <div className="lg:hidden -mt-4">{ctaDock}</div>
             </div>
           </div>
         </section>
