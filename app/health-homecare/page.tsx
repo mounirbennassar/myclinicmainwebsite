@@ -11,27 +11,18 @@ import { WhatsAppIcon } from "@/app/components/icons";
 
 const PHONE_TEL = "920022811";
 const PHONE_DISPLAY = "920 022 811";
-/* Two WhatsApp lines: the clinic's general number books consultations; the
-   Telehome line handles post-teleconsultation & home care services. */
-const WA_GENERAL = "966920022811";
-const WA_HOMECARE = "966549112992";
-const waLink = (num: string, msg: string) => `https://wa.me/${num}?text=${encodeURIComponent(msg)}`;
+/* After-service line: post-teleconsultation & home care follow-up is by phone
+   only — every WhatsApp button uses the clinic's general number. */
+const AFTERCARE_TEL = "+966549112992";
+const AFTERCARE_DISPLAY = "054 911 2992";
+const WA_NUMBER = "966920022811";
 const waUrl = (isRtl: boolean, msg?: string) =>
-  waLink(
-    WA_GENERAL,
+  `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(
     msg ??
       (isRtl
         ? "مرحباً، أرغب في حجز استشارة عن بعد من عيادتي."
         : "Hello, I'd like to book a teleconsultation with My Clinic.")
-  );
-const waHomecareUrl = (isRtl: boolean, msg?: string) =>
-  waLink(
-    WA_HOMECARE,
-    msg ??
-      (isRtl
-        ? "مرحباً، أرغب في الاستفسار عن خدمات ما بعد الاستشارة عن بعد والرعاية المنزلية من عيادتي."
-        : "Hello, I'd like to ask about My Clinic's post-teleconsultation & home care services.")
-  );
+  )}`;
 
 /* Brand journey palette — virtual phase reads aqua/teal, at-home phase reads navy.
    This carries the "from your screen to your front door" story through the page. */
@@ -201,8 +192,16 @@ export default function HealthHomecarePage() {
   const { lang } = useLang();
   const isRtl = lang === "ar";
   const WA = waUrl(isRtl);
-  const WA_HOME = waHomecareUrl(isRtl);
-  const homecareLabel = isRtl ? "خدمات ما بعد الاستشارة عن بعد والرعاية المنزلية" : "Post-Teleconsultation & Home Care Services";
+  /* Small after-service line under the call buttons — a title plus a plain phone number. */
+  const afterCare = (
+    <div className="mt-4 text-white/70 text-[13px] leading-relaxed">
+      <div className="font-bold">{isRtl ? "خدمات ما بعد الاستشارة عن بعد والرعاية المنزلية" : "Post-Teleconsultation & Home Care Services"}</div>
+      <a href={`tel:${AFTERCARE_TEL}`} onClick={trackPhoneClick} dir="ltr" className="mt-1 inline-flex items-center gap-1.5 font-extrabold text-white hover:text-[#5cd5f8] transition-colors">
+        <span className="material-symbols-outlined text-[16px]">call</span>
+        {AFTERCARE_DISPLAY}
+      </a>
+    </div>
+  );
 
   const phaseLabel = (p: "virtual" | "home") =>
     p === "virtual" ? (isRtl ? "عن بُعد" : "Virtual") : isRtl ? "في المنزل" : "At home";
@@ -313,16 +312,7 @@ export default function HealthHomecarePage() {
                     {PHONE_DISPLAY}
                   </a>
                 </div>
-                <a
-                  href={WA_HOME}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={trackWhatsAppClick}
-                  className="mt-3 inline-flex items-center justify-center gap-2 bg-[#25D366] text-white font-extrabold px-7 py-3.5 rounded-full shadow-[0_12px_30px_-10px_rgba(37,211,102,0.7)] hover:-translate-y-0.5 hover:shadow-[0_16px_34px_-10px_rgba(37,211,102,0.8)] active:translate-y-0 transition-all w-full sm:w-auto text-center"
-                >
-                  <WhatsAppIcon className="text-xl shrink-0" />
-                  {homecareLabel}
-                </a>
+                {afterCare}
               </motion.div>
 
               {/* Image */}
@@ -555,7 +545,7 @@ export default function HealthHomecarePage() {
                       </div>
 
                       <a
-                        href={s.phase === "virtual" ? waUrl(isRtl, msg) : waHomecareUrl(isRtl, msg)}
+                        href={waUrl(isRtl, msg)}
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={trackWhatsAppClick}
@@ -688,16 +678,7 @@ export default function HealthHomecarePage() {
                     {PHONE_DISPLAY}
                   </a>
                 </div>
-                <a
-                  href={WA_HOME}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={trackWhatsAppClick}
-                  className="mt-3.5 inline-flex items-center justify-center gap-2 bg-[#25D366] text-white font-extrabold px-8 py-4 rounded-full shadow-lg hover:-translate-y-0.5 hover:shadow-xl active:translate-y-0 transition-all w-full sm:w-auto text-center"
-                >
-                  <WhatsAppIcon className="text-xl shrink-0" />
-                  {homecareLabel}
-                </a>
+                {afterCare}
               </div>
             </div>
           </Reveal>
