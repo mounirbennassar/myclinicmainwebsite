@@ -11,10 +11,9 @@ import { WhatsAppIcon } from "@/app/components/icons";
 
 const PHONE_TEL = "920022811";
 const PHONE_DISPLAY = "920 022 811";
-/* After-service line: post-teleconsultation & home care follow-up is by phone
-   only — every WhatsApp button uses the clinic's general number. */
-const AFTERCARE_TEL = "+966549112992";
-const AFTERCARE_DISPLAY = "054 911 2992";
+/* Two WhatsApp lines: the clinic's general number books consultations; the
+   Telehome line handles post-teleconsultation & home care services. */
+const WA_AFTERCARE = "966549112992";
 const WA_NUMBER = "966920022811";
 const waUrl = (isRtl: boolean, msg?: string) =>
   `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(
@@ -22,6 +21,12 @@ const waUrl = (isRtl: boolean, msg?: string) =>
       (isRtl
         ? "مرحباً، أرغب في حجز استشارة عن بعد من عيادتي."
         : "Hello, I'd like to book a teleconsultation with My Clinic.")
+  )}`;
+const waAftercareUrl = (isRtl: boolean) =>
+  `https://wa.me/${WA_AFTERCARE}?text=${encodeURIComponent(
+    isRtl
+      ? "مرحبا، أرغب في الاستفسار عن خدمات ما بعد الاستشارة عن بعد والرعاية المنزلية من عيادتي."
+      : "Hello, I'd like to ask about My Clinic's post-teleconsultation & home care services."
   )}`;
 
 /* Brand journey palette — virtual phase reads aqua/teal, at-home phase reads navy.
@@ -192,14 +197,59 @@ export default function HealthHomecarePage() {
   const { lang } = useLang();
   const isRtl = lang === "ar";
   const WA = waUrl(isRtl);
-  /* Small after-service line under the call buttons — a title plus a plain phone number. */
-  const afterCare = (
-    <div className="mt-4 text-white/70 text-[13px] leading-relaxed">
-      <div className="font-bold">{isRtl ? "خدمات ما بعد الاستشارة عن بعد والرعاية المنزلية" : "Post-Teleconsultation & Home Care Services"}</div>
-      <a href={`tel:${AFTERCARE_TEL}`} onClick={trackPhoneClick} dir="ltr" className="mt-1 inline-flex items-center gap-1.5 font-extrabold text-white hover:text-[#5cd5f8] transition-colors">
-        <span className="material-symbols-outlined text-[16px]">call</span>
-        {AFTERCARE_DISPLAY}
-      </a>
+  /* Contact dock — book, after-care and call, sized by its own width (container
+     queries): one column on phones, the two WhatsApp lines side by side with
+     the call bar beneath in the hero column, all three in a row when there is room (closing CTA). */
+  const ctaDock = (
+    <div className="@container">
+      <div className="grid grid-cols-1 @min-[440px]:grid-cols-2 @min-[820px]:grid-cols-[1fr_1.3fr_auto] gap-2 p-2 rounded-[1.75rem] bg-white/[0.06] ring-1 ring-white/15 backdrop-blur-sm">
+        {[
+          {
+            href: WA,
+            eyebrow: isRtl ? "ابدأ من هنا" : "Start here",
+            label: isRtl ? "احجز استشارتك" : "Book a Consultation",
+            bg: "#25D366",
+          },
+          {
+            href: waAftercareUrl(isRtl),
+            eyebrow: isRtl ? "بعد الاستشارة" : "Aftercare",
+            label: isRtl ? "خدمات ما بعد الاستشارة عن بعد والرعاية المنزلية" : "Post-Teleconsultation & Home Care Services",
+            bg: "linear-gradient(135deg,#25D366 0%,#128C7E 100%)",
+          },
+        ].map((b) => (
+          <a
+            key={b.label}
+            href={b.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={trackWhatsAppClick}
+            className="group flex items-center gap-3 rounded-[1.25rem] px-3.5 py-3 text-white shadow-[0_12px_28px_-14px_rgba(37,211,102,0.8)] hover:-translate-y-0.5 hover:shadow-[0_18px_34px_-14px_rgba(37,211,102,0.9)] active:translate-y-0 transition-all"
+            style={{ background: b.bg }}
+          >
+            <span className="w-10 h-10 rounded-full bg-white/20 ring-1 ring-white/30 flex items-center justify-center shrink-0">
+              <WhatsAppIcon className="text-[22px]" />
+            </span>
+            <span className="flex-1 min-w-0 text-start">
+              <span className={`block text-[11px] font-bold text-white/80 ${isRtl ? "" : "uppercase tracking-[0.1em]"}`}>{b.eyebrow}</span>
+              <span className="block text-[14.5px] font-extrabold leading-snug [text-wrap:balance]">{b.label}</span>
+            </span>
+            <span className={`material-symbols-outlined text-[20px] shrink-0 transition-transform ${isRtl ? "rotate-180 group-hover:-translate-x-0.5" : "group-hover:translate-x-0.5"}`}>arrow_forward</span>
+          </a>
+        ))}
+        <a
+          href={`tel:${PHONE_TEL}`}
+          onClick={trackPhoneClick}
+          className="flex items-center justify-center gap-3 rounded-[1.25rem] px-5 py-3 text-white bg-white/10 ring-1 ring-white/20 hover:bg-white/20 transition-all @min-[440px]:col-span-2 @min-[820px]:col-span-1"
+        >
+          <span className="w-10 h-10 rounded-full bg-white/10 ring-1 ring-white/25 flex items-center justify-center shrink-0">
+            <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>call</span>
+          </span>
+          <span className="text-start">
+            <span className={`block text-[11px] font-bold text-white/70 ${isRtl ? "" : "uppercase tracking-[0.1em]"}`}>{isRtl ? "اتصل بنا" : "Call us"}</span>
+            <span dir="ltr" className="block text-[15px] font-extrabold whitespace-nowrap">{PHONE_DISPLAY}</span>
+          </span>
+        </a>
+      </div>
     </div>
   );
 
@@ -290,29 +340,7 @@ export default function HealthHomecarePage() {
                   ))}
                 </ul>
 
-                <div className="mt-8 flex flex-col sm:flex-row gap-3">
-                  <a
-                    href={WA}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={trackWhatsAppClick}
-                    className="inline-flex items-center justify-center gap-2 bg-[#25D366] text-white font-extrabold px-7 py-3.5 rounded-full shadow-[0_12px_30px_-10px_rgba(37,211,102,0.7)] hover:-translate-y-0.5 hover:shadow-[0_16px_34px_-10px_rgba(37,211,102,0.8)] active:translate-y-0 transition-all"
-                  >
-                    <WhatsAppIcon className="text-xl" />
-                    {isRtl ? "احجز استشارتك" : "Book a consultation"}
-                    <span className={`material-symbols-outlined text-[20px] ${isRtl ? "rotate-180" : ""}`}>arrow_forward</span>
-                  </a>
-                  <a
-                    href={`tel:${PHONE_TEL}`}
-                    onClick={trackPhoneClick}
-                    dir="ltr"
-                    className="inline-flex items-center justify-center gap-2 bg-white/10 text-white font-extrabold px-7 py-3.5 rounded-full ring-1 ring-white/25 backdrop-blur hover:bg-white/20 transition-all"
-                  >
-                    <span className="material-symbols-outlined text-[20px]">call</span>
-                    {PHONE_DISPLAY}
-                  </a>
-                </div>
-                {afterCare}
+                <div className="mt-8">{ctaDock}</div>
               </motion.div>
 
               {/* Image */}
@@ -644,7 +672,7 @@ export default function HealthHomecarePage() {
               <div className="absolute -bottom-24 -left-16 w-96 h-96 rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, rgba(0,93,183,0.45) 0%, transparent 70%)" }} aria-hidden />
               <div className="absolute inset-0 opacity-[0.06] pointer-events-none" style={{ backgroundImage: "radial-gradient(rgba(255,255,255,0.9) 1px, transparent 1px)", backgroundSize: "22px 22px" }} aria-hidden />
 
-              <div className="relative max-w-3xl">
+              <div className="relative max-w-[56rem]">
                 <span className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 ring-1 ring-white/20 text-white font-extrabold backdrop-blur ${isRtl ? "text-[13px]" : "text-[11px] uppercase tracking-[0.15em]"}`}>
                   <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>home_health</span>
                   {isRtl ? "احجز موعدك" : "Get started"}
@@ -652,33 +680,12 @@ export default function HealthHomecarePage() {
                 <h2 className={`mt-5 font-headline text-3xl md:text-5xl font-extrabold ${isRtl ? "leading-[1.3]" : "tracking-tight leading-[1.05]"} [text-wrap:balance]`}>
                   {isRtl ? "ابدأ استشارتك من مكانك" : "Ready when you are."}
                 </h2>
-                <p className="mt-5 text-white/80 text-base md:text-lg leading-[1.9] [text-wrap:pretty]">
+                <p className="mt-5 max-w-3xl text-white/80 text-base md:text-lg leading-[1.9] [text-wrap:pretty]">
                   {isRtl
                     ? "تواصل معنا عبر واتساب أو الهاتف، وسيساعدك فريق عيادتي على حجز الاستشارة وترتيب الخدمات المنزلية التي تحتاجها."
                     : "Care that begins from your phone and arrives at your door. Reach us on WhatsApp or by phone and we'll arrange the right care at a time that suits you."}
                 </p>
-                <div className="mt-9 flex flex-col sm:flex-row gap-3.5">
-                  <a
-                    href={WA}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={trackWhatsAppClick}
-                    className="inline-flex items-center justify-center gap-2 bg-[#25D366] text-white font-extrabold px-8 py-4 rounded-full shadow-lg hover:-translate-y-0.5 hover:shadow-xl active:translate-y-0 transition-all"
-                  >
-                    <WhatsAppIcon className="text-xl" />
-                    {isRtl ? "احجز استشارتك" : "Book a consultation"}
-                  </a>
-                  <a
-                    href={`tel:${PHONE_TEL}`}
-                    onClick={trackPhoneClick}
-                    dir="ltr"
-                    className="inline-flex items-center justify-center gap-2 bg-white/10 text-white font-extrabold px-8 py-4 rounded-full ring-1 ring-white/30 backdrop-blur hover:bg-white/20 transition-all"
-                  >
-                    <span className="material-symbols-outlined text-[21px]">call</span>
-                    {PHONE_DISPLAY}
-                  </a>
-                </div>
-                {afterCare}
+                <div className="mt-9">{ctaDock}</div>
               </div>
             </div>
           </Reveal>
