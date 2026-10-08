@@ -20,20 +20,20 @@ type Leader = {
 
 const MEDICAL_DIRECTOR = { en: "Medical Director", ar: "المدير الطبي" };
 
-// One grid, in the order the client asked for: the CMO first, the CEO in the
-// middle of the top row, then the rest. 3 per row on desktop, 1 per row on phones.
+// One grid, in the order the client asked for: the CEO first, then the CMO,
+// then the rest. 3 per row on desktop, 1 per row on phones.
 const LEADERS: Leader[] = [
-  {
-    img: "/leadership/ahmed-alzahrani.webp",
-    icon: "health_and_safety",
-    name: { en: "Dr. Ahmed Alzahrani", ar: "د. أحمد الزهراني" },
-    title: { en: "Chief Medical Officer", ar: "الرئيس التنفيذي الطبي" },
-  },
   {
     img: "/leadership/abdullah-alghamdi.webp",
     icon: "verified",
     name: { en: "Abdullah Alghamdi", ar: "عبدالله الغامدي" },
     title: { en: "Chief Executive Officer", ar: "الرئيس التنفيذي" },
+  },
+  {
+    img: "/leadership/ahmed-alzahrani.webp",
+    icon: "health_and_safety",
+    name: { en: "Dr. Ahmed Alzahrani", ar: "د. أحمد الزهراني" },
+    title: { en: "Chief Medical Officer", ar: "الرئيس التنفيذي الطبي" },
   },
   {
     img: "/leadership/hesham-abdulwahab.webp",
