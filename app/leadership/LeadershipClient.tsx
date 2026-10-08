@@ -15,16 +15,26 @@ type Leader = {
   icon: string;
   name: { en: string; ar: string };
   title: { en: string; ar: string };
+  medical?: boolean;
 };
 
-const CEO: Leader = {
-  img: "/leadership/abdullah-alghamdi.webp",
-  icon: "verified",
-  name: { en: "Abdullah Alghamdi", ar: "عبدالله الغامدي" },
-  title: { en: "Chief Executive Officer", ar: "الرئيس التنفيذي" },
-};
+const MEDICAL_DIRECTOR = { en: "Medical Director", ar: "المدير الطبي" };
 
-const EXECUTIVES: Leader[] = [
+// One grid, in the order the client asked for: the CMO first, the CEO in the
+// middle of the top row, then the rest. 3 per row on desktop, 1 per row on phones.
+const LEADERS: Leader[] = [
+  {
+    img: "/leadership/ahmed-alzahrani.webp",
+    icon: "health_and_safety",
+    name: { en: "Dr. Ahmed Alzahrani", ar: "د. أحمد الزهراني" },
+    title: { en: "Chief Medical Officer", ar: "الرئيس التنفيذي الطبي" },
+  },
+  {
+    img: "/leadership/abdullah-alghamdi.webp",
+    icon: "verified",
+    name: { en: "Abdullah Alghamdi", ar: "عبدالله الغامدي" },
+    title: { en: "Chief Executive Officer", ar: "الرئيس التنفيذي" },
+  },
   {
     img: "/leadership/hesham-abdulwahab.webp",
     icon: "apartment",
@@ -37,22 +47,16 @@ const EXECUTIVES: Leader[] = [
     name: { en: "Omar Bashanfar", ar: "عمر باشنفر" },
     title: { en: "Chief Financial Officer", ar: "الرئيس التنفيذي للمالية" },
   },
-  {
-    img: "/leadership/ahmed-alzahrani.webp",
-    icon: "health_and_safety",
-    name: { en: "Dr. Ahmed Alzahrani", ar: "د. أحمد الزهراني" },
-    title: { en: "Chief Medical Officer", ar: "الرئيس التنفيذي الطبي" },
-  },
+  ...[
+    { img: "/leadership/asim-alshanbari.webp", name: { en: "Dr. Asim Alshanbari", ar: "د. عاصم الشنبري" } },
+    { img: "/leadership/majed-alnabulsi.webp", name: { en: "Dr. Majed Alnabulsi", ar: "د. ماجد النابلسي" } },
+    { img: "/leadership/majed-almansouri.webp", name: { en: "Dr. Majed Almansouri", ar: "د. ماجد المنصوري" } },
+    { img: "/leadership/mohammed-batais.webp", name: { en: "Prof. Mohammed Batais", ar: "البروفيسور محمد بطيس" } },
+  ].map((m) => ({ ...m, icon: "stethoscope", title: MEDICAL_DIRECTOR, medical: true })),
 ];
 
-const MEDICAL_DIRECTOR = { en: "Medical Director", ar: "المدير الطبي" };
-
-const MEDICAL: Leader[] = [
-  { img: "/leadership/asim-alshanbari.webp", name: { en: "Dr. Asim Alshanbari", ar: "د. عاصم الشنبري" } },
-  { img: "/leadership/majed-alnabulsi.webp", name: { en: "Dr. Majed Alnabulsi", ar: "د. ماجد النابلسي" } },
-  { img: "/leadership/majed-almansouri.webp", name: { en: "Dr. Majed Almansouri", ar: "د. ماجد المنصوري" } },
-  { img: "/leadership/mohammed-batais.webp", name: { en: "Prof. Mohammed Batais", ar: "البروفيسور محمد بطيس" } },
-].map((m) => ({ ...m, icon: "stethoscope", title: MEDICAL_DIRECTOR }));
+/** The CEO card plays its hover effect once by itself; the rest are hover-only. */
+const AUTOPLAY_IMG = "/leadership/abdullah-alghamdi.webp";
 
 /* Safe scroll reveal — framer-motion whileInView, same as about-us (GSAP
    ScrollTrigger reveals leave elements stuck at opacity:0 on these pages). */
@@ -74,15 +78,16 @@ function Reveal({ children, className, delay = 0 }: { children: ReactNode; class
  * Plays the hover effect once, by itself, when the CEO card scrolls into view:
  * sets data-lit for LIT_MS, and every hover style is mirrored on
  * `data-[lit]` / `group-data-[lit]`. Hovering afterwards plays it again as usual.
- * `delay` waits for the Reveal fade-in to finish. The other cards are hover-only.
+ * `delay` waits for the Reveal fade-in to finish; `enabled` is false for every
+ * card but the CEO's.
  */
 const LIT_MS = 1700;
-function useIntroGlow<T extends HTMLElement>(delay: number) {
+function useIntroGlow<T extends HTMLElement>(delay: number, enabled: boolean) {
   const ref = useRef<T>(null);
   const [lit, setLit] = useState(false);
   useEffect(() => {
     const el = ref.current;
-    if (!el) return;
+    if (!el || !enabled) return;
     let on: number | undefined;
     let off: number | undefined;
     const io = new IntersectionObserver(
@@ -102,7 +107,7 @@ function useIntroGlow<T extends HTMLElement>(delay: number) {
       window.clearTimeout(on);
       window.clearTimeout(off);
     };
-  }, [delay]);
+  }, [delay, enabled]);
   return [ref, lit ? "" : undefined] as const;
 }
 
@@ -132,37 +137,41 @@ function HoverLight() {
   );
 }
 
-function LeaderCard({ leader, isRtl, tier }: { leader: Leader; isRtl: boolean; tier: string }) {
+function LeaderCard({ leader, isRtl, tier, autoPlay }: { leader: Leader; isRtl: boolean; tier: string; autoPlay: boolean }) {
+  const [glowRef, lit] = useIntroGlow<HTMLElement>(900, autoPlay);
   const name = isRtl ? leader.name.ar : leader.name.en;
   const title = isRtl ? leader.title.ar : leader.title.en;
   return (
     <article
+      ref={glowRef}
+      data-lit={lit}
       onMouseMove={trackPointer}
-      className="group relative isolate aspect-[4/5] overflow-hidden rounded-[1.4rem] md:rounded-[2rem] bg-primary-fixed shadow-[0_24px_60px_-34px_rgba(0,27,61,0.55)] ring-1 ring-primary/10 motion-safe:transition-all motion-safe:duration-500 hover:-translate-y-2 hover:shadow-[0_40px_80px_-30px_rgba(0,77,153,0.55)] hover:ring-secondary-fixed-dim/70"
+      className="group relative isolate aspect-[4/5] overflow-hidden rounded-[2rem] bg-primary-fixed shadow-[0_24px_60px_-34px_rgba(0,27,61,0.55)] ring-1 ring-primary/10 motion-safe:transition-all motion-safe:duration-500 hover:-translate-y-2 data-[lit]:-translate-y-2 hover:shadow-[0_40px_80px_-30px_rgba(0,77,153,0.55)] data-[lit]:shadow-[0_40px_80px_-30px_rgba(0,77,153,0.55)] hover:ring-secondary-fixed-dim/70 data-[lit]:ring-secondary-fixed-dim/70"
     >
       <Image
         src={leader.img}
         alt={`${name} — ${title}`}
         fill
-        sizes="(min-width: 1280px) 340px, (min-width: 768px) 45vw, 50vw"
-        className="object-cover object-top motion-safe:transition-transform motion-safe:duration-[900ms] motion-safe:ease-out group-hover:scale-[1.06]"
+        priority={autoPlay}
+        sizes="(min-width: 1280px) 360px, (min-width: 768px) 45vw, 92vw"
+        className="object-cover object-top motion-safe:transition-transform motion-safe:duration-[900ms] motion-safe:ease-out group-hover:scale-[1.06] group-data-[lit]:scale-[1.06]"
       />
       {/* Legibility gradient — deepens on hover so the glass panel reads */}
       <div
         aria-hidden
-        className="absolute inset-0 z-10 bg-gradient-to-t from-[#001b3d]/85 via-[#001b3d]/10 to-transparent transition-opacity duration-500 group-hover:opacity-90"
+        className="absolute inset-0 z-10 bg-gradient-to-t from-[#001b3d]/85 via-[#001b3d]/10 to-transparent transition-opacity duration-500 group-hover:opacity-90 group-data-[lit]:opacity-90"
       />
       <HoverLight />
 
       {/* Glass caption: name + title always visible; the panel frosts over and
           reveals the tier line on hover (touch devices still get the essentials). */}
-      <div className="absolute inset-x-1.5 bottom-1.5 md:inset-x-3 md:bottom-3 z-30">
-        <div className="rounded-[1.1rem] md:rounded-[1.4rem] border border-transparent p-3 md:p-4 transition-all duration-500 group-hover:border-white/30 group-hover:bg-white/12 group-hover:backdrop-blur-xl group-hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_10px_30px_-10px_rgba(0,0,0,0.4)]">
-          <h3 className={`font-headline font-bold text-white text-[15px] sm:text-lg md:text-xl leading-tight ${isRtl ? "" : "tracking-tight"}`}>
+      <div className="absolute inset-x-3 bottom-3 z-30">
+        <div className="rounded-[1.4rem] border border-transparent p-4 transition-all duration-500 group-hover:border-white/30 group-data-[lit]:border-white/30 group-hover:bg-white/12 group-data-[lit]:bg-white/12 group-hover:backdrop-blur-xl group-data-[lit]:backdrop-blur-xl group-hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_10px_30px_-10px_rgba(0,0,0,0.4)] group-data-[lit]:shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_10px_30px_-10px_rgba(0,0,0,0.4)]">
+          <h3 className={`font-headline font-bold text-white text-lg md:text-xl leading-tight ${isRtl ? "" : "tracking-tight"}`}>
             {name}
           </h3>
-          <p className="mt-1 text-[11px] sm:text-[13px] font-semibold leading-snug text-secondary-fixed">{title}</p>
-          <div className="grid grid-rows-[0fr] opacity-0 transition-all duration-500 group-hover:grid-rows-[1fr] group-hover:opacity-100">
+          <p className="mt-1 text-[13px] font-semibold leading-snug text-secondary-fixed">{title}</p>
+          <div className="grid grid-rows-[0fr] opacity-0 transition-all duration-500 group-hover:grid-rows-[1fr] group-data-[lit]:grid-rows-[1fr] group-hover:opacity-100 group-data-[lit]:opacity-100">
             <div className="overflow-hidden">
               <div className="mt-3 flex items-center gap-2 border-t border-white/20 pt-3 text-[12px] font-medium text-white/80">
                 <span className="material-symbols-outlined text-[18px] text-secondary-fixed-dim">{leader.icon}</span>
@@ -173,80 +182,6 @@ function LeaderCard({ leader, isRtl, tier }: { leader: Leader; isRtl: boolean; t
         </div>
       </div>
     </article>
-  );
-}
-
-function CeoCard({ isRtl }: { isRtl: boolean }) {
-  const [glowRef, lit] = useIntroGlow<HTMLElement>(800);
-  return (
-    <article
-      ref={glowRef}
-      data-lit={lit}
-      onMouseMove={trackPointer}
-      className="group relative isolate overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-[#002a57] via-primary to-[#00395f] p-2 shadow-[0_50px_100px_-45px_rgba(0,27,61,0.8)] ring-1 ring-white/10 motion-safe:transition-all motion-safe:duration-500 hover:-translate-y-1.5 data-[lit]:-translate-y-1.5 hover:shadow-[0_60px_110px_-40px_rgba(0,77,153,0.75)] data-[lit]:shadow-[0_60px_110px_-40px_rgba(0,77,153,0.75)]"
-    >
-      <div aria-hidden className="pointer-events-none absolute -top-32 end-0 h-80 w-80 rounded-full bg-secondary-container/25 blur-3xl" />
-      <div aria-hidden className="pointer-events-none absolute -bottom-40 start-1/3 h-80 w-80 rounded-full bg-primary-fixed-dim/20 blur-3xl" />
-      <HoverLight />
-
-      <div className="relative z-10 grid md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] gap-2">
-        <div className="relative aspect-[4/5] overflow-hidden rounded-[2rem]">
-          <Image
-            src={CEO.img}
-            alt={`${isRtl ? CEO.name.ar : CEO.name.en} — ${isRtl ? CEO.title.ar : CEO.title.en}`}
-            fill
-            priority
-            sizes="(min-width: 1024px) 440px, (min-width: 768px) 45vw, 92vw"
-            className="object-cover object-top motion-safe:transition-transform motion-safe:duration-[900ms] motion-safe:ease-out group-hover:scale-[1.05] group-data-[lit]:scale-[1.05]"
-          />
-          <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-[#001b3d]/40 to-transparent" />
-        </div>
-
-        <div className="relative flex flex-col justify-center p-6 md:p-10 lg:p-12">
-          <span className={`inline-flex w-fit items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 font-bold text-secondary-fixed backdrop-blur-md ${isRtl ? "text-[13px]" : "text-[11px] uppercase tracking-[0.18em]"}`}>
-            <span className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>
-              {CEO.icon}
-            </span>
-            {isRtl ? CEO.title.ar : CEO.title.en}
-          </span>
-          <h2 className={`mt-5 font-headline font-extrabold text-white text-4xl md:text-5xl ${isRtl ? "leading-[1.3]" : "tracking-tight leading-[1.05]"}`}>
-            {isRtl ? CEO.name.ar : CEO.name.en}
-          </h2>
-          <div aria-hidden className="mt-6 h-px w-24 bg-gradient-to-r from-secondary-fixed-dim to-transparent rtl:bg-gradient-to-l" />
-          <p className="mt-6 max-w-md text-base md:text-lg leading-relaxed text-white/75 [text-wrap:pretty]">
-            {isRtl
-              ? "يقود رؤية عيادتي ومسيرة نموها، ليجعل الرعاية الصحية المتخصصة أقرب وأيسر لكل أسرة في المملكة."
-              : "Leading My Clinic's vision and growth, bringing specialized healthcare closer to every family in the Kingdom."}
-          </p>
-        </div>
-      </div>
-    </article>
-  );
-}
-
-/** Vertical org-chart connector between tiers. */
-function Connector() {
-  return (
-    <div aria-hidden className="flex justify-center py-6 md:py-8">
-      <div className="flex flex-col items-center">
-        <div className="h-10 md:h-14 w-px bg-gradient-to-b from-primary/0 via-primary/30 to-primary/50" />
-        <div className="h-2.5 w-2.5 rounded-full bg-primary ring-4 ring-primary-fixed" />
-      </div>
-    </div>
-  );
-}
-
-function TierHeading({ icon, en, ar, isRtl }: { icon: string; en: string; ar: string; isRtl: boolean }) {
-  return (
-    <div className="mb-8 md:mb-10 flex items-center gap-4">
-      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-white text-primary shadow-clinical ring-1 ring-primary/10">
-        <span className="material-symbols-outlined text-[22px]">{icon}</span>
-      </span>
-      <h2 className={`font-headline font-bold text-primary text-2xl md:text-3xl ${isRtl ? "" : "tracking-tight"}`}>
-        {isRtl ? ar : en}
-      </h2>
-      <div aria-hidden className="h-px flex-1 bg-gradient-to-r from-primary/25 to-transparent rtl:bg-gradient-to-l" />
-    </div>
   );
 }
 
@@ -293,36 +228,16 @@ export default function LeadershipClient() {
           </div>
         </section>
 
+        {/* ── Leaders: 3 per row (last row centred), 2 on tablets, 1 on phones ── */}
         <section className="relative max-w-6xl mx-auto px-4 md:px-8 -mt-14 md:-mt-20 pb-20 md:pb-28">
-          {/* ── Tier 1: CEO ── */}
-          <Reveal>
-            <CeoCard isRtl={isRtl} />
-          </Reveal>
-
-          <Connector />
-
-          {/* ── Tier 2: C-suite ── */}
-          <Reveal>
-            <TierHeading icon="groups" en="Executive Leadership" ar="القيادة التنفيذية" isRtl={isRtl} />
-          </Reveal>
-          <div className="flex flex-wrap justify-center gap-3 md:gap-6">
-            {EXECUTIVES.map((l, i) => (
-              <Reveal key={l.img} delay={i * 0.08} className="w-[calc(50%-6px)] md:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]">
-                <LeaderCard leader={l} isRtl={isRtl} tier={execTier} />
-              </Reveal>
-            ))}
-          </div>
-
-          <Connector />
-
-          {/* ── Tier 3: Medical directors ── */}
-          <Reveal>
-            <TierHeading icon="medical_services" en="Medical Leadership" ar="القيادة الطبية" isRtl={isRtl} />
-          </Reveal>
-          <div className="grid grid-cols-2 gap-3 md:gap-6 lg:grid-cols-4">
-            {MEDICAL.map((l, i) => (
-              <Reveal key={l.img} delay={i * 0.08}>
-                <LeaderCard leader={l} isRtl={isRtl} tier={medTier} />
+          <div className="flex flex-wrap justify-center gap-6">
+            {LEADERS.map((l, i) => (
+              <Reveal
+                key={l.img}
+                delay={(i % 3) * 0.08}
+                className="w-full max-w-sm sm:max-w-none sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]"
+              >
+                <LeaderCard leader={l} isRtl={isRtl} tier={l.medical ? medTier : execTier} autoPlay={l.img === AUTOPLAY_IMG} />
               </Reveal>
             ))}
           </div>
