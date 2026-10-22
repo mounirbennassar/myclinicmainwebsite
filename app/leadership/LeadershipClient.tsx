@@ -51,7 +51,7 @@ const LEADERS: Leader[] = [
     { img: "/leadership/asim-alshanbari.webp", name: { en: "Dr. Asim Alshanbari", ar: "د. عاصم الشنبري" } },
     { img: "/leadership/majed-alnabulsi.webp", name: { en: "Dr. Majed Alnabulsi", ar: "د. ماجد النابلسي" } },
     { img: "/leadership/majed-almansouri.webp", name: { en: "Dr. Majed Almansouri", ar: "د. ماجد المنصوري" } },
-    { img: "/leadership/mohammed-batais.webp", name: { en: "Prof. Mohammed Batais", ar: "البروفيسور محمد بطيس" } },
+    { img: "/leadership/mohammed-batais.webp", name: { en: "Prof. Mohammed Batais", ar: "البروفيسور محمد باتيس" } },
   ].map((m) => ({ ...m, icon: "stethoscope", title: MEDICAL_DIRECTOR, medical: true })),
 ];
 
