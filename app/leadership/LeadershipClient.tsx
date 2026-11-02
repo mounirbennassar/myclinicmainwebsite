@@ -152,7 +152,7 @@ function LeaderCard({ leader, isRtl, tier, autoPlay }: { leader: Leader; isRtl: 
         src={leader.img}
         alt={`${name} — ${title}`}
         fill
-        priority={autoPlay}
+        preload={autoPlay}
         sizes="(min-width: 1280px) 360px, (min-width: 768px) 45vw, 92vw"
         className="object-cover object-top motion-safe:transition-transform motion-safe:duration-[900ms] motion-safe:ease-out group-hover:scale-[1.06] group-data-[lit]:scale-[1.06]"
       />

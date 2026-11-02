@@ -27,6 +27,7 @@ export default function SiteFooter() {
     { href: "/find-doctor", en: "Find a Doctor", ar: "ابحث عن طبيب" },
     { href: "/specialties", en: "Specialties", ar: "التخصصات" },
     { href: "/about-us", en: "About Us", ar: "من نحن" },
+    { href: "/leadership", en: "Leadership", ar: "القيادة" },
     { href: "/contact", en: "Contact", ar: "تواصل معنا" },
     { href: "/feedback", en: "Feedback & Complaints", ar: "الملاحظات والشكاوى" },
   ];

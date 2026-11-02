@@ -27,6 +27,7 @@ export const NAV_LINKS: { href: string; en: string; ar: string; icon: string }[]
   { href: "/health-homecare", en: "Home Care", ar: "الرعاية المنزلية", icon: "home_health" },
   { href: "/dental", en: "Dental", ar: "الأسنان", icon: "dentistry" },
   { href: "/pediatric", en: "Pediatrics", ar: "طب الأطفال", icon: "child_care" },
+  { href: "/leadership", en: "Leadership", ar: "القيادة", icon: "groups" },
 ];
 
 export default function SiteNav() {

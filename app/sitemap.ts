@@ -20,6 +20,7 @@ const STATIC_ROUTES = [
   "/my360",
   "/health-homecare",
   "/about-us",
+  "/leadership",
   "/contact",
   "/feedback",
   "/blog",
