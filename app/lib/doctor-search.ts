@@ -5,6 +5,7 @@
 // can run every keystroke against it without a network round-trip.
 
 import type { Doctor } from "./doctors";
+import { branchLabel } from "./doctor-display";
 
 /** Lowercase, drop titles/punctuation, unify common transliteration variants. */
 export function normEn(s: string): string {
@@ -172,7 +173,11 @@ export function buildDoctorIndex(
       normAr(d.title_ar || ""),
       normEn(d.qualification_en || ""),
       normAr(d.qualification_ar || ""),
+      // Branches in both scripts, via the same table the profile renders with,
+      // so "الخالدية" finds a doctor stored as "Al Khalidyah".
       ...d.branches.map((b) => normEn(b)),
+      ...d.branches.map((b) => normEn(branchLabel(b, false))),
+      ...d.branches.map((b) => normAr(branchLabel(b, true))),
       ...d.cities.map((c) => normEn(c)),
       d.cities.includes("Jeddah") ? "جده" : "",
       d.cities.includes("Riyadh") ? "الرياض" : "",
