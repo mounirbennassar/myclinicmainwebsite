@@ -458,7 +458,7 @@ export default function HomeClient({ initialDoctors }: { initialDoctors?: Doctor
                             <>
                               <p className="font-medium">{t.sunThu}</p>
                               {branch.isRiyadh ? (
-                                <p className="font-bold text-error">{t.friClosed}</p>
+                                <p className="font-medium">{t.friRiyadh}</p>
                               ) : (
                                 <p className="font-medium">{t.fri}</p>
                               )}
@@ -509,7 +509,7 @@ export default function HomeClient({ initialDoctors }: { initialDoctors?: Doctor
                     <span className="font-medium">{isRtl ? "الأحد – الخميس" : "Sunday – Thursday"}</span>
                     <span className="font-bold">{isRtl ? "9:00 صباحًا – 9:00 مساءً" : "9:00 AM – 9:00 PM"}</span>
                   </div>
-                  <p className="text-secondary-fixed font-bold text-xs mt-2">{isRtl ? "الرياض: مغلق يوم الجمعة" : "Riyadh: Closed on Friday"}</p>
+                  <p className="text-secondary-fixed font-bold text-xs mt-2">{isRtl ? "الرياض: الجمعة 3:00 مساء – 7:00 مساء" : "Riyadh: Friday 3:00 PM – 7:00 PM"}</p>
                   <p className="text-secondary-fixed font-bold text-xs mt-1">{isRtl ? "التحلية: 1:00 مساءً – 9:00 مساءً، مغلق يوم الجمعة" : "Al Tahlia: 1:00 PM – 9:00 PM, Closed on Friday"}</p>
                 </div>
                 <div className="flex justify-between border-b border-white/20 pb-3">

@@ -143,6 +143,7 @@ const translations = {
     // Location hours
     sunThu: "Sun – Thu: 9:00 AM – 9:00 PM",
     fri: "Fri: 5:00 PM – 9:00 PM",
+    friRiyadh: "Fri: 3:00 PM – 7:00 PM",
     sat: "Sat: 1:00 PM – 9:00 PM",
     dentalSatThu: "Sat – Thu: 10:00 AM – 10:00 PM",
     dentalFri: "Fri: 4:00 PM – 8:00 PM",
@@ -154,7 +155,7 @@ const translations = {
     saturday: "Saturday",
     saturdayHours: "12:00 PM - 04:00 PM",
     friday: "Friday",
-    fridayHours: "Jeddah: Open / Riyadh: Closed",
+    fridayHours: "Jeddah: Open / Riyadh: 3:00 PM – 7:00 PM",
     patientStories: "Patient Stories",
     verifiedPatient: "Verified Patient",
 
@@ -333,6 +334,7 @@ const translations = {
     // Location hours
     sunThu: "الأحد – الخميس: 9:00 ص – 9:00 م",
     fri: "الجمعة: 5:00 م – 9:00 م",
+    friRiyadh: "الجمعة: 3:00 م – 7:00 م",
     sat: "السبت: 1:00 م – 9:00 م",
     dentalSatThu: "السبت – الخميس: 10:00 ص – 10:00 م",
     dentalFri: "الجمعة: 4:00 م – 8:00 م",
@@ -344,7 +346,7 @@ const translations = {
     saturday: "السبت",
     saturdayHours: "12:00 م - 04:00 م",
     friday: "الجمعة",
-    fridayHours: "جدة: مفتوح / الرياض: مغلق",
+    fridayHours: "جدة: مفتوح / الرياض: 3:00 م – 7:00 م",
     patientStories: "قصص مرضانا",
     verifiedPatient: "مريض موثّق",
 

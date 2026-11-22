@@ -115,7 +115,7 @@ export default function DentalLocations() {
                           <>
                             <p className="font-medium">{isRtl ? "الأحد – الخميس: 9:00 ص – 9:00 م" : "Sun – Thu: 9:00 AM – 9:00 PM"}</p>
                             {b.isRiyadh ? (
-                              <p className="font-bold text-red-600">{isRtl ? "مغلق يوم الجمعة" : "Closed on Friday"}</p>
+                              <p className="font-medium">{isRtl ? "الجمعة: 3:00 م – 7:00 م" : "Fri: 3:00 PM – 7:00 PM"}</p>
                             ) : (
                               <p className="font-medium">{isRtl ? "الجمعة: 5:00 م – 9:00 م" : "Fri: 5:00 PM – 9:00 PM"}</p>
                             )}

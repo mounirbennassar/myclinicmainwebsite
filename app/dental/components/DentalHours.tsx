@@ -36,7 +36,7 @@ export default function DentalHours() {
                     <span className="font-bold">{isRtl ? "9:00 ص – 9:00 م" : "9:00 AM – 9:00 PM"}</span>
                   </div>
                   <p className="text-amber-300 font-bold text-xs mt-2">
-                    {isRtl ? "الرياض: مغلق يوم الجمعة" : "Riyadh: Closed on Friday"}
+                    {isRtl ? "الرياض: الجمعة 3:00 م – 7:00 م" : "Riyadh: Friday 3:00 PM – 7:00 PM"}
                   </p>
                   <p className="text-amber-300 font-bold text-xs mt-1">
                     {isRtl ? "التحلية: 1:00 م – 9:00 م، مغلق يوم الجمعة" : "Al Tahlia: 1:00 PM – 9:00 PM, Closed on Friday"}

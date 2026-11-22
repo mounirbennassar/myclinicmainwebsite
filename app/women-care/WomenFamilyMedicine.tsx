@@ -552,7 +552,7 @@ export default function WomenFamilyMedicine({ doctors }: { doctors: Doctor[] }) 
                           ) : b.isRiyadh ? (
                             <>
                               <p className="font-medium">{isRtl ? "الأحد – الخميس: 9:00 ص – 9:00 م" : "Sun – Thu: 9:00 AM – 9:00 PM"}</p>
-                              <p className="font-bold text-error">{isRtl ? "الجمعة: مغلق" : "Friday: Closed"}</p>
+                              <p className="font-medium">{isRtl ? "الجمعة: 3:00 م – 7:00 م" : "Friday: 3:00 PM – 7:00 PM"}</p>
                             </>
                           ) : (
                             <>
