@@ -49,6 +49,13 @@
   --color-on-primary-fixed: #001b3d;
   --color-secondary-container: #63dbfe;
 
+  /* v2 home (app/preview/home) — the v5 editorial palette. */
+  --color-ink: #0b1f3a;
+  --color-paper: #f8f9fb;
+  --color-mist: #eef2f6;
+  --color-ink-muted: #5b6676;
+  --color-glow: #78b4ff;
+
   --font-headline: var(--font-poppins);
   --font-body: var(--font-manrope);
   --font-label: var(--font-manrope);
