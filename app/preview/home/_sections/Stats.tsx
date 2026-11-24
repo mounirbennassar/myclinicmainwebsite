@@ -77,31 +77,3 @@ export function Ticker({ isRtl }: { isRtl: boolean }) {
     </section>
   );
 }
-
-/**
- * A transparent ticker laid ON the seam between a light section and the dark
- * one below it. The band is centred on the seam, and the row is drawn twice:
- * a navy copy clipped to the top half (over the light section) and a white
- * copy clipped to the bottom half (over the dark one), so every word changes
- * colour exactly where the backgrounds meet. Both copies live inside the one
- * moving track, so they can never drift apart.
- */
-export function SeamTicker({ items, isRtl, reverse = false }: { items: string[]; isRtl: boolean; reverse?: boolean }) {
-  // Repeat short lists so one copy of the row is always wider than the screen.
-  const row = Array.from({ length: Math.max(1, Math.ceil(10 / items.length)) }, () => items).flat();
-  const goesRight = isRtl !== reverse;
-  return (
-    <div className="relative z-20 h-0 pointer-events-none select-none" aria-hidden="true">
-      <div dir="ltr" className="seam-band absolute inset-x-0 top-0 -translate-y-1/2 h-20 sm:h-28 overflow-hidden text-[clamp(2.2rem,5.2vw,4.6rem)]">
-        <div className={`marquee-track relative flex w-max h-full ${goesRight ? "reverse" : ""}`} style={{ "--dur": "55s" } as CSSProperties}>
-          <div className="flex h-full [clip-path:inset(0_0_50%_0)]">
-            <MarqueeRow items={row} textClass="text-primary" markClass="text-primary/80" />
-          </div>
-          <div className="absolute inset-0 flex h-full [clip-path:inset(50%_0_0_0)]">
-            <MarqueeRow items={row} textClass="text-white" markClass="text-glow" />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}

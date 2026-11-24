@@ -544,13 +544,6 @@
 .hv2 .marquee:hover .marquee-track {
   animation-play-state: paused;
 }
-/* Arabic glyphs sit high in their line box (tall ascender space), so the
-   seam would only clip their feet; drop them so the colour change runs
-   through the body of the letters, as it does for Latin. */
-[dir="rtl"] .hv2 .seam-band .display {
-  position: relative;
-  top: 0.2em;
-}
 @keyframes hv2-marquee {
   from {
     transform: translate3d(0, 0, 0);
