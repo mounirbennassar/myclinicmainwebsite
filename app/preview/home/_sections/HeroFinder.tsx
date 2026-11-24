@@ -26,7 +26,7 @@ const norm = (s: string) =>
   s
     .toLowerCase()
     .normalize("NFKD")
-    .replace(/[ً-ٰٟ]/g, "")
+    .replace(/[\u064B-\u065F\u0670]/g, "") // tashkeel range, written as escapes on purpose
     .replace(/[أإآ]/g, "ا")
     .replace(/ة/g, "ه")
     .replace(/ى/g, "ي")
