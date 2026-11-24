@@ -49,7 +49,7 @@ export function Lines({
   delay?: number;
 }) {
   return (
-    <Tag className={`display ${className}`} data-rv="" style={{ "--d": `${delay}ms` } as CSSProperties}>
+    <Tag className={`display lines ${className}`} data-rv="" style={{ "--d": `${delay}ms` } as CSSProperties}>
       {lines.map((line, i) => (
         <span key={i} className="ln">
           <span style={{ "--i": i } as CSSProperties} className={mutedLast && i === lines.length - 1 ? "opacity-55" : undefined}>

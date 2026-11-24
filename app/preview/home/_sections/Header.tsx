@@ -34,7 +34,7 @@ export default function Header() {
   return (
     <header data-hv2-header="" data-solid="false" data-hidden="false" className={`hv2-header fixed inset-x-0 top-0 z-50 ${open ? "menu-open" : ""}`}>
       <div id="hv2-progress" className="absolute top-0 inset-x-0 h-0.5 bg-primary" aria-hidden="true" />
-      <nav className="max-w-[1440px] mx-auto h-[76px] px-5 sm:px-10 flex items-center justify-between gap-6" aria-label={isRtl ? "التنقل الرئيسي" : "Main navigation"}>
+      <nav className="max-w-[1440px] mx-auto h-[76px] px-5 sm:px-10 flex items-center justify-between gap-3 sm:gap-6" aria-label={isRtl ? "التنقل الرئيسي" : "Main navigation"}>
         <div className="flex items-center gap-3 shrink-0">
         <button type="button" onClick={scrollToTop} aria-label={isRtl ? "عيادتي — أعلى الصفحة" : "My Clinic — back to top"} className="shrink-0 cursor-pointer">
           {/* eslint-disable-next-line @next/next/no-img-element -- SVG logo, nothing to optimise */}
@@ -42,8 +42,9 @@ export default function Header() {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/home-v2/logo-navy.svg" alt="My Clinic" width={110} height={40} className="logo-dark h-9 sm:h-10 w-auto" />
         </button>
-        {/* Marks the page as the internal preview so nobody mistakes it for live */}
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-current/25 px-2.5 py-1 text-[10px] sm:text-[11px] whitespace-nowrap">
+        {/* Marks the page as the internal preview so nobody mistakes it for live.
+            Hidden on phones, where it pushed the menu button off the screen. */}
+        <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-current/25 px-2.5 py-1 text-[10px] sm:text-[11px] whitespace-nowrap">
           <span className="w-1.5 h-1.5 rounded-full bg-[#ffb547]" />
           {pick(COPY.previewBadge, isRtl)}
         </span>

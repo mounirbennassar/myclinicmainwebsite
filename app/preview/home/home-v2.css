@@ -65,24 +65,36 @@
   letter-spacing: 0;
 }
 
-/* Line masks for headings: each line rides up out of its own clip box. */
+/* Line masks for headings: each line rides up out of its own clip box.
+   The box reaches well past the line box above and below (padding, cancelled
+   by equal negative margins so the layout is unchanged), because the tight
+   display leading puts descenders ("p", "y") and Arabic dots outside the
+   line box, and a box cut to the line box shaved them off. The heading is a
+   flex column (.lines) so those negative margins don't collapse into extra
+   line spacing. Parked lines are also transparent, so a glyph that pokes out
+   of its box can never show as a stray dot. */
+.hv2 .lines {
+  display: flex;
+  flex-direction: column;
+}
 .hv2 .ln {
   display: block;
   overflow: hidden;
-  padding-bottom: 0.08em;
-  margin-bottom: -0.08em;
+  padding: 0.14em 0 0.26em;
+  margin: -0.14em 0 -0.26em;
 }
 [dir="rtl"] .hv2 .ln {
-  padding-bottom: 0.18em;
-  margin-bottom: -0.18em;
+  padding: 0.32em 0 0.42em;
+  margin: -0.32em 0 -0.42em;
 }
 .hv2 .ln > span {
   display: block;
-  transition: transform 1.15s var(--ease);
+  transition: transform 1.15s var(--ease), opacity 0.8s var(--ease);
   transition-delay: calc(var(--i, 0) * 90ms + var(--d, 0ms));
 }
 .hv2[data-motion="on"] [data-rv]:not([data-in]) .ln > span {
-  transform: translateY(112%);
+  transform: translateY(130%);
+  opacity: 0;
 }
 
 /* Generic reveal: fade + rise. --d staggers siblings. */
@@ -360,17 +372,20 @@
 
 /* Headline per slide: idle (parked below), active (in), exit (out the top). */
 .hv2 .hero-copy .ln > span {
-  transform: translateY(112%);
+  transform: translateY(130%);
+  opacity: 0;
   transition: none;
 }
 .hv2 .hero-copy.is-active .ln > span {
   transform: translateY(0);
-  transition: transform 1.1s var(--ease);
+  opacity: 1;
+  transition: transform 1.1s var(--ease), opacity 0.7s var(--ease);
   transition-delay: calc(var(--i, 0) * 110ms + 250ms);
 }
 .hv2 .hero-copy.is-exit .ln > span {
-  transform: translateY(-112%);
-  transition: transform 0.8s var(--ease-io);
+  transform: translateY(-130%);
+  opacity: 0;
+  transition: transform 0.8s var(--ease-io), opacity 0.6s var(--ease-io);
   transition-delay: calc(var(--i, 0) * 60ms);
 }
 .hv2 .hero-copy[data-intro] .ln > span {
@@ -392,10 +407,12 @@
 }
 @keyframes hv2-rise {
   from {
-    transform: translateY(112%);
+    transform: translateY(130%);
+    opacity: 0;
   }
   to {
     transform: translateY(0);
+    opacity: 1;
   }
 }
 .hv2 .fade-up {

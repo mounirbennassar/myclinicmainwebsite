@@ -36,8 +36,11 @@ export default function Hero({ isRtl, doctors }: { isRtl: boolean; doctors?: Fin
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current]);
 
+  // The hero is at least one screen tall (capped at 1040px on very tall
+  // screens) but free to grow: a fixed height clipped the finder and slide
+  // index on short phones, where the content is taller than the screen.
   return (
-    <section data-hero="" className="relative min-h-[720px] h-[100svh] max-h-[1040px] text-white overflow-hidden bg-ink" aria-roledescription="carousel">
+    <section data-hero="" className="relative min-h-[min(100svh,1040px)] text-white overflow-hidden bg-ink" aria-roledescription="carousel">
       {/* Photography — crossfading stack, Ken Burns on the active frame (desktop) */}
       <div data-hero-media="" className="absolute inset-0 -bottom-[12%]">
         {HERO_SLIDES.map((s, i) => (
@@ -51,7 +54,7 @@ export default function Hero({ isRtl, doctors }: { isRtl: boolean; doctors?: Fin
       <div className="absolute inset-0 bg-gradient-to-b from-ink/70 via-ink/25 to-ink/90" aria-hidden="true" />
       <div className="absolute inset-0 bg-gradient-to-r from-ink/50 via-transparent to-transparent rtl:bg-gradient-to-l" aria-hidden="true" />
 
-      <div data-hero-copy="" className="relative h-full max-w-[1440px] mx-auto px-5 sm:px-10 pt-28 pb-7 flex flex-col">
+      <div data-hero-copy="" className="relative min-h-[inherit] max-w-[1440px] mx-auto px-5 sm:px-10 pt-28 pb-7 flex flex-col">
         <div className="flex-1 flex flex-col justify-center">
           <p className="fade-up eyebrow text-white/75" style={{ "--d": "150ms" } as CSSProperties}>
             {pick(COPY.heroEyebrow, isRtl)}
@@ -71,14 +74,14 @@ export default function Hero({ isRtl, doctors }: { isRtl: boolean; doctors?: Fin
                   aria-hidden={i !== current}
                 >
                   {i === 0 ? (
-                    <h1 className="hero-title display leading-[.92] max-w-[1150px]">
+                    <h1 className="hero-title display lines leading-[.92] max-w-[1150px]">
                       <span className="ln"><span style={{ "--i": 0 } as CSSProperties}>{l1}</span></span>
-                      <span className="ln"><span style={{ "--i": 1 } as CSSProperties} className="text-white/60">{l2}</span></span>
+                      <span className="ln"><span style={{ "--i": 1 } as CSSProperties}>{l2}</span></span>
                     </h1>
                   ) : (
-                    <p className="hero-title display leading-[.92] max-w-[1150px]">
+                    <p className="hero-title display lines leading-[.92] max-w-[1150px]">
                       <span className="ln"><span style={{ "--i": 0 } as CSSProperties}>{l1}</span></span>
-                      <span className="ln"><span style={{ "--i": 1 } as CSSProperties} className="text-white/60">{l2}</span></span>
+                      <span className="ln"><span style={{ "--i": 1 } as CSSProperties}>{l2}</span></span>
                     </p>
                   )}
                   <p className="hero-sub mt-6 max-w-[540px] text-base sm:text-lg text-white/80 leading-relaxed">{pick(s.sub, isRtl)}</p>
@@ -108,7 +111,9 @@ export default function Hero({ isRtl, doctors }: { isRtl: boolean; doctors?: Fin
         </div>
 
         {/* Quick doctor finder → /find-doctor with the filters applied */}
-        <HeroFinder isRtl={isRtl} doctors={doctors} />
+        <div className="mt-10">
+          <HeroFinder isRtl={isRtl} doctors={doctors} />
+        </div>
 
         {/* Slide index + progress, status line */}
         <div className="fade-up mt-6 flex flex-wrap items-center justify-between gap-4 text-xs text-white/70" style={{ "--d": "1200ms" } as CSSProperties}>
