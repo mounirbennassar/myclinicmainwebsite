@@ -6,11 +6,12 @@ import { useEffect, useRef, useState } from "react";
 import { useLang } from "@/app/i18n/context";
 import { trackPhoneClick, trackWhatsAppClick } from "@/app/lib/tracking";
 import type { DoctorCard } from "@/app/lib/doctors";
-import { PHONE_TEL, whatsappLink } from "./_lib/content";
+import { BRANCHES, PHONE_TEL, PROGRAMS, pick, whatsappLink } from "./_lib/content";
 import { scrollToId, useHomeMotion } from "./_lib/motion";
 import Header from "./_sections/Header";
 import Hero from "./_sections/Hero";
-import { Stats, Ticker } from "./_sections/Stats";
+import { SeamTicker, Stats, Ticker } from "./_sections/Stats";
+import { BrandMarkSprite } from "./_sections/BrandMark";
 import Specialties from "./_sections/Specialties";
 import Services from "./_sections/Services";
 import Programs from "./_sections/Programs";
@@ -52,6 +53,7 @@ export default function NewHome({ initialDoctors }: { initialDoctors?: DoctorCar
 
   return (
     <div ref={rootRef} className={`hv2 ${dmSans.variable} w-full`}>
+      <BrandMarkSprite />
       <Header />
 
       <div id="hv2-wrapper">
@@ -62,9 +64,12 @@ export default function NewHome({ initialDoctors }: { initialDoctors?: DoctorCar
             <Ticker isRtl={isRtl} />
             <Specialties isRtl={isRtl} />
             <Services isRtl={isRtl} />
+            {/* Seam tickers: transparent bands laid across a light→dark edge */}
+            <SeamTicker isRtl={isRtl} items={PROGRAMS.map((p) => pick(p.name, isRtl))} reverse />
             <Programs isRtl={isRtl} />
             <Doctors isRtl={isRtl} initialDoctors={initialDoctors} />
             <Experience isRtl={isRtl} />
+            <SeamTicker isRtl={isRtl} items={BRANCHES.map((b) => pick(b.name, isRtl))} />
             <Locations isRtl={isRtl} onBook={bookAt} />
             <Stories isRtl={isRtl} />
             <Booking isRtl={isRtl} city={bookingCity} setCity={setBookingCity} />

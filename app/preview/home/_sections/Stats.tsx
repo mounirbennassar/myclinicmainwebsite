@@ -5,6 +5,7 @@ import translations, { type TranslationKey } from "@/app/i18n/translations";
 import { specKeys } from "@/app/lib/specialties";
 import { COPY, pick } from "../_lib/content";
 import { CountUp } from "./ui";
+import { BrandMark } from "./BrandMark";
 
 /** Facts strip under the hero. The doctor figure is the live roster size. */
 export function Stats({ isRtl, doctorCount }: { isRtl: boolean; doctorCount: number }) {
@@ -38,38 +39,69 @@ export function Stats({ isRtl, doctorCount }: { isRtl: boolean; doctorCount: num
   );
 }
 
-/** Two counter-drifting bands of specialty names; speed follows scroll velocity. */
+/**
+ * One row of labels separated by the brand flower, drifting at a steady pace.
+ * Pure CSS (compositor-driven), so it stays smooth even while the main thread
+ * is busy. The row is rendered twice back to back and slid by -50% for a
+ * seamless loop; Arabic runs the other way, as Arabic tickers read.
+ */
+function MarqueeRow({ items, textClass, markClass }: { items: string[]; textClass: string; markClass: string }) {
+  return (
+    <>
+      {[0, 1].map((copy) => (
+        <div key={copy} className="flex h-full shrink-0 items-center">
+          {items.map((n, i) => (
+            <span key={i} className="flex h-full items-center">
+              <span dir="auto" className={`display whitespace-nowrap px-6 sm:px-9 leading-none ${textClass}`}>
+                {n}
+              </span>
+              <BrandMark className={`w-[0.62em] h-[0.62em] shrink-0 ${markClass}`} />
+            </span>
+          ))}
+        </div>
+      ))}
+    </>
+  );
+}
+
 export function Ticker({ isRtl }: { isRtl: boolean }) {
   const t = translations[isRtl ? "ar" : "en"];
   const names = specKeys.map((k) => t[`spec.${k}` as TranslationKey] as string);
-  const rowA = names.slice(0, 14);
-  const rowB = names.slice(14);
-  const row = (list: string[], outlined: boolean) => (
-    // Each band is forced LTR so the -50% loop maths is direction-agnostic;
-    // every label inside still renders in its own script direction.
-    <div dir="ltr" className="ticker-mask overflow-hidden">
-      <div data-ticker="" className="flex w-max will-change-transform">
-        {[0, 1].map((copy) => (
-          <div key={copy} className="flex shrink-0 items-center" aria-hidden={copy === 1}>
-            {list.map((n, i) => (
-              <span key={i} className="flex items-center">
-                <span dir="auto" className={`display whitespace-nowrap px-6 sm:px-10 text-[2.6rem] sm:text-[4.5rem] leading-[1.15] ${(i + (outlined ? 1 : 0)) % 2 ? "outline-text" : "text-ink"}`}>
-                  {n}
-                </span>
-                <span className="w-2.5 h-2.5 rounded-full bg-primary/70 shrink-0" />
-              </span>
-            ))}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
   return (
-    <section className="py-12 sm:py-20 overflow-hidden bg-paper" aria-hidden="true">
-      <div className="flex flex-col gap-2 sm:gap-4 -rotate-2 scale-[1.04]">
-        {row(rowA, false)}
-        {row(rowB, true)}
+    <section className="py-12 sm:py-16 overflow-hidden bg-paper border-b border-ink/10" aria-hidden="true">
+      <div dir="ltr" className="marquee ticker-mask overflow-hidden text-[clamp(1.7rem,3.4vw,3rem)]">
+        <div className={`marquee-track flex w-max ${isRtl ? "reverse" : ""}`} style={{ "--dur": "90s" } as CSSProperties}>
+          <MarqueeRow items={names} textClass="text-ink" markClass="text-primary" />
+        </div>
       </div>
     </section>
+  );
+}
+
+/**
+ * A transparent ticker laid ON the seam between a light section and the dark
+ * one below it. The band is centred on the seam, and the row is drawn twice:
+ * a navy copy clipped to the top half (over the light section) and a white
+ * copy clipped to the bottom half (over the dark one), so every word changes
+ * colour exactly where the backgrounds meet. Both copies live inside the one
+ * moving track, so they can never drift apart.
+ */
+export function SeamTicker({ items, isRtl, reverse = false }: { items: string[]; isRtl: boolean; reverse?: boolean }) {
+  // Repeat short lists so one copy of the row is always wider than the screen.
+  const row = Array.from({ length: Math.max(1, Math.ceil(10 / items.length)) }, () => items).flat();
+  const goesRight = isRtl !== reverse;
+  return (
+    <div className="relative z-20 h-0 pointer-events-none select-none" aria-hidden="true">
+      <div dir="ltr" className="seam-band absolute inset-x-0 top-0 -translate-y-1/2 h-20 sm:h-28 overflow-hidden text-[clamp(2.2rem,5.2vw,4.6rem)]">
+        <div className={`marquee-track relative flex w-max h-full ${goesRight ? "reverse" : ""}`} style={{ "--dur": "55s" } as CSSProperties}>
+          <div className="flex h-full [clip-path:inset(0_0_50%_0)]">
+            <MarqueeRow items={row} textClass="text-primary" markClass="text-primary/80" />
+          </div>
+          <div className="absolute inset-0 flex h-full [clip-path:inset(50%_0_0_0)]">
+            <MarqueeRow items={row} textClass="text-white" markClass="text-glow" />
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

@@ -12,7 +12,6 @@
  *   [data-zoom-in]       image settles from a slight zoom as it enters
  *   [data-hero] / [data-hero-copy] / [data-hero-media]   hero scroll-out
  *   [data-hscroll] + [data-hscroll-track]   pinned horizontal gallery (desktop)
- *   [data-ticker]        velocity-reactive marquee
  *   [data-expand]        panel that grows from an inset to full bleed
  *   [data-magnetic]      pointer-magnetic button (fine pointers)
  *
@@ -220,41 +219,7 @@ export function useHomeMotion(rootRef: RefObject<HTMLDivElement | null>, isRtl: 
             });
           }
 
-          // 7. Ticker: constant drift that surges with scroll velocity and
-          //    follows the scroll direction; paused while off screen.
-          q("[data-ticker]").forEach((el, i) => {
-            const forward = i % 2 === 0;
-            const loop = gsap.fromTo(
-              el,
-              { xPercent: forward ? 0 : -50 },
-              { xPercent: forward ? -50 : 0, duration: 42, ease: "none", repeat: -1 }
-            );
-            // Park the playhead far from zero so a reversed timeScale (scrolling
-            // up) has room to run backwards instead of stalling at the start.
-            loop.totalTime(loop.duration() * 400);
-            let dir = 1;
-            ScrollTrigger.create({
-              trigger: el,
-              start: "top bottom",
-              end: "bottom top",
-              onToggle: (self) => (self.isActive ? loop.play() : loop.pause()),
-              onUpdate: (self) => {
-                const v = self.getVelocity();
-                if (self.direction !== dir) dir = self.direction;
-                const boost = Math.min(Math.abs(v) / 260, 6);
-                gsap.to(loop, {
-                  timeScale: dir * (1 + boost),
-                  duration: 0.25,
-                  overwrite: true,
-                  onComplete: () => {
-                    gsap.to(loop, { timeScale: dir, duration: 1.4, ease: "power2.out" });
-                  },
-                });
-              },
-            });
-          });
-
-          // 8. Magnetic buttons. Listeners are released by the returned
+          // 7. Magnetic buttons. Listeners are released by the returned
           //    cleanup, which matchMedia runs whenever a condition flips.
           const unbind: (() => void)[] = [];
           if (fine) {

@@ -355,6 +355,41 @@ export function riyadhNow(): { day: number; hour: number } {
 
 /* ─────────────────────── Specialty links ─────────────────────── */
 
+/**
+ * A real clinic photo per specialty (replaces the icon in the list). Where the
+ * clinic has no photo of that exact service, the closest honest scene is used
+ * (a consultation, an exam room) rather than stock imagery; a few share one.
+ */
+export const SPECIALTY_IMAGES: Record<string, string> = {
+  familyMedicine: "/female-family/services/family.webp",
+  obGyn: "/female-family/services/pregnancy.webp",
+  pediatrics: "/kids/checkup.jpg",
+  dermatologyCosmetics: "/clinic/exam-room.webp",
+  orthopedics: "/clinic/xray.jpg",
+  ent: "/clinic/branch-khalidiyyah.webp",
+  endocrinologyDiabetes: "/clinic/lab.webp",
+  internalMedicine: "/clinic/ax.webp",
+  ophthalmology: "/clinic/branch-obhour.webp",
+  gastroenterology: "/female-family/services/screening.webp",
+  neurology: "/clinic/neurology.jpg",
+  cardiology: "/clinic/consultation.webp",
+  urology: "/clinic/mri.jpg",
+  psychiatryPsychology: "/female-family/services/gynecology.webp",
+  pulmonologySleep: "/clinic/ct-scanner.webp",
+  allergyImmunology: "/clinic/home-phlebotomy.webp",
+  audioVestibular: "/clinic/branch-khalidiyyah.webp",
+  dental: "/dental/dentalv2/treatment-loupes.webp",
+  emergency: "/clinic/branch-tahlia.webp",
+  generalSurgery: "/clinic/nurse-station.jpg",
+  geriatricMedicine: "/clinic/home.webp",
+  hematology: "/clinic/lab.webp",
+  nephrology: "/clinic/consultation.webp",
+  nutrition: "/female-family/services/nutrition.webp",
+  occupationalMedicine: "/clinic/reception.jpg",
+  physiotherapy: "/clinic/physiotherapy.jpg",
+  rheumatology: "/clinic/physio-room.jpg",
+};
+
 /** Specialties that own a dedicated landing page link there instead of the directory. */
 export const SPECIALTY_PAGES: Record<string, string> = {
   dental: "/dental",
