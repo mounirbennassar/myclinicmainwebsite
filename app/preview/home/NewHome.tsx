@@ -6,6 +6,9 @@ import { useEffect, useRef, useState } from "react";
 import { useLang } from "@/app/i18n/context";
 import { trackPhoneClick, trackWhatsAppClick } from "@/app/lib/tracking";
 import type { DoctorCard } from "@/app/lib/doctors";
+
+/** A card plus the cities it practises in (the hero finder counts by city). */
+export type HomeDoctor = DoctorCard & { cities: string[] };
 import { BRANCHES, PHONE_TEL, PROGRAMS, pick, whatsappLink } from "./_lib/content";
 import { scrollToId, useHomeMotion } from "./_lib/motion";
 import Header from "./_sections/Header";
@@ -33,7 +36,7 @@ const dmSans = DM_Sans({ subsets: ["latin"], weight: ["400", "500", "600", "700"
  * actions, preview badge) sits OUTSIDE #hv2-wrapper; everything that scrolls
  * sits inside #hv2-content.
  */
-export default function NewHome({ initialDoctors }: { initialDoctors?: DoctorCard[] }) {
+export default function NewHome({ initialDoctors }: { initialDoctors?: HomeDoctor[] }) {
   const { lang } = useLang();
   const isRtl = lang === "ar";
   const rootRef = useRef<HTMLDivElement>(null);
@@ -59,7 +62,7 @@ export default function NewHome({ initialDoctors }: { initialDoctors?: DoctorCar
       <div id="hv2-wrapper">
         <div id="hv2-content" className="overflow-x-clip">
           <main id="main">
-            <Hero isRtl={isRtl} />
+            <Hero isRtl={isRtl} doctors={initialDoctors} />
             <Stats isRtl={isRtl} doctorCount={initialDoctors?.length ?? 0} />
             <Ticker isRtl={isRtl} />
             <Specialties isRtl={isRtl} />

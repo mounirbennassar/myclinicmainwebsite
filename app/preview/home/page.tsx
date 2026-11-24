@@ -1,8 +1,8 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getAllActiveDoctors, orderDoctorsForDisplay, toDoctorCard, type DoctorCard } from "@/app/lib/doctors";
-import NewHome from "./NewHome";
+import { getAllActiveDoctors, orderDoctorsForDisplay, toDoctorCard } from "@/app/lib/doctors";
+import NewHome, { type HomeDoctor } from "./NewHome";
 
 /**
  * v2 home page — INTERNAL PREVIEW.
@@ -34,7 +34,7 @@ function keyMatches(key: string): boolean {
 
 const DOCTORS_SSR_BUDGET_MS = 2500;
 
-async function doctorsWithinBudget(): Promise<DoctorCard[]> {
+async function doctorsWithinBudget(): Promise<HomeDoctor[]> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   try {
     const rows = await Promise.race([
@@ -43,7 +43,8 @@ async function doctorsWithinBudget(): Promise<DoctorCard[]> {
         timer = setTimeout(() => resolve([]), DOCTORS_SSR_BUDGET_MS);
       }),
     ]);
-    return rows.map(toDoctorCard);
+    // Cards plus cities: the hero finder shows doctor counts per city.
+    return rows.map((d) => ({ ...toDoctorCard(d), cities: d.cities }));
   } finally {
     clearTimeout(timer);
   }
@@ -57,7 +58,7 @@ export default async function HomePreview({
   const { key } = await searchParams;
   if (typeof key !== "string" || !keyMatches(key)) notFound();
 
-  let doctors: DoctorCard[] = [];
+  let doctors: HomeDoctor[] = [];
   try {
     doctors = orderDoctorsForDisplay(await doctorsWithinBudget());
   } catch {

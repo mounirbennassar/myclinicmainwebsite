@@ -97,7 +97,7 @@ export default function Booking({ isRtl, city, setCity }: { isRtl: boolean; city
               onClick={trackWhatsAppClick}
               target="_blank"
               rel="noopener noreferrer"
-              className="btn btn-ghost on-dark inline-flex items-center justify-center gap-2.5 rounded-full px-7 py-4 text-sm border-white/40 w-fit"
+              className="btn btn-ghost on-dark btn-wa inline-flex items-center justify-center gap-2.5 rounded-full px-7 py-4 text-sm border-white/40 w-fit"
             >
               <WhatsAppIcon className="text-[18px]" />
               {t.whatsappUs}

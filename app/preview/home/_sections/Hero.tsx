@@ -1,29 +1,23 @@
 "use client";
 
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { useEffect, useState, type CSSProperties, type FormEvent } from "react";
-import translations, { type TranslationKey } from "@/app/i18n/translations";
-import { doctorFilters, featuredFilterOrder, specNameToKey } from "@/app/lib/specialties";
+import { useEffect, useState, type CSSProperties } from "react";
+import translations from "@/app/i18n/translations";
 import { trackWhatsAppClick } from "@/app/lib/tracking";
 import { WhatsAppIcon } from "@/app/components/icons";
 import { COPY, HERO_SLIDES, pick, whatsappLink } from "../_lib/content";
 import { scrollToId } from "../_lib/motion";
 import { Arrow } from "./ui";
+import HeroFinder, { type FinderDoctor } from "./HeroFinder";
 
 const SLIDE_MS = 7000;
 
-// Most-requested first (the clinic's promoted order), then the rest A–Z.
-const FINDER_SPECS = [...featuredFilterOrder, ...doctorFilters.filter((s) => !featuredFilterOrder.includes(s))];
 
-export default function Hero({ isRtl }: { isRtl: boolean }) {
+export default function Hero({ isRtl, doctors }: { isRtl: boolean; doctors?: FinderDoctor[] }) {
   const t = translations[isRtl ? "ar" : "en"];
-  const router = useRouter();
   const [current, setCurrent] = useState(0);
   const [previous, setPrevious] = useState(-1);
   const [intro, setIntro] = useState(true);
-  const [spec, setSpec] = useState("");
-  const [city, setCity] = useState("");
 
   const go = (i: number) => {
     const next = (i + HERO_SLIDES.length) % HERO_SLIDES.length;
@@ -41,20 +35,6 @@ export default function Hero({ isRtl }: { isRtl: boolean }) {
     return () => window.clearTimeout(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current]);
-
-  const tSpec = (name: string) => {
-    const key = specNameToKey[name];
-    return key ? (t[`spec.${key}` as TranslationKey] as string) || name : name;
-  };
-
-  const find = (e: FormEvent) => {
-    e.preventDefault();
-    const p = new URLSearchParams();
-    if (spec) p.set("spec", spec);
-    if (city) p.set("city", city);
-    const qs = p.toString();
-    router.push(qs ? `/find-doctor?${qs}` : "/find-doctor");
-  };
 
   return (
     <section data-hero="" className="relative min-h-[720px] h-[100svh] max-h-[1040px] text-white overflow-hidden bg-ink" aria-roledescription="carousel">
@@ -119,7 +99,7 @@ export default function Hero({ isRtl }: { isRtl: boolean }) {
               onClick={trackWhatsAppClick}
               target="_blank"
               rel="noopener noreferrer"
-              className="btn btn-ghost on-dark inline-flex items-center gap-2.5 rounded-full px-6 py-4 text-sm w-fit border-white/40"
+              className="btn btn-ghost on-dark btn-wa inline-flex items-center gap-2.5 rounded-full px-6 py-4 text-sm w-fit border-white/40"
             >
               <WhatsAppIcon className="text-[18px]" />
               {t.whatsappUs}
@@ -128,33 +108,7 @@ export default function Hero({ isRtl }: { isRtl: boolean }) {
         </div>
 
         {/* Quick doctor finder → /find-doctor with the filters applied */}
-        <form onSubmit={find} className="fade-up glass rounded-[22px] p-2 grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-2" style={{ "--d": "1000ms" } as CSSProperties} aria-label={pick(COPY.finderSubmit, isRtl)}>
-          <label className="rounded-2xl px-5 py-3 hover:bg-white/10 transition-colors cursor-pointer">
-            <span className="block eyebrow text-[10px] text-white/60">{pick(COPY.finderSpecialty, isRtl)}</span>
-            <select value={spec} onChange={(e) => setSpec(e.target.value)} className="w-full bg-transparent text-sm mt-1 outline-none appearance-none cursor-pointer">
-              <option value="">{pick(COPY.finderAnySpecialty, isRtl)}</option>
-              {FINDER_SPECS.map((s) => (
-                <option key={s} value={s}>
-                  {tSpec(s)}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="rounded-2xl px-5 py-3 hover:bg-white/10 transition-colors cursor-pointer md:border-s md:border-white/15">
-            <span className="block eyebrow text-[10px] text-white/60">{pick(COPY.finderCity, isRtl)}</span>
-            <select value={city} onChange={(e) => setCity(e.target.value)} className="w-full bg-transparent text-sm mt-1 outline-none appearance-none cursor-pointer">
-              <option value="">{pick(COPY.finderAnyCity, isRtl)}</option>
-              <option value="Jeddah">{t.jeddah}</option>
-              <option value="Riyadh">{t.riyadh}</option>
-            </select>
-          </label>
-          <button type="submit" className="btn btn-primary rounded-2xl px-8 py-4 text-sm font-semibold inline-flex items-center justify-center gap-3 cursor-pointer">
-            {pick(COPY.finderSubmit, isRtl)}
-            <span className="arrow">
-              <Arrow />
-            </span>
-          </button>
-        </form>
+        <HeroFinder isRtl={isRtl} doctors={doctors} />
 
         {/* Slide index + progress, status line */}
         <div className="fade-up mt-6 flex flex-wrap items-center justify-between gap-4 text-xs text-white/70" style={{ "--d": "1200ms" } as CSSProperties}>

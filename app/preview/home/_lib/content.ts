@@ -65,6 +65,11 @@ export const COPY = {
   finderCity: { en: "City", ar: "المدينة" },
   finderAnyCity: { en: "All cities", ar: "جميع المدن" },
   finderSubmit: { en: "Find a doctor", ar: "ابحث عن طبيب" },
+  finderSearch: { en: "Search specialties", ar: "ابحث عن تخصص" },
+  finderNoResults: { en: "No specialty matches that search", ar: "لا يوجد تخصص مطابق للبحث" },
+  finderClear: { en: "Clear", ar: "مسح" },
+  finderPopular: { en: "Most requested", ar: "الأكثر طلبا" },
+  finderAllSpecs: { en: "All specialties", ar: "جميع التخصصات" },
 
   statSpecialties: { en: "Medical specialties", ar: "تخصص طبي" },
   statDoctors: { en: "Doctors & consultants", ar: "طبيب واستشاري" },

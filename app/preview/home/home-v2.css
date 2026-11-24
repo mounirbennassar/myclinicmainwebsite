@@ -139,17 +139,34 @@
 .hv2 .btn-light:hover {
   color: #fff;
 }
+/* Outline buttons. The fill and the hover text colour are set explicitly per
+   surface: filling with currentColor made the background the same colour as
+   the label, so the text vanished on hover. */
 .hv2 .btn-ghost {
   border: 1px solid currentColor;
+  transition: color 0.45s var(--ease), border-color 0.45s var(--ease);
 }
-.hv2 .btn-ghost::before {
-  background: currentColor;
-}
-.hv2 .btn-ghost.on-dark:hover {
-  color: var(--color-ink);
+.hv2 .btn-ghost.on-light::before {
+  background: rgba(0, 77, 153, 0.08);
 }
 .hv2 .btn-ghost.on-light:hover {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+.hv2 .btn-ghost.on-dark::before {
+  background: var(--color-primary);
+}
+.hv2 .btn-ghost.on-dark:hover {
   color: #fff;
+  border-color: var(--color-primary);
+}
+/* WhatsApp buttons fill with WhatsApp green, label stays white. */
+.hv2 .btn-ghost.btn-wa::before {
+  background: #25d366;
+}
+.hv2 .btn-ghost.btn-wa:hover {
+  color: #fff;
+  border-color: #25d366;
 }
 .hv2 .btn .arrow {
   transition: transform 0.45s var(--ease);
@@ -426,8 +443,62 @@
     -webkit-backdrop-filter: blur(20px);
   }
 }
-.hv2 .glass select option {
-  color: var(--color-ink);
+/* Hero finder dropdowns: the panel rises out of its field (the bar sits at
+   the bottom of the hero, which clips overflow, so panels open upward).
+   Kept mounted so closing animates too; visibility flips after the fade. */
+.hv2 .dd-panel {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px) scale(0.97);
+  transform-origin: 50% 100%;
+  transition: opacity 0.2s var(--ease), transform 0.32s var(--ease), visibility 0s linear 0.32s;
+}
+.hv2 .dd-panel[data-open="true"] {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition: opacity 0.22s var(--ease), transform 0.4s var(--ease), visibility 0s;
+}
+.hv2 .dd-panel[data-open="true"] .dd-option {
+  animation: hv2-dd-item 0.4s var(--ease) both;
+}
+/* The search field draws its own rounded focus ring; the page-wide
+   focus-visible outline would add a square box inside it. */
+.hv2 .dd-panel input:focus-visible {
+  outline: none;
+}
+.hv2 .dd-option {
+  transition: background-color 0.18s var(--ease);
+}
+.hv2 .dd-option[data-active="true"] {
+  background: var(--color-mist);
+}
+@keyframes hv2-dd-item {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.hv2 .dd-panel ul {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(11, 31, 58, 0.2) transparent;
+}
+.hv2 .finder-count {
+  animation: hv2-pop 0.45s var(--ease) both;
+}
+@keyframes hv2-pop {
+  from {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
 }
 
 .hv2 .pulse {
