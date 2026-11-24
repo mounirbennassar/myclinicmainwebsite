@@ -8,6 +8,10 @@
  * Arabic is written WITHOUT tashkeel — a standing rule for this site.
  */
 
+import { hoursRows, type BranchId } from "@/app/lib/branch-hours";
+
+export { formatHour } from "@/app/lib/branch-hours";
+
 export type L = { en: string; ar: string };
 export const pick = (l: L, isRtl: boolean) => (isRtl ? l.ar : l.en);
 
@@ -246,15 +250,14 @@ export const EXPERIENCE_POINTS: { title: L; body: L }[] = [
 /** Day indexes follow Date#getDay(): 0 = Sunday … 6 = Saturday. */
 type HoursRow = { days: L; from: number | null; to: number | null; dayIdx: number[] };
 
-const SUN_THU = [0, 1, 2, 3, 4];
-const SAT_THU = [6, 0, 1, 2, 3, 4];
 const d = (en: string, ar: string): L => ({ en, ar });
 
-const GENERAL_JEDDAH: HoursRow[] = [
-  { days: d("Sun – Thu", "الأحد – الخميس"), from: 9, to: 21, dayIdx: SUN_THU },
-  { days: d("Saturday", "السبت"), from: 13, to: 21, dayIdx: [6] },
-  { days: d("Friday", "الجمعة"), from: 17, to: 21, dayIdx: [5] },
-];
+/** Long day names for this layout's single-day rows. */
+const LONG_DAYS: Record<string, L> = { Sat: d("Saturday", "السبت"), Fri: d("Friday", "الجمعة") };
+
+/** A branch's week from the shared table in app/lib/branch-hours.ts. */
+const hours = (id: BranchId): HoursRow[] =>
+  hoursRows(id).map((r) => ({ days: LONG_DAYS[r.days.en] ?? r.days, from: r.span?.from ?? null, to: r.span?.to ?? null, dayIdx: r.dayIdx }));
 
 export type Branch = {
   id: string;
@@ -266,7 +269,6 @@ export type Branch = {
   hours: HoursRow[];
 };
 
-// Hours mirror the live home page (app/HomeClient.tsx) — keep the two in step.
 export const BRANCHES: Branch[] = [
   {
     id: "mohammadiyah",
@@ -274,7 +276,7 @@ export const BRANCHES: Branch[] = [
     city: "Jeddah",
     image: "/clinic/branch-mohammadiyah-building.webp",
     mapUrl: "https://www.google.com/maps/place/My+Clinic/@21.6589018,39.1224875,17z/data=!3m1!4b1!4m6!3m5!1s0x15c3d9a3312f53ab:0x9dbc0ed7bf423fab!8m2!3d21.6589018!4d39.1224875!16s%2Fg%2F11dyrcw8t2",
-    hours: GENERAL_JEDDAH,
+    hours: hours("mohammadiyah"),
   },
   {
     id: "sahafa",
@@ -282,11 +284,7 @@ export const BRANCHES: Branch[] = [
     city: "Riyadh",
     image: "/clinic/riyadh.webp",
     mapUrl: "https://maps.app.goo.gl/5XEWuSVKVzkJNyWt6",
-    hours: [
-      { days: d("Sun – Thu", "الأحد – الخميس"), from: 9, to: 21, dayIdx: SUN_THU },
-      { days: d("Saturday", "السبت"), from: 13, to: 21, dayIdx: [6] },
-      { days: d("Friday", "الجمعة"), from: 15, to: 19, dayIdx: [5] },
-    ],
+    hours: hours("sahafa"),
   },
   {
     id: "safa",
@@ -294,7 +292,7 @@ export const BRANCHES: Branch[] = [
     city: "Jeddah",
     image: "/clinic/branch-safa-building.webp",
     mapUrl: "https://maps.app.goo.gl/zWd9vWV6m6Sukb956",
-    hours: GENERAL_JEDDAH,
+    hours: hours("safa"),
   },
   {
     id: "khalidiyyah",
@@ -303,10 +301,7 @@ export const BRANCHES: Branch[] = [
     dental: true,
     image: "/dental/40.webp",
     mapUrl: "https://maps.app.goo.gl/exmYNncSGTQAfDzV6",
-    hours: [
-      { days: d("Sat – Thu", "السبت – الخميس"), from: 10, to: 22, dayIdx: SAT_THU },
-      { days: d("Friday", "الجمعة"), from: 16, to: 20, dayIdx: [5] },
-    ],
+    hours: hours("khalidiyyah"),
   },
   {
     id: "tahlia",
@@ -314,10 +309,7 @@ export const BRANCHES: Branch[] = [
     city: "Jeddah",
     image: "/clinic/branch-tahlia-building.webp",
     mapUrl: "https://maps.app.goo.gl/ST25xhT8Hpe8PZp87",
-    hours: [
-      { days: d("Sat – Thu", "السبت – الخميس"), from: 13, to: 21, dayIdx: SAT_THU },
-      { days: d("Friday", "الجمعة"), from: null, to: null, dayIdx: [5] },
-    ],
+    hours: hours("tahlia"),
   },
   {
     id: "obhour",
@@ -325,16 +317,9 @@ export const BRANCHES: Branch[] = [
     city: "Jeddah",
     image: "/clinic/branch-obhour-building.webp",
     mapUrl: "https://maps.app.goo.gl/vmem2gxxNnHzv4q17",
-    hours: GENERAL_JEDDAH,
+    hours: hours("obhour"),
   },
 ];
-
-/** "9:00 AM" / "9:00 ص" from a 24h hour. */
-export function formatHour(h: number, isRtl: boolean): string {
-  const h12 = h % 12 === 0 ? 12 : h % 12;
-  const pm = h >= 12;
-  return isRtl ? `${h12}:00 ${pm ? "م" : "ص"}` : `${h12}:00 ${pm ? "PM" : "AM"}`;
-}
 
 /** Whether a branch is open at a given Riyadh-local weekday + fractional hour. */
 export function isBranchOpen(b: Branch, day: number, hour: number): boolean {

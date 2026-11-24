@@ -11,6 +11,7 @@ import SiteNav from "@/app/components/SiteNav";
 import SiteFooter from "@/app/components/SiteFooter";
 import DoctorsCarousel from "@/app/components/DoctorsCarousel";
 import type { Doctor } from "@/app/lib/doctors";
+import { formatSpan, hoursRows, type BranchId } from "@/app/lib/branch-hours";
 
 /* ── Brand palette ──────────────────────────────────────────────
    Site navy + teal carried from the design tokens, with a rose accent that is
@@ -27,12 +28,12 @@ const WA_TEXT = "مرحبا، أود حجز موعد في قسم صحة المر
 const WHATSAPP_LINK = `https://wa.me/966920022811?text=${encodeURIComponent(WA_TEXT)}`;
 
 /* Branches — same source data as the homepage locations rail. */
-const branches = [
-  { name: "Al Sahafa", nameAr: "الصحافة", city: "Riyadh", cityAr: "الرياض", image: "/clinic/riyadh.webp", mapUrl: "https://maps.app.goo.gl/5XEWuSVKVzkJNyWt6", isRiyadh: true },
-  { name: "Al Mohammadiyah", nameAr: "المحمدية", city: "Jeddah", cityAr: "جدة", image: "/clinic/branch-mohammadiyah-building.webp", mapUrl: "https://www.google.com/maps/place/My+Clinic/@21.6589018,39.1224875,17z/data=!3m1!4b1!4m6!3m5!1s0x15c3d9a3312f53ab:0x9dbc0ed7bf423fab!8m2!3d21.6589018!4d39.1224875!16s%2Fg%2F11dyrcw8t2" },
-  { name: "Al Safa", nameAr: "الصفا", city: "Jeddah", cityAr: "جدة", image: "/clinic/safa.webp", mapUrl: "https://maps.app.goo.gl/zWd9vWV6m6Sukb956" },
-  { name: "Al Tahlia", nameAr: "التحلية", city: "Jeddah", cityAr: "جدة", image: "/clinic/branch-tahlia-building.webp", mapUrl: "https://maps.app.goo.gl/ST25xhT8Hpe8PZp87", isTahlia: true },
-  { name: "Obhour", nameAr: "أبحر", city: "Jeddah", cityAr: "جدة", image: "/clinic/branch-obhour-building.webp", mapUrl: "https://maps.app.goo.gl/vmem2gxxNnHzv4q17" },
+const branches: { id: BranchId; name: string; nameAr: string; city: string; cityAr: string; image: string; mapUrl: string }[] = [
+  { id: "sahafa", name: "Al Sahafa", nameAr: "الصحافة", city: "Riyadh", cityAr: "الرياض", image: "/clinic/riyadh.webp", mapUrl: "https://maps.app.goo.gl/5XEWuSVKVzkJNyWt6" },
+  { id: "mohammadiyah", name: "Al Mohammadiyah", nameAr: "المحمدية", city: "Jeddah", cityAr: "جدة", image: "/clinic/branch-mohammadiyah-building.webp", mapUrl: "https://www.google.com/maps/place/My+Clinic/@21.6589018,39.1224875,17z/data=!3m1!4b1!4m6!3m5!1s0x15c3d9a3312f53ab:0x9dbc0ed7bf423fab!8m2!3d21.6589018!4d39.1224875!16s%2Fg%2F11dyrcw8t2" },
+  { id: "safa", name: "Al Safa", nameAr: "الصفا", city: "Jeddah", cityAr: "جدة", image: "/clinic/safa.webp", mapUrl: "https://maps.app.goo.gl/zWd9vWV6m6Sukb956" },
+  { id: "tahlia", name: "Al Tahlia", nameAr: "التحلية", city: "Jeddah", cityAr: "جدة", image: "/clinic/branch-tahlia-building.webp", mapUrl: "https://maps.app.goo.gl/ST25xhT8Hpe8PZp87" },
+  { id: "obhour", name: "Obhour", nameAr: "أبحر", city: "Jeddah", cityAr: "جدة", image: "/clinic/branch-obhour-building.webp", mapUrl: "https://maps.app.goo.gl/vmem2gxxNnHzv4q17" },
 ];
 
 /* Services — value maps to the note sent with the lead. Card photos live in
@@ -544,22 +545,11 @@ export default function WomenFamilyMedicine({ doctors }: { doctors: Doctor[] }) 
                       <div className="flex items-start gap-2">
                         <span className="material-symbols-outlined text-[#0E7C84] text-base mt-0.5">schedule</span>
                         <div className="text-xs space-y-1">
-                          {b.isTahlia ? (
-                            <>
-                              <p className="font-medium">{isRtl ? "السبت – الخميس: 1:00 م – 9:00 م" : "Sat – Thu: 1:00 PM – 9:00 PM"}</p>
-                              <p className="font-bold text-error">{isRtl ? "الجمعة: مغلق" : "Friday: Closed"}</p>
-                            </>
-                          ) : b.isRiyadh ? (
-                            <>
-                              <p className="font-medium">{isRtl ? "الأحد – الخميس: 9:00 ص – 9:00 م" : "Sun – Thu: 9:00 AM – 9:00 PM"}</p>
-                              <p className="font-medium">{isRtl ? "الجمعة: 3:00 م – 7:00 م" : "Friday: 3:00 PM – 7:00 PM"}</p>
-                            </>
-                          ) : (
-                            <>
-                              <p className="font-medium">{isRtl ? "الأحد – الخميس: 9:00 ص – 9:00 م" : "Sun – Thu: 9:00 AM – 9:00 PM"}</p>
-                              <p className="font-medium">{isRtl ? "الجمعة: 5:00 م – 9:00 م" : "Friday: 5:00 PM – 9:00 PM"}</p>
-                            </>
-                          )}
+                          {hoursRows(b.id).map((r) => (
+                            <p key={r.days.en} className={r.span ? "font-medium" : "font-bold text-error"}>
+                              {isRtl ? r.days.ar : r.days.en}: {formatSpan(r.span, isRtl)}
+                            </p>
+                          ))}
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
@@ -647,7 +637,7 @@ export default function WomenFamilyMedicine({ doctors }: { doctors: Doctor[] }) 
 
               <Reveal delay={0.1} className="flex flex-col gap-4 mb-8">
                 {[
-                  { icon: "schedule", t: isRtl ? "ساعات العمل" : "Working hours", d: isRtl ? "السبت – الخميس · 9 ص – 9 م" : "Sat – Thu · 9 AM – 9 PM" },
+                  { icon: "schedule", t: isRtl ? "ساعات العمل" : "Working hours", d: isRtl ? "معظم الفروع: الأحد – الخميس · 9 ص – 9 م" : "Most branches: Sun – Thu · 9 AM – 9 PM" },
                   { icon: "location_on", t: isRtl ? "الفروع" : "Branches", d: isRtl ? "6 فروع في جدة والرياض" : "6 branches in Jeddah & Riyadh" },
                   { icon: "call", t: PHONE_DISPLAY, d: isRtl ? "اتصلي أو تواصلي عبر واتساب" : "Call or reach us on WhatsApp", ltr: true },
                 ].map((c, i) => (

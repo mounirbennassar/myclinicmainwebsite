@@ -9,6 +9,8 @@ import SiteNav from "./components/SiteNav";
 import { WhatsAppIcon } from "./components/icons";
 import SiteFooter from "./components/SiteFooter";
 import DoctorsCarousel from "./components/DoctorsCarousel";
+import BranchHoursTable from "./components/BranchHoursTable";
+import { formatSpan, hoursRows, type BranchId } from "./lib/branch-hours";
 import type { DoctorCard } from "./lib/doctors";
 
 const specKeys = [
@@ -33,13 +35,13 @@ const svcKeys = ["radiology", "laboratory", "pharmacy", "physiotherapy", "homeHe
 const svcIcons = ["radiology", "biotech", "local_pharmacy", "physical_therapy", "home_health", "support_agent"];
 const svcImages = ["/clinic/mri.webp", "/clinic/lab.webp", "/clinic/pharmacy.webp", "/clinic/physiotherapy.webp", "/clinic/ax.webp", "/clinic/nurse-station.webp"];
 
-const branches = [
-  { name: "Al Sahafa", nameAr: "الصحافة", city: "Riyadh", cityAr: "الرياض", image: "/clinic/riyadh.webp", mapUrl: "https://maps.app.goo.gl/5XEWuSVKVzkJNyWt6", isDental: false, isRiyadh: true },
-  { name: "Al Mohammadiyah", nameAr: "المحمدية", city: "Jeddah", cityAr: "جدة", image: "/clinic/branch-mohammadiyah-building.webp", mapUrl: "https://www.google.com/maps/place/My+Clinic/@21.6589018,39.1224875,17z/data=!3m1!4b1!4m6!3m5!1s0x15c3d9a3312f53ab:0x9dbc0ed7bf423fab!8m2!3d21.6589018!4d39.1224875!16s%2Fg%2F11dyrcw8t2?entry=ttu&g_ep=EgoyMDI2MDMzMC4wIKXMDSoASAFQAw%3D%3D", isDental: false, isRiyadh: false },
-  { name: "Al Safa", nameAr: "الصفا", city: "Jeddah", cityAr: "جدة", image: "/clinic/safa.webp", mapUrl: "https://maps.app.goo.gl/zWd9vWV6m6Sukb956", isDental: false, isRiyadh: false },
-  { name: "Al Khalidiyyah", nameAr: "الخالدية", city: "Jeddah", cityAr: "جدة", label: "Dental Clinic", labelAr: "عيادة الأسنان", image: "/clinic/branch-khalidiyyah-building.webp", mapUrl: "https://maps.app.goo.gl/exmYNncSGTQAfDzV6", isDental: true, isRiyadh: false },
-  { name: "Al Tahlia", nameAr: "التحلية", city: "Jeddah", cityAr: "جدة", image: "/clinic/branch-tahlia-building.webp", mapUrl: "https://maps.app.goo.gl/ST25xhT8Hpe8PZp87", isDental: false, isRiyadh: false, isTahlia: true },
-  { name: "Obhour", nameAr: "أبحر", city: "Jeddah", cityAr: "جدة", image: "/clinic/branch-obhour-building.webp", mapUrl: "https://maps.app.goo.gl/vmem2gxxNnHzv4q17", isDental: false, isRiyadh: false },
+const branches: { id: BranchId; name: string; nameAr: string; city: string; cityAr: string; label?: string; labelAr?: string; image: string; mapUrl: string; isDental: boolean }[] = [
+  { id: "sahafa", name: "Al Sahafa", nameAr: "الصحافة", city: "Riyadh", cityAr: "الرياض", image: "/clinic/riyadh.webp", mapUrl: "https://maps.app.goo.gl/5XEWuSVKVzkJNyWt6", isDental: false },
+  { id: "mohammadiyah", name: "Al Mohammadiyah", nameAr: "المحمدية", city: "Jeddah", cityAr: "جدة", image: "/clinic/branch-mohammadiyah-building.webp", mapUrl: "https://www.google.com/maps/place/My+Clinic/@21.6589018,39.1224875,17z/data=!3m1!4b1!4m6!3m5!1s0x15c3d9a3312f53ab:0x9dbc0ed7bf423fab!8m2!3d21.6589018!4d39.1224875!16s%2Fg%2F11dyrcw8t2?entry=ttu&g_ep=EgoyMDI2MDMzMC4wIKXMDSoASAFQAw%3D%3D", isDental: false },
+  { id: "safa", name: "Al Safa", nameAr: "الصفا", city: "Jeddah", cityAr: "جدة", image: "/clinic/safa.webp", mapUrl: "https://maps.app.goo.gl/zWd9vWV6m6Sukb956", isDental: false },
+  { id: "khalidiyyah", name: "Al Khalidiyyah", nameAr: "الخالدية", city: "Jeddah", cityAr: "جدة", label: "Dental Clinic", labelAr: "عيادة الأسنان", image: "/clinic/branch-khalidiyyah-building.webp", mapUrl: "https://maps.app.goo.gl/exmYNncSGTQAfDzV6", isDental: true },
+  { id: "tahlia", name: "Al Tahlia", nameAr: "التحلية", city: "Jeddah", cityAr: "جدة", image: "/clinic/branch-tahlia-building.webp", mapUrl: "https://maps.app.goo.gl/ST25xhT8Hpe8PZp87", isDental: false },
+  { id: "obhour", name: "Obhour", nameAr: "أبحر", city: "Jeddah", cityAr: "جدة", image: "/clinic/branch-obhour-building.webp", mapUrl: "https://maps.app.goo.gl/vmem2gxxNnHzv4q17", isDental: false },
 ];
 
 const slideImages = ["/clinic/reception.webp", "/clinic/lobby.webp", "/clinic/nurse-station.webp"];
@@ -443,28 +445,12 @@ export default function HomeClient({ initialDoctors }: { initialDoctors?: Doctor
                       <div className="flex items-start gap-2 text-on-surface-variant">
                         <span className="material-symbols-outlined text-primary text-base mt-0.5">schedule</span>
                         <div className="text-xs space-y-1">
-                          {branch.isDental ? (
-                            <>
-                              <p className="font-bold text-primary text-[11px]">{t.dentalClinicLabel}</p>
-                              <p className="font-medium">{t.dentalSatThu}</p>
-                              <p className="font-medium">{t.dentalFri}</p>
-                            </>
-                          ) : (branch as any).isTahlia ? (
-                            <>
-                              <p className="font-medium">{isRtl ? "السبت – الخميس: 1:00 م – 9:00 م" : "Sat – Thu: 1:00 PM – 9:00 PM"}</p>
-                              <p className="font-bold text-error">{t.friClosed}</p>
-                            </>
-                          ) : (
-                            <>
-                              <p className="font-medium">{t.sunThu}</p>
-                              {branch.isRiyadh ? (
-                                <p className="font-medium">{t.friRiyadh}</p>
-                              ) : (
-                                <p className="font-medium">{t.fri}</p>
-                              )}
-                              <p className="font-medium">{t.sat}</p>
-                            </>
-                          )}
+                          {branch.isDental && <p className="font-bold text-primary text-[11px]">{t.dentalClinicLabel}</p>}
+                          {hoursRows(branch.id).map((r) => (
+                            <p key={r.days.en} className={r.span ? "font-medium" : "font-bold text-error"}>
+                              {isRtl ? r.days.ar : r.days.en}: {formatSpan(r.span, isRtl)}
+                            </p>
+                          ))}
                         </div>
                       </div>
                       <div className="flex items-center gap-2 text-on-surface-variant">
@@ -499,45 +485,11 @@ export default function HomeClient({ initialDoctors }: { initialDoctors?: Doctor
           {/* Opening Hours & Patient Stories */}
           <div className="space-y-12">
             <div className="bg-primary text-white p-8 md:p-10 rounded-xl shadow-2xl">
-              <h3 className="text-2xl font-extrabold mb-8 flex items-center gap-4">
+              <h3 className="text-2xl font-extrabold mb-6 flex items-center gap-4">
                 <span className="material-symbols-outlined">schedule</span>
                 {t.openingHours}
               </h3>
-              <div className="space-y-4">
-                <div className="border-b border-white/20 pb-3">
-                  <div className="flex justify-between">
-                    <span className="font-medium">{isRtl ? "الأحد – الخميس" : "Sunday – Thursday"}</span>
-                    <span className="font-bold">{isRtl ? "9:00 صباحًا – 9:00 مساءً" : "9:00 AM – 9:00 PM"}</span>
-                  </div>
-                  <p className="text-secondary-fixed font-bold text-xs mt-2">{isRtl ? "الرياض: الجمعة 3:00 مساء – 7:00 مساء" : "Riyadh: Friday 3:00 PM – 7:00 PM"}</p>
-                  <p className="text-secondary-fixed font-bold text-xs mt-1">{isRtl ? "التحلية: 1:00 مساءً – 9:00 مساءً، مغلق يوم الجمعة" : "Al Tahlia: 1:00 PM – 9:00 PM, Closed on Friday"}</p>
-                </div>
-                <div className="flex justify-between border-b border-white/20 pb-3">
-                  <span className="font-medium">{isRtl ? "الجمعة" : "Friday"}</span>
-                  <span className="font-bold">{isRtl ? "5:00 مساءً – 9:00 مساءً" : "5:00 PM – 9:00 PM"}</span>
-                </div>
-                <div className="flex justify-between border-b border-white/20 pb-3">
-                  <span className="font-medium">{isRtl ? "السبت" : "Saturday"}</span>
-                  <span className="font-bold">{isRtl ? "1:00 مساءً – 9:00 مساءً" : "1:00 PM – 9:00 PM"}</span>
-                </div>
-              </div>
-              {/* Dental Hours */}
-              <div className="mt-6 pt-6 border-t border-white/20">
-                <h4 className="font-extrabold text-sm mb-4 flex items-center gap-2">
-                  <span className="material-symbols-outlined text-base" style={{ fontVariationSettings: "'FILL' 1" }}>dentistry</span>
-                  {isRtl ? "عيادة الأسنان" : "Dental Clinic"}
-                </h4>
-                <div className="space-y-3">
-                  <div className="flex justify-between border-b border-white/10 pb-3">
-                    <span className="font-medium text-sm">{isRtl ? "السبت – الخميس" : "Saturday – Thursday"}</span>
-                    <span className="font-bold text-sm">{isRtl ? "10:00 صباحًا – 10:00 مساءً" : "10:00 AM – 10:00 PM"}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="font-medium text-sm">{isRtl ? "الجمعة" : "Friday"}</span>
-                    <span className="font-bold text-sm">{isRtl ? "4:00 عصرًا – 8:00 مساءً" : "4:00 PM – 8:00 PM"}</span>
-                  </div>
-                </div>
-              </div>
+              <BranchHoursTable isRtl={isRtl} />
             </div>
           </div>
           {/* Appointment Form */}
